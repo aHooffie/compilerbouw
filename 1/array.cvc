@@ -1,0 +1,47 @@
+printIntVec( int[n] vec ) {
+    // print vec to stdout
+}
+
+printFloatVec( float[n] vec ) {
+    // print vec to stdout
+}
+
+printIntMat( int[m, n] mat ) {
+    // print mat to stdout;
+}
+
+printFloatMat( float[m,n ] mat ) {
+    // print mat to stdout;
+}
+
+scanIntVec( int[n] vec ) {
+    // scan vec from stdin;
+
+}
+
+scanFloatVec( float[n ] vec ) {
+    // scan vec from stdin;
+}
+
+scanIntMat( int[m,n ] mat ) {
+    // scan mat from stdin;
+}
+
+scanFloatMat( float[m,n ] mat ) {
+    // scan mat from stdin;
+}
+
+matMul( float[m,k ] a, float[k,n ] b, float[m,n ] c ) {
+    // multiply two floating point matrices a and b and store result in c;
+}
+
+queens( bool[m,n ] a ) {
+    // solve the well known 8 Queens problem (bonus challenge).
+}
+
+
+
+All above CiviC modules must not export a main function. For testing purposes write separate
+modules that do contain main functions with suitable test code and submit them alongside.
+For printing and scanning arrays use the same textual format as used for array constants in CiviC
+source code.

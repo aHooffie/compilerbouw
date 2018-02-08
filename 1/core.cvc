@@ -1,0 +1,33 @@
+// Return greatest common denominator of a and b.
+int gcd(int a, int b) {
+    while (a != 0 || b != 0)  {
+        if (a > b) {
+            a = a % b;
+        } else {
+            b = b % a;
+        }
+    }
+
+    if (a == 0) {
+        return b;
+    } else {
+        return a;
+    }
+}
+
+// Return factorial of n.
+int fac(int n) {
+    if (n == 0) {
+        return 1;
+    } else {
+        return n * (n - 1);
+    }
+}
+
+fib(n) {
+    // returns nth fibonacci
+}
+
+isprime(n) {
+    // returns true if n is a prime number, false otherwise
+}

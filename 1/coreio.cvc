@@ -1,0 +1,9 @@
+fibs(n) {
+    // print first n Fibonnaci numbers
+    // Use fib 
+}
+
+primes(n) {
+    // print first n prime numbers
+    // clone of function isprime as nested local function definition.
+}

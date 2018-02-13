@@ -1,0 +1,44 @@
+#include <civic.h>
+#include "core.cvc"
+
+export void main()
+{
+    printInt(gcd(15, 10));
+    printNewlines(1);
+    printInt(gcd(7877, 3547));
+    printNewlines(1);
+    printInt(gcd(1675, 1633125));
+    printNewlines(2);
+
+    printInt(fib(10));
+    printNewlines(1);
+    printInt(fib(1));
+    printNewlines(1);
+    printInt(fib(50));
+    printNewlines(2);
+
+    printInt(fac(10));
+    printNewlines(1);
+    printInt(fac(20)); // > 20 = too big.
+    printNewlines(1);
+    printInt(fac(3));
+    printNewlines(2);
+
+    if (isprime(50) == true)
+        printInt(0);
+    else
+        printInt(1);
+    printNewlines(1);
+
+    if (isprime(17) == true)
+        printInt(0);
+    else
+        printInt(1);
+    printNewlines(1);
+
+    if (isprime(7919) == true)
+        printInt(0);
+    else
+        printInt(1);
+    printNewlines(1);
+}

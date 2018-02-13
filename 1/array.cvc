@@ -1,47 +1,93 @@
-printIntVec( int[n] vec ) {
-    // print vec to stdout
+#include <civic.h>
+
+/* Print a vector / array of integers to stdout */
+printIntVec(int[n] vec)
+{
+    for (int i = 0; n)
+    {
+        printInt(vec[n]);
+        printSpaces(1);
+    }
+    printNewlines(1);
 }
 
-printFloatVec( float[n] vec ) {
-    // print vec to stdout
-}
+/* Print a vector / array of floats to stdout */
+// printFloatVec(float[n] vec)
+// {
+//     for (int i = 0; n)
+//     {
+//         printFloat(float vec[n]);
+//         printSpaces(1);
+//     }
+//     printNewlines(1);
+// }
 
-printIntMat( int[m, n] mat ) {
-    // print mat to stdout;
-}
+/* Print a matrix of integers to stdout. */
+// printIntMat(int[m, n] mat)
+// {
+//     for (int i = 0; m)
+//     {
+//         for (int j = 0; n)
+//         {
+// printInt(mat[m, n]);
+// printSpaces(1);
+// }
+// printNewlines(1);
+// }
+// printNewlines(1);
+// }
 
-printFloatMat( float[m,n ] mat ) {
-    // print mat to stdout;
-}
+/* Print a matrix of floats to stdout. */
+// printFloatMat(float[m, n] mat)
+// {
+//     for (int i = 0; m)
+//     {
+//         for (int j = 0; n)
+//         {
+//             printFloat(mat[m, n]);
+//             printSpaces(1);
+//         }
+//         printNewlines(1);
+//     }
+//     printNewlines(1);
+// }
 
-scanIntVec( int[n] vec ) {
-    // scan vec from stdin;
+/* Scan a vector / array of integers from stdin. */
+// scanIntVec(int[n] vec)
+// {
+// }
 
-}
+/* Scan a vector / array of floats from stdin. */
+// scanFloatVec(float[n] vec)
+// {
+// scan vec from stdin;
+// }
 
-scanFloatVec( float[n ] vec ) {
-    // scan vec from stdin;
-}
+/* Scan a matrix of integers from stdin. */
+// scanIntMat(int[m, n] mat)
+// {
+// scan mat from stdin;
+// }
 
-scanIntMat( int[m,n ] mat ) {
-    // scan mat from stdin;
-}
+/* Scan a matrix of floats from stdin. */
+// scanFloatMat(float[m, n] mat)
+// {
+// scan mat from stdin;
+// }
 
-scanFloatMat( float[m,n ] mat ) {
-    // scan mat from stdin;
-}
+/* Multiply two floating point matrices a and b and store result in c. */
+// matMul(float[m, k] a, float[k, n] b, float[m, n] c)
+// {
+// multiply two floating point matrices a and b and store result in c;
+// }
 
-matMul( float[m,k ] a, float[k,n ] b, float[m,n ] c ) {
-    // multiply two floating point matrices a and b and store result in c;
-}
+/* Solve the well known 8 Queens problem. */
+// queens(bool[m, n] a)
+// {
+// solve the well known 8 Queens problem (bonus challenge).
+// }
 
-queens( bool[m,n ] a ) {
-    // solve the well known 8 Queens problem (bonus challenge).
-}
-
-
-
-All above CiviC modules must not export a main function. For testing purposes write separate
-modules that do contain main functions with suitable test code and submit them alongside.
-For printing and scanning arrays use the same textual format as used for array constants in CiviC
-source code.
+// All above CiviC modules must not export a main function. For testing purposes write separate
+// modules that do contain main functions with suitable test code and submit them alongside.
+// For printing and scanning arrays use the same textual format as used for array constants in CiviC
+// source code.

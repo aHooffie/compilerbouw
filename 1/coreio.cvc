@@ -1,9 +1,67 @@
-fibs(n) {
-    // print first n Fibonnaci numbers
-    // Use fib 
+/* 
+ * Andrea van den Hooff
+ * 10439080
+ * Premaster Software Engineering
+ * coreio.cvc: implements the functions required by Assignment 1.2
+ * (fibs & primes).
+*/ 
+
+#include <civic.h>
+// #include "core.cvc"
+
+/* Print the first n Fibonacci numbers. */
+// export int fibs(int n) {
+//     for (int i = 0, n) {
+//         printInt(fib(i));
+//         printSpaces(1);
+//     }
+//     printNewlines(1);
+// }
+
+/* Print the first n prime numbers. */
+export void primes(int n) {
+    int counter = 0;
+    int i = 2;
+
+    bool isprime(int n)
+    {
+        int i = 5;
+        int j = 2;
+
+        if (n == 2 || n == 3)
+            return true;
+        if (n % 2 == 0 || n % 3 == 0)
+            return false;
+
+        while (i * i <= n)
+        {
+            if (n % i == 0)
+                return false;
+
+            i = i + j;
+            j = 6 - j;
+        }
+
+        return true;
+    }
+
+    while (counter != n) {
+        if (isprime(i) == true) {
+            printInt(i);
+            printSpaces(1);
+        }
+        counter = counter + 1;
+        i = i + 1;
+    }
 }
 
-primes(n) {
-    // print first n prime numbers
-    // clone of function isprime as nested local function definition.
+int main() {
+    // fibs(10);
+    // printNewlines(1);
+    // fibs(20); // > 20 = too big.
+    // printNewlines(1);
+    // primes(20);
+    printInt(2);
+    printNewlines(1);
+    return 0;
 }

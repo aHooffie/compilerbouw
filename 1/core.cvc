@@ -1,33 +1,91 @@
-// Return greatest common denominator of a and b.
-int gcd(int a, int b) {
-    while (a != 0 || b != 0)  {
-        if (a > b) {
+/* 
+ * Andrea van den Hooff
+ * 10439080
+ * Premaster Software Engineering
+ * core.cvc: implements the functions required by Assignment 1.1
+ * (gcd, fac, fib & isprime).
+*/ 
+
+#include <civic.h>
+
+/* Return the greatest common denominator of a and b. */
+export int gcd(int a, int b)
+{
+    while (a != 0 && b != 0)
+    {
+        if (a > b)
             a = a % b;
-        } else {
+        else
             b = b % a;
+    }
+
+    if (a == 0)
+        return b;
+
+    return a;
+}
+
+/* Return the factorial of n. */
+export int fac(int n)
+{
+    int result = 1;
+    if (n <= 1)
+        return 1;
+    else
+        while (n > 1)
+        {
+            result = result * n;
+            n = n - 1;
+        }
+
+    return result;
+}
+
+/* Return the nth Fibonnaci (n = 0 == 0).
+The first 10 are: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34. */
+export int fib(int n)
+{
+    int a = 1;
+    int b = 1;
+
+    if (n == 0 || n == 1)
+        return n;
+    else
+    {
+        for (int i = 1, n)
+        {
+            if (a < b)
+                a = a + b;
+            else
+                b = b + a;
         }
     }
-
-    if (a == 0) {
-        return b;
-    } else {
+    if (a > b)
         return a;
+
+    return b;
+}
+
+/* Returns 1 if n is a prime number, 0 otherwise.
+Used the algorithm on https://goo.gl/GLaoDm. */
+export bool isprime(int n)
+{
+    int i = 5;
+    int j = 2;
+
+    if (n == 2 || n == 3)
+        return true;
+    if (n % 2 == 0 || n % 3 == 0)
+        return false;
+
+    while (i * i <= n)
+    {
+        if (n % i == 0)
+            return false;
+
+        i = i + j;
+        j = 6 - j;
     }
-}
 
-// Return factorial of n.
-int fac(int n) {
-    if (n == 0) {
-        return 1;
-    } else {
-        return n * (n - 1);
-    }
-}
-
-fib(n) {
-    // returns nth fibonacci
-}
-
-isprime(n) {
-    // returns true if n is a prime number, false otherwise
+    return true;
 }

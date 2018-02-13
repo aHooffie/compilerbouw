@@ -1,8 +1,22 @@
 #include <civic.h>
-#include "core.cvc"
+#include "coreio.cvc"
+#include "array.cvc"
 
-export void main()
+export int main() {
+    int as = scanInt();
+    if (as == 1) 
+        as_1();
+    else if (as == 2)
+        as_2();
+    else if (as == 3) 
+        as_3();
+
+    return 0;
+}
+
+export int as_1()
 {
+    /* Tests for assignment 1.*/
     printInt(gcd(15, 10));
     printNewlines(1);
     printInt(gcd(7877, 3547));
@@ -10,7 +24,7 @@ export void main()
     printInt(gcd(1675, 1633125));
     printNewlines(2);
 
-    printInt(fib(10));
+    printInt(fib(2));
     printNewlines(1);
     printInt(fib(1));
     printNewlines(1);
@@ -41,4 +55,24 @@ export void main()
     else
         printInt(1);
     printNewlines(1);
+
+    return 0;
+}
+
+export int as_2() {
+    fibs(10);
+    printNewlines(1);
+    fibs(-3);
+    printNewlines(1);
+    fibs(20);
+    printNewlines(1);
+    primes(30);
+    printNewlines(1);
+    primes(-1);
+    printNewlines(1);
+        return 0;
+}
+
+export int as_3() {
+    return 0;
 }

@@ -1,66 +1,68 @@
 #include <civic.h>
 
 /* Print a vector / array of integers to stdout */
-printIntVec(int[n] vec)
+export void printIntVec(int[n] vec)
 {
-    for (int i = 0; n)
+    for (int i = 0, n)
     {
-        printInt(vec[n]);
+        printInt(vec[i]);
         printSpaces(1);
     }
     printNewlines(1);
 }
 
 /* Print a vector / array of floats to stdout */
-// printFloatVec(float[n] vec)
-// {
-//     for (int i = 0; n)
-//     {
-//         printFloat(float vec[n]);
-//         printSpaces(1);
-//     }
-//     printNewlines(1);
-// }
+export void printFloatVec(float[n] vec)
+{
+    for (int i = 0, n)
+    {
+        printFloat(vec[i]);
+        printSpaces(1);
+    }
+    printNewlines(1);
+}
 
 /* Print a matrix of integers to stdout. */
-// printIntMat(int[m, n] mat)
-// {
-//     for (int i = 0; m)
-//     {
-//         for (int j = 0; n)
-//         {
-// printInt(mat[m, n]);
-// printSpaces(1);
-// }
-// printNewlines(1);
-// }
-// printNewlines(1);
-// }
+export void printIntMat(int[m, n] mat)
+{
+    for (int i = 0, m)
+    {
+        for (int j = 0, n)
+        {
+            printInt(mat[i, j]);
+            printSpaces(1);
+        }
+
+        printNewlines(1);
+    }
+
+    printNewlines(1);
+}
 
 /* Print a matrix of floats to stdout. */
-// printFloatMat(float[m, n] mat)
-// {
-//     for (int i = 0; m)
-//     {
-//         for (int j = 0; n)
-//         {
-//             printFloat(mat[m, n]);
-//             printSpaces(1);
-//         }
-//         printNewlines(1);
-//     }
-//     printNewlines(1);
-// }
+export void printFloatMat(float[m, n] mat)
+{
+    for (int i = 0, m)
+    {
+        for (int j = 0, n)
+        {
+            printFloat(mat[i, j]);
+            printSpaces(1);
+        }
+        printNewlines(1);
+    }
+    printNewlines(1);
+}
 
 /* Scan a vector / array of integers from stdin. */
 // scanIntVec(int[n] vec)
 // {
+        
 // }
 
 /* Scan a vector / array of floats from stdin. */
 // scanFloatVec(float[n] vec)
 // {
-// scan vec from stdin;
 // }
 
 /* Scan a matrix of integers from stdin. */
@@ -75,11 +77,30 @@ printIntVec(int[n] vec)
 // scan mat from stdin;
 // }
 
-/* Multiply two floating point matrices a and b and store result in c. */
-// matMul(float[m, k] a, float[k, n] b, float[m, n] c)
-// {
-// multiply two floating point matrices a and b and store result in c;
-// }
+/* Multiply two floating point matrices a and b and store result in c. 
+    https://en.wikipedia.org/wiki/Matrix_multiplication 
+    matMul( float[m,k ] a, float[k,n ] b, float[m,n ] c ) */
+export void matMul(float[a, b] first, float[c, d] second, float[e, f] result)
+{
+    float sum = 0.0; 
+
+    if (a != e || b != c || d != f) {
+        return;
+    }
+
+    for (int x = 0, a) {
+        for (int y = 0, d) {
+            for (int z = 0, b) {
+                sum = sum + first[x, z] * second[z, y];//iets van a * iets van b;
+            }
+        
+        result[x, y] = sum;
+        sum = 0.0;
+        }
+    }
+
+  return;
+}
 
 /* Solve the well known 8 Queens problem. */
 // queens(bool[m, n] a)
@@ -91,3 +112,18 @@ printIntVec(int[n] vec)
 // modules that do contain main functions with suitable test code and submit them alongside.
 // For printing and scanning arrays use the same textual format as used for array constants in CiviC
 // source code.
+
+// export int main() {
+//     int[20] test;
+//     int[10] vec = [1, 2, 3, 4, 5, 6, 8, 8, 12, 10];
+//     float[5] vec_2 = [1.2, 4.444444, 3.1415, 1208.1994, 1.23456789];
+//     printIntVec(vec);
+//     printFloatVec(vec_2);
+
+//     // int[1, 10] mat = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+//     // int[1] mat = vec;
+//     // printIntMat(mat);
+
+//     // As a unit test: you should be able to scan what you printed yourself before. ;-)
+//     return 0;
+// }

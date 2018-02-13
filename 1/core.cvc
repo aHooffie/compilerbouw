@@ -41,18 +41,20 @@ export int fac(int n)
     return result;
 }
 
-/* Return the nth Fibonnaci (n = 0 == 0).
+/* Return the nth Fibonnaci (n = 1 == 0).
 The first 10 are: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34. */
 export int fib(int n)
 {
-    int a = 1;
+    int a = 0;
     int b = 1;
 
-    if (n == 0 || n == 1)
-        return n;
+    if (n == 1) 
+        return 0;
+    else if ( n == 2)
+        return 1;
     else
     {
-        for (int i = 1, n)
+        for (int i = 2, n)
         {
             if (a < b)
                 a = a + b;

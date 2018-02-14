@@ -4,11 +4,11 @@
  * Premaster Software Engineering
  * core.cvc: implements the functions required by Assignment 1.1
  * (gcd, fac, fib & isprime).
-*/ 
+ */
 
 #include <civic.h>
 
-/* Return the greatest common denominator of a and b. */
+/* Returns the greatest common denominator of a and b. */
 export int gcd(int a, int b)
 {
     while (a != 0 && b != 0)
@@ -25,11 +25,11 @@ export int gcd(int a, int b)
     return a;
 }
 
-/* Return the factorial of n. */
+/* Returns the factorial of n. */
 export int fac(int n)
 {
     int result = 1;
-    if (n <= 1)
+    if (n <= 1 || n > 20)
         return 1;
     else
         while (n > 1)
@@ -48,9 +48,9 @@ export int fib(int n)
     int a = 0;
     int b = 1;
 
-    if (n == 1) 
+    if (n == 1)
         return 0;
-    else if ( n == 2)
+    else if (n == 2)
         return 1;
     else
     {
@@ -68,7 +68,7 @@ export int fib(int n)
     return b;
 }
 
-/* Returns 1 if n is a prime number, 0 otherwise.
+/* Returns true if n is a prime number, false otherwise.
 Used the algorithm on https://goo.gl/GLaoDm. */
 export bool isprime(int n)
 {

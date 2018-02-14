@@ -1,3 +1,11 @@
+/* 
+ * Andrea van den Hooff
+ * 10439080
+ * Premaster Software Engineering
+ * array.cvc: implements printing & scanning of (multidimensional) arrays,
+ * required by Assignment 1.3.
+ */
+
 #include <civic.h>
 
 /* Print a vector / array of integers to stdout */
@@ -55,75 +63,77 @@ export void printFloatMat(float[m, n] mat)
 }
 
 /* Scan a vector / array of integers from stdin. */
-// scanIntVec(int[n] vec)
-// {
-        
-// }
+export void scanIntVec(int[n] vec)
+{
+    if (n > 0)
+    {
+        for (int i = 0, n)
+            vec[i] = scanInt();
+    }
+}
 
 /* Scan a vector / array of floats from stdin. */
-// scanFloatVec(float[n] vec)
-// {
-// }
+export void scanFloatVec(float[n] vec)
+{
+    if (n > 0)
+    {
+        for (int i = 0, n)
+            vec[i] = scanFloat();
+    }
+}
 
 /* Scan a matrix of integers from stdin. */
-// scanIntMat(int[m, n] mat)
-// {
-// scan mat from stdin;
-// }
+export void scanIntMat(int[m, n] mat)
+{
+    if (n > 0 && m > 0)
+    {
+        for (int i = 0, m)
+        {
+            for (int j = 0, n)
+            {
+                mat[i, j] = scanInt();
+            }
+        }
+    }
+}
 
 /* Scan a matrix of floats from stdin. */
-// scanFloatMat(float[m, n] mat)
-// {
-// scan mat from stdin;
-// }
+export void scanFloatMat(float[m, n] mat)
+{
+    if (n > 0 && m > 0)
+    {
+        for (int i = 0, m)
+        {
+            for (int j = 0, n)
+                mat[i, j] = scanFloat();
+        }
+    }
+}
 
 /* Multiply two floating point matrices a and b and store result in c. 
     https://en.wikipedia.org/wiki/Matrix_multiplication 
-    matMul( float[m,k ] a, float[k,n ] b, float[m,n ] c ) */
+    original: matMul( float[m, k] a, float[k, n] b, float[m, n] c) */
 export void matMul(float[a, b] first, float[c, d] second, float[e, f] result)
 {
-    float sum = 0.0; 
+    float sum = 0.0;
 
-    if (a != e || b != c || d != f) {
+    if (a != e || b != c || d != f)
         return;
-    }
 
-    for (int x = 0, a) {
-        for (int y = 0, d) {
-            for (int z = 0, b) {
-                sum = sum + first[x, z] * second[z, y];//iets van a * iets van b;
-            }
-        
-        result[x, y] = sum;
-        sum = 0.0;
+    for (int x = 0, a)
+    {
+        for (int y = 0, d)
+        {
+            for (int z = 0, b)
+                sum = sum + first[x, z] * second[z, y];
+
+            result[x, y] = sum;
+            sum = 0.0;
         }
     }
 
-  return;
+    return;
 }
 
 /* Solve the well known 8 Queens problem. */
-// queens(bool[m, n] a)
-// {
-// solve the well known 8 Queens problem (bonus challenge).
-// }
-
-// All above CiviC modules must not export a main function. For testing purposes write separate
-// modules that do contain main functions with suitable test code and submit them alongside.
-// For printing and scanning arrays use the same textual format as used for array constants in CiviC
-// source code.
-
-// export int main() {
-//     int[20] test;
-//     int[10] vec = [1, 2, 3, 4, 5, 6, 8, 8, 12, 10];
-//     float[5] vec_2 = [1.2, 4.444444, 3.1415, 1208.1994, 1.23456789];
-//     printIntVec(vec);
-//     printFloatVec(vec_2);
-
-//     // int[1, 10] mat = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-//     // int[1] mat = vec;
-//     // printIntMat(mat);
-
-//     // As a unit test: you should be able to scan what you printed yourself before. ;-)
-//     return 0;
-// }
+// queens(bool[m, n] a) {}

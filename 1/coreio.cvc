@@ -4,26 +4,30 @@
  * Premaster Software Engineering
  * coreio.cvc: implements the functions required by Assignment 1.2
  * (fibs & primes).
-*/ 
+ */
 
 #include <civic.h>
 #include "core.cvc"
 
 /* Print the first n Fibonacci numbers. */
-export void fibs(int n) {
-    for (int i = 1, n + 1) {
+export void fibs(int n)
+{
+    for (int i = 1, n + 1)
+    {
         printInt(fib(i));
         printSpaces(1);
     }
-    
+
     printNewlines(1);
 }
 
 /* Print the first n prime numbers. */
-export void primes(int n) {
+export void primes(int n)
+{
     int counter = 0;
     int i = 2;
 
+    /* Nested local function to check if n is a prime number.*/
     bool isprime(int n)
     {
         int i = 5;
@@ -49,8 +53,10 @@ export void primes(int n) {
     if (n <= 0)
         return;
 
-    while (counter != n) {
-        if (isprime(i) == true) {
+    while (counter != n)
+    {
+        if (isprime(i) == true)
+        {
             counter = counter + 1;
             printInt(i);
             printSpaces(1);

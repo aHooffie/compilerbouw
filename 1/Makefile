@@ -4,7 +4,7 @@
 %.o: %.s
 	civas -o $@ $<
 
-run: main.o mod.o
+run: main.o and.o
 	civvm $^
 
 clean:

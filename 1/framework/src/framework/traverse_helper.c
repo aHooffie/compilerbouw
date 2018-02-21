@@ -39,7 +39,27 @@ TRAVsons(node * arg_node, info * arg_info)
 {
 	switch (NODE_TYPE(arg_node)) {
 	case N_module:
-		TRAV(MODULE_STMTS(arg_node), arg_info);
+		TRAV(MODULE_DECLARATIONS(arg_node), arg_info);
+		break;
+	case N_declarations:
+		TRAV(DECLARATIONS_DECLARATION(arg_node), arg_info);
+		TRAV(DECLARATIONS_NEXT(arg_node), arg_info);
+		break;
+	case N_func:
+		TRAV(FUNC_FUNCBODY(arg_node), arg_info);
+		TRAV(FUNC_PARAMETERS(arg_node), arg_info);
+		break;
+	case N_globaldec:
+		break;
+	case N_globaldef:
+		TRAV(GLOBALDEF_ASSIGN(arg_node), arg_info);
+		break;
+	case N_funcbody:
+		TRAV(FUNCBODY_STMTS(arg_node), arg_info);
+		TRAV(FUNCBODY_VARDECLARATIONS(arg_node), arg_info);
+		break;
+	case N_parameters:
+		TRAV(PARAMETERS_NEXT(arg_node), arg_info);
 		break;
 	case N_stmts:
 		TRAV(STMTS_STMT(arg_node), arg_info);
@@ -49,13 +69,56 @@ TRAVsons(node * arg_node, info * arg_info)
 		TRAV(ASSIGN_LET(arg_node), arg_info);
 		TRAV(ASSIGN_EXPR(arg_node), arg_info);
 		break;
+	case N_if:
+		TRAV(IF_ELSE(arg_node), arg_info);
+		TRAV(IF_EXPR(arg_node), arg_info);
+		TRAV(IF_STMTS(arg_node), arg_info);
+		break;
+	case N_else:
+		TRAV(ELSE_STMTS(arg_node), arg_info);
+		break;
+	case N_while:
+		TRAV(WHILE_EXPR(arg_node), arg_info);
+		TRAV(WHILE_STMTS(arg_node), arg_info);
+		break;
+	case N_dowhile:
+		TRAV(DOWHILE_STMTS(arg_node), arg_info);
+		TRAV(DOWHILE_WHILE(arg_node), arg_info);
+		break;
+	case N_for:
+		TRAV(FOR_ASSIGN(arg_node), arg_info);
+		TRAV(FOR_EXPR(arg_node), arg_info);
+		TRAV(FOR_EXPROPT(arg_node), arg_info);
+		TRAV(FOR_STMTS(arg_node), arg_info);
+		break;
+	case N_return:
+		TRAV(RETURN_EXPR(arg_node), arg_info);
+		break;
+	case N_expressions:
+		TRAV(EXPRESSIONS_EXPR(arg_node), arg_info);
+		TRAV(EXPRESSIONS_NEXT(arg_node), arg_info);
+		break;
+	case N_functioncallstmt:
+		TRAV(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+		break;
 	case N_binop:
 		TRAV(BINOP_LEFT(arg_node), arg_info);
 		TRAV(BINOP_RIGHT(arg_node), arg_info);
 		break;
+	case N_monop:
+		TRAV(MONOP_EXPR(arg_node), arg_info);
+		break;
 	case N_varlet:
+		TRAV(VARLET_NEXT(arg_node), arg_info);
+		TRAV(VARLET_ASSIGN(arg_node), arg_info);
 		break;
 	case N_var:
+		break;
+	case N_cast:
+		TRAV(CAST_EXPR(arg_node), arg_info);
+		break;
+	case N_functioncallexpr:
+		TRAV(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
 		break;
 	case N_num:
 		break;
@@ -88,20 +151,71 @@ TRAVnumSons(node * node)
 	case N_module:
 		result = 1;
 		break;
+	case N_declarations:
+		result = 2;
+		break;
+	case N_func:
+		result = 2;
+		break;
+	case N_globaldec:
+		result = 0;
+		break;
+	case N_globaldef:
+		result = 1;
+		break;
+	case N_funcbody:
+		result = 2;
+		break;
+	case N_parameters:
+		result = 1;
+		break;
 	case N_stmts:
 		result = 2;
 		break;
 	case N_assign:
 		result = 2;
 		break;
+	case N_if:
+		result = 3;
+		break;
+	case N_else:
+		result = 1;
+		break;
+	case N_while:
+		result = 2;
+		break;
+	case N_dowhile:
+		result = 2;
+		break;
+	case N_for:
+		result = 4;
+		break;
+	case N_return:
+		result = 1;
+		break;
+	case N_expressions:
+		result = 2;
+		break;
+	case N_functioncallstmt:
+		result = 1;
+		break;
 	case N_binop:
 		result = 2;
 		break;
+	case N_monop:
+		result = 1;
+		break;
 	case N_varlet:
-		result = 0;
+		result = 2;
 		break;
 	case N_var:
 		result = 0;
+		break;
+	case N_cast:
+		result = 1;
+		break;
+	case N_functioncallexpr:
+		result = 1;
 		break;
 	case N_num:
 		result = 0;
@@ -138,7 +252,67 @@ TRAVgetSon(int no, node * parent)
 	case N_module:
 		switch (no) {
 		case 0:
-			result = MODULE_STMTS(parent);
+			result = MODULE_DECLARATIONS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_declarations:
+		switch (no) {
+		case 0:
+			result = DECLARATIONS_DECLARATION(parent);
+			break;
+		case 1:
+			result = DECLARATIONS_NEXT(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_func:
+		switch (no) {
+		case 0:
+			result = FUNC_FUNCBODY(parent);
+			break;
+		case 1:
+			result = FUNC_PARAMETERS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_globaldec:
+		switch (no) {
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_globaldef:
+		switch (no) {
+		case 0:
+			result = GLOBALDEF_ASSIGN(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_funcbody:
+		switch (no) {
+		case 0:
+			result = FUNCBODY_STMTS(parent);
+			break;
+		case 1:
+			result = FUNCBODY_VARDECLARATIONS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_parameters:
+		switch (no) {
+		case 0:
+			result = PARAMETERS_NEXT(parent);
 			break;
 		default:
 			DBUG_ASSERT((FALSE), "index out of range!");
@@ -168,6 +342,102 @@ TRAVgetSon(int no, node * parent)
 			DBUG_ASSERT((FALSE), "index out of range!");
 			break;
 		} break;
+	case N_if:
+		switch (no) {
+		case 0:
+			result = IF_ELSE(parent);
+			break;
+		case 1:
+			result = IF_EXPR(parent);
+			break;
+		case 2:
+			result = IF_STMTS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_else:
+		switch (no) {
+		case 0:
+			result = ELSE_STMTS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_while:
+		switch (no) {
+		case 0:
+			result = WHILE_EXPR(parent);
+			break;
+		case 1:
+			result = WHILE_STMTS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_dowhile:
+		switch (no) {
+		case 0:
+			result = DOWHILE_STMTS(parent);
+			break;
+		case 1:
+			result = DOWHILE_WHILE(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_for:
+		switch (no) {
+		case 0:
+			result = FOR_ASSIGN(parent);
+			break;
+		case 1:
+			result = FOR_EXPR(parent);
+			break;
+		case 2:
+			result = FOR_EXPROPT(parent);
+			break;
+		case 3:
+			result = FOR_STMTS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_return:
+		switch (no) {
+		case 0:
+			result = RETURN_EXPR(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_expressions:
+		switch (no) {
+		case 0:
+			result = EXPRESSIONS_EXPR(parent);
+			break;
+		case 1:
+			result = EXPRESSIONS_NEXT(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_functioncallstmt:
+		switch (no) {
+		case 0:
+			result = FUNCTIONCALLSTMT_EXPRESSIONS(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
 	case N_binop:
 		switch (no) {
 		case 0:
@@ -180,14 +450,47 @@ TRAVgetSon(int no, node * parent)
 			DBUG_ASSERT((FALSE), "index out of range!");
 			break;
 		} break;
+	case N_monop:
+		switch (no) {
+		case 0:
+			result = MONOP_EXPR(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
 	case N_varlet:
 		switch (no) {
+		case 0:
+			result = VARLET_NEXT(parent);
+			break;
+		case 1:
+			result = VARLET_ASSIGN(parent);
+			break;
 		default:
 			DBUG_ASSERT((FALSE), "index out of range!");
 			break;
 		} break;
 	case N_var:
 		switch (no) {
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_cast:
+		switch (no) {
+		case 0:
+			result = CAST_EXPR(parent);
+			break;
+		default:
+			DBUG_ASSERT((FALSE), "index out of range!");
+			break;
+		} break;
+	case N_functioncallexpr:
+		switch (no) {
+		case 0:
+			result = FUNCTIONCALLEXPR_EXPRESSIONS(parent);
+			break;
 		default:
 			DBUG_ASSERT((FALSE), "index out of range!");
 			break;

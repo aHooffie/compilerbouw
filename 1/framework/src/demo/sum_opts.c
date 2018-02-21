@@ -67,7 +67,8 @@ static node *MakeModule(node *syntaxtree)
 {
 	node *counters;
 	DBUG_ENTER("MakeModule");
-	counters = TBmakeModule(0, 0, 0, 0, 0, syntaxtree);
+	// counters = TBmakeModule(0, 0, 0, 0, 0, syntaxtree);
+	counters = TBmakeModule(syntaxtree);
 
 	DBUG_RETURN(counters);
 }
@@ -76,14 +77,13 @@ static node *MakeModule(node *syntaxtree)
 node *SOmodule(node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("SOmodule");
-
-	MODULE_STMTS(arg_node) = TRAVdo(MODULE_STMTS(arg_node), arg_info);
-
-	MODULE_ADDITION(arg_node) = INFO_SUMADD(arg_info);
-	MODULE_SUBTRACTION(arg_node) = INFO_SUMSUB(arg_info);
-	MODULE_MULTIPLICATION(arg_node) = INFO_SUMMUL(arg_info);
-	MODULE_DIVISION(arg_node) = INFO_SUMDIV(arg_info);
-	MODULE_MODULO(arg_node) = INFO_SUMMOD(arg_info);
+	MODULE_DECLARATIONS(arg_node) = TRAVdo(MODULE_DECLARATIONS(arg_node), arg_info);
+	// MODULE_STMTS(arg_node) = TRAVdo(MODULE_STMTS(arg_node), arg_info);
+	// MODULE_ADDITION(arg_node) = INFO_SUMADD(arg_info);
+	// MODULE_SUBTRACTION(arg_node) = INFO_SUMSUB(arg_info);
+	// MODULE_MULTIPLICATION(arg_node) = INFO_SUMMUL(arg_info);
+	// MODULE_DIVISION(arg_node) = INFO_SUMDIV(arg_info);
+	// MODULE_MODULO(arg_node) = INFO_SUMMOD(arg_info);
 
 	DBUG_RETURN(arg_node);
 }
@@ -135,11 +135,11 @@ node *SOdoSumOpts(node *syntaxtree)
 	syntaxtree = TRAVdo(arg_module, arg_info);
 	TRAVpop();
 
-	CTInote("Total additions: %d", MODULE_ADDITION(syntaxtree));
-	CTInote("Total subtractions: %d", MODULE_SUBTRACTION(syntaxtree));
-	CTInote("Total multiplications: %d", MODULE_MULTIPLICATION(syntaxtree));
-	CTInote("Total divisions: %d", MODULE_DIVISION(syntaxtree));
-	CTInote("Total modulos: %d", MODULE_MODULO(syntaxtree));
+	// CTInote("Total additions: %d", MODULE_ADDITION(syntaxtree));
+	// CTInote("Total subtractions: %d", MODULE_SUBTRACTION(syntaxtree));
+	// CTInote("Total multiplications: %d", MODULE_MULTIPLICATION(syntaxtree));
+	// CTInote("Total divisions: %d", MODULE_DIVISION(syntaxtree));
+	// CTInote("Total modulos: %d", MODULE_MODULO(syntaxtree));
 
 	arg_info = FreeInfo(arg_info);
 	DBUG_RETURN(syntaxtree);

@@ -73,9 +73,17 @@ assign: varlet LET expr SEMICOLON
         }
         ;
 
-varlet: ID
+varlet: ID varlet assign
         {
-          $$ = TBmakeVarlet( STRcpy( $1));
+          $$ = TBmakeVarlet( STRcpy( $1), $2, $3);
+        }
+        | ID varlet
+        {
+          $$ = TBmakeVarlet( STRcpy( $1), $2, NULL);
+        }
+        | ID 
+        {
+          $$ = TBmakeVarlet( $1, NULL, NULL);
         }
         ;
 

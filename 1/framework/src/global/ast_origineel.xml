@@ -17,9 +17,6 @@
     <type name="Bool" ctype="bool" init="FALSE" copy="literal" />
     <type name="Float" ctype="float" init="0.0" copy="literal" />
     <type name="BinOp" ctype="binop" init="BO_unknown" copy="literal" />
-    <type name="MonOp" ctype="monop" init="MO_unknown" copy="literal" />
-    <type name="RetType" ctype="rettype" init="RT_unknown" copy="literal" />
-    <type name="BasicType" ctype="basictype" init="BT_unknown" copy="literal" />
     <type name="Link" ctype="node*" init="NULL" copy="lookup" />
     <type name="CompilerPhase" ctype="compiler_phase_t" init="PH_initial" copy="literal" />
   </attributetypes>
@@ -88,33 +85,31 @@
     <nodeset name="Expr">
       <target>
         <node name="BinOp" />
-        <node name="MonOp" />
         <node name="Var" />
         <node name="Num" />
         <node name="Float" />
-        <node name="Cast" />
         <node name="Bool" />
-        <node name="FunctionCallExpr" />
       </target>
     </nodeset>
     <nodeset name="Stmt">
       <target>
         <node name="Assign" />
         <node name="If" />
+        <node name="Else" />
         <node name="While" />
         <node name="DoWhile" />
         <node name="For" />
         <node name="Return" />
-        <node name="FunctionCallStmt" />
       </target>
     </nodeset>
-    <nodeset name="Declaration">
-      <target>
-        <node name="Func" />
-        <node name="GlobalDec" />
-        <node name="GlobalDef" />
-      </target>
-    </nodeset>
+    <!-- <nodeset name="Decl"> -->
+      <!-- <target> -->
+        <!-- <node name="FunLet" /> -->
+        <!-- <node name="Fun" /> -->
+        <!-- <node name="Global" /> -->
+        <!-- <node name="GlobalLet" /> -->
+      <!-- </target> -->
+    <!-- </nodeset> -->
   </nodesets>
 
 <!--
@@ -126,11 +121,138 @@
 <node name="Module">
       <description>represents the module</description>
       <sons>
-        <son name="Declarations">
+        <son name="Stmts">
         <description>statements</description>
           <targets>
             <target mandatory="yes">
-              <node name="Declarations" />
+              <node name="Stmts" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <!-- <description>operator types</description>
+        <attribute name="Addition">
+        <description>amount of addition operators</description>
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <phases>
+                  <all />
+                </phases>
+               </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Subtraction">
+        <description>amount of subtraction operators</description>
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <phases>
+                  <all />
+                </phases>
+               </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Multiplication">
+        <description>amount of multiplication operators</description>
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <phases>
+                  <all />
+                </phases>
+               </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Division">
+        <description>amount of division operators</description>
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <phases>
+                  <all />
+                </phases>
+               </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Modulo">
+        <description>amount of modulo operators</description>
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <phases>
+                  <all />
+                </phases>
+               </target>
+            </targets>
+          </type>
+        </attribute> -->
+      </attributes>
+    </node>
+<!--
+ Node Stmts:
+-->
+     <node name="Stmts">
+      <description>represents (sequence of) statements</description>
+      <sons>
+        <son name="Stmt">
+        <description>first statement in sequence</description>
+          <targets>
+            <target mandatory="yes">
+              <set name="Stmt" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+        <son name="Next">
+        <description>remaining statements in sequence</description>
+          <targets>
+            <target mandatory="no">
+              <node name="Stmts" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+      </attributes>
+    </node>
+<!--
+ Node Assign:
+-->
+     <node name="Assign">
+      <description>represents assignment statement</description>
+      <sons>
+        <son name="Let">
+        <description>
+         left hand side variable; can be missing to represent procedure calls
+	</description>
+          <targets>
+            <target mandatory="no">
+              <node name="VarLet" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+        <son name="Expr">
+        <description>right hand side expression</description>
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
                 <phases>
                   <all />
                 </phases>
@@ -142,356 +264,49 @@
       </attributes>
     </node>
 
-<!-- Node Declaration -->
-<node name="Declarations">
-  <description>represents (sequence of) declarations</description>
-  <sons>
-    <son name="Declaration">
-    <description>first declaration in sequence</description>
-      <targets>
-        <target mandatory="yes">
-          <set name="Declaration" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Next">
-    <description>remaining declarations in sequence</description>
-      <targets>
-        <target mandatory="no">
-          <node name="Declarations" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-  </attributes>
-</node>
-
-<!-- NODESET DECLS -->
-<!-- Node Func -->
-<node name="Func">
-  <description>represents a function declaration + defintion</description>
-  <sons>
-    <son name="FuncBody">
-    <description>represents optional body with statement(s) (if funcdef)</description>
-      <targets>
-        <target mandatory="no">
-          <node name="FuncBody" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Parameters">
-    <description>represents (optional) parameters. </description>
-      <targets>
-        <target mandatory="no">
-          <node name="Parameters" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-    <attribute name = "ReturnType">
-      <description>Return Type</description>
-      <type name = "RetType">
-      <targets>
-        <target mandatory="yes">
-          <any/>
-            <phases>
-          <all />
-          </phases>
-            </target>
-        </targets>
-        </type>
-    </attribute>
-    <attribute name= "Name">
-      <description>Identifier in character string representation</description>
-        <type name="String">
-          <targets>
-            <target mandatory="yes">
-              <phases>
-                <all />
-              </phases>
-              </target>
-          </targets>
-        </type>
-      </attribute>
-    </attributes>
-</node>
-
-
-<!-- Node GlobalDec -->
-<node name="GlobalDec">
-    <description>represents a global declaration</description>
-    <sons>
-    </sons>
-    <attributes>
-      <attribute name = "BasicType">
-        <description> BasicType </description>
-        <type name = "BasicType">
-        <targets>
-          <target mandatory="yes">
-            <any/>
-              <phases>
-            <all />
-            </phases>
-             </target>
-          </targets>
-          </type>
-      </attribute>
-      <attribute name="Name">
-        <description>Identifier in character string representation</description>
-          <type name="String">
-            <targets>
-              <target mandatory="yes">
-                <phases>
-                  <all />
-                </phases>
-               </target>
-            </targets>
-          </type>
-        </attribute>
-      </attributes>
-  </node>
-
-<!-- Node GlobalDef -->
-<node name="GlobalDef">
-  <description>represents a global declaration</description>
-  <sons>
-    <son name="Assign">
-      <description>optional assignment to expression</description>
-      <targets>
-      <target mandatory="no">
-        <node name="Assign" />
-          <phases>
-            <all />
-          </phases>
-        </target>
-    </targets>
-    </son>
-  </sons>
-  <attributes>
-    <attribute name="Name">
-      <description>Identifier in character string representation</description>
-        <type name="String">
-          <targets>
-            <target mandatory="yes">
-              <phases>
-                <all />
-              </phases>
-              </target>
-          </targets>
-        </type>
-      </attribute>
-      <attribute name="BasicType">
-      <description>BasicType</description>
-        <type name="BasicType">
-          <targets>
-            <target mandatory="yes">
-              <phases>
-                <all />
-              </phases>
-              </target>
-          </targets>
-        </type>
-      </attribute>
-  </attributes>
-</node>
-
-<node name="FuncBody">
-  <description>represents the body of a function (vardec + stmts)</description>
-  <sons>
-    <son name="Stmts">
-    <description>represents optional body with statement(s) (if funcdef)</description>
-      <targets>
-        <target mandatory="no">
-          <node name="Stmts" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="VarDeclarations">
-    <description>represents (optional) parameters. </description>
-      <targets>
-        <target mandatory="no">
-          <node name="VarLet" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-</node>
-
-<!-- Node parameters -->
-<node name="Parameters">
-  <description>represents (sequence of) statements</description>
-  <sons>
-    <son name="Next">
-    <description>remaining parameters in sequence</description>
-      <targets>
-        <target mandatory="no">
-          <node name="Parameters" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-    <attribute name="Name">
-        <description>Identifier in character string representation</description>
-          <type name="String">
-            <targets>
-              <target mandatory="yes">
-                <phases>
-                  <all />
-                </phases>
-               </target>
-            </targets>
-          </type>
-        </attribute>
-        <attribute name="BasicType">
-        <description>BasicType</description>
-          <type name="BasicType">
-            <targets>
-              <target mandatory="yes">
-                <phases>
-                  <all />
-                </phases>
-               </target>
-            </targets>
-          </type>
-        </attribute>
-  </attributes>
-</node>
-
-<!--
- Node Stmts:
--->
-<node name="Stmts">
-  <description>represents (sequence of) statements</description>
-  <sons>
-    <son name="Stmt">
-    <description>first statement in sequence</description>
-      <targets>
-        <target mandatory="yes">
-          <set name="Stmt" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Next">
-    <description>remaining statements in sequence</description>
-      <targets>
-        <target mandatory="no">
-          <node name="Stmts" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-  </attributes>
-</node>
-
-<!--
- Node Assign:
--->
-<node name="Assign">
-  <description>represents assignment statement</description>
-  <sons>
-    <son name="Let">
-    <description>
-      left hand side variable; can be missing to represent procedure calls
-    </description>
-      <targets>
-        <target mandatory="no">
-          <node name="VarLet" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Expr">
-    <description>right hand side expression</description>
-      <targets>
-        <target mandatory="yes">
-          <set name="Expr" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-  </attributes>
-</node>
-
 <!--
  Node If:
 -->
-  <node name="If">
-  <description>represents if statement</description>
-  <sons>
-    <son name="Else">
-    <description>... </description>
-      <targets>
-        <target mandatory="no">
-          <node name="Else" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Expr">
-    <description>Respresents the condition(s) </description>
-      <targets>
-        <target mandatory="yes">
-          <set name="Expr" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-    <son name="Stmts">
-    <description>Represents a block with statement(s) </description>
-      <targets>
-        <target mandatory="yes">
-          <node name="Stmts" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-  </attributes>
-</node>
+     <node name="If">
+      <description>represents if statement</description>
+      <sons>
+        <son name="Else">
+        <description>... </description>
+          <targets>
+            <target mandatory="no">
+              <node name="Else" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+        <son name="Expr">
+        <description>Respresents the condition(s) </description>
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+        <son name="Stmts">
+        <description>Represents a block with statement(s) </description>
+          <targets>
+            <target mandatory="yes">
+              <node name="Stmts" />
+                <phases>
+                  <all />
+                </phases>
+             </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+      </attributes>
+    </node>
 
 <!--
  Node Else:
@@ -634,89 +449,25 @@
       </attributes>
     </node>
 
-  <!-- Node Return -->
-  <node name="Return">
-    <description>represents a return-statement</description>
-    <sons>
-      <son name="Expr">
-      <description>represents an optional expression </description>
-        <targets>
-          <target mandatory="no">
-            <set name="Expr" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-      </son>
-    </sons>
-    <attributes>
-    </attributes>
-  </node>
-  
-<!-- Node Expression -->
-  <node name="Expressions">
-    <description>represents an expression node for function calls</description>
-    <sons>
-      <son name="Expr">
-      <description>represents an optional expression </description>
-        <targets>
-          <target mandatory="no">
-            <set name="Expr" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-      </son>
-      <son name="Next">
-      <description>represents an optional expression </description>
-        <targets>
-          <target mandatory="no">
-            <node name="Expressions" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-      </son>
-    </sons>
-    <attributes>
-    </attributes>
-  </node>
-
-  <!-- Node FunctionCallStmt -->
-  <node name="FunctionCallStmt">
-    <description>represents a call to a function</description>
-    <sons>
-      <son name="Expressions">
-      <description>represents an optional expression </description>
-        <targets>
-          <target mandatory="no">
-            <node name="Expressions" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-      </son>
-    </sons>
-    <attributes>
-      <attribute name="Name">
-        <description>Identifier in character string representation</description>
-          <type name="String">
-            <targets>
-              <target mandatory="yes">
-                <any />
+    <!-- Node Return -->
+    <node name="Return">
+      <description>represents a return-statement</description>
+      <sons>
+        <son name="Expr">
+        <description>represents an optional expression </description>
+          <targets>
+            <target mandatory="no">
+              <set name="Expr" />
                 <phases>
                   <all />
                 </phases>
-              </target>
-            </targets>
-          </type>
-      </attribute>
-    </attributes>
-  </node>
+             </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+      </attributes>
+    </node>
 
 <!--
  Node BinOp:
@@ -763,70 +514,12 @@
         </attribute>
       </attributes>
     </node>
-
-<!--
- Node MonOp:
--->
-<node name="MonOp">
-  <description>represents mono operator application</description>
-  <sons>
-    <son name="Expr">
-    <description>operand expression</description>
-      <targets>
-        <target mandatory="yes">
-          <set name="Expr" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-    <description>operator type</description>
-    <attribute name="Op">
-      <type name="MonOp">
-        <targets>
-          <target mandatory="yes">
-            <any />
-            <phases>
-              <all />
-            </phases>
-          </target>
-        </targets>
-      </type>
-    </attribute>
-  </attributes>
-</node>
-
 <!--
  Node VarLet:
 -->
     <node name="VarLet">
       <description>represents variable (identifier) in assignment position</description>
       <sons>
-        <son name="Next">
-          <description>remaining varlet declaration in sequence</description>
-          <targets>
-          <target mandatory="no">
-            <node name="VarLet" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-        </son>
-        <son name="Assign">
-          <description>optional assignment to expression</description>
-          <targets>
-          <target mandatory="no">
-            <node name="Assign" />
-              <phases>
-                <all />
-              </phases>
-            </target>
-        </targets>
-        </son>
       </sons>
       <attributes>
         <attribute name="Name">
@@ -842,7 +535,7 @@
             </targets>
           </type>
         </attribute>
-        <attribute name="Declaration">
+        <attribute name="Decl">
         <description>Link to symbol table entry</description>
           <type name="Link">
             <targets>
@@ -857,7 +550,6 @@
         </attribute>
       </attributes>
     </node>
-
 <!--
  Node Var:
 -->
@@ -878,7 +570,7 @@
             </targets>
           </type>
         </attribute>
-        <attribute name="Declaration">
+        <attribute name="Decl">
         <description>Link to symbol table entry</description>
           <type name="Link">
             <targets>
@@ -893,77 +585,6 @@
         </attribute>
       </attributes>
     </node>
-
-<!--
- Node Cast:
--->
-<node name="Cast">
-  <description>represents a cast in expression position</description>
-  <sons>
-    <son name="Expr">
-    <description>represents a required expression </description>
-    <targets>
-      <target mandatory="yes">
-        <set name="Expr" />
-          <phases>
-            <all />
-          </phases>
-        </target>
-    </targets>
-  </son>
-  </sons>
-  <attributes>
-    <attribute name = "BasicType">
-    <description> BasicType </description>
-    <type name = "BasicType">
-    <targets>
-      <target mandatory="yes">
-        <any/>
-          <phases>
-           <all />
-        </phases>
-          </target>
-      </targets>
-      </type>
-  </attribute>
-  </attributes>
-</node>
-
-<!--
- Node FunctionCallExpr:
--->
-<node name="FunctionCallExpr">
-  <description>represents a function call in expression position</description>
-  <sons>
-    <son name="Expressions">
-      <description>represents an optional expression </description>
-      <targets>
-        <target mandatory="no">
-          <node name="Expressions" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-      </targets>
-    </son>
-  </sons>
-  <attributes>
-    <attribute name="Name">
-        <description>Identifier in character string representation</description>
-          <type name="String">
-            <targets>
-              <target mandatory="yes">
-                <any />
-                <phases>
-                  <all />
-                </phases>
-              </target>
-            </targets>
-          </type>
-      </attribute>    
-  </attributes>
-</node>
-
 <!--
  Node Num:
 -->

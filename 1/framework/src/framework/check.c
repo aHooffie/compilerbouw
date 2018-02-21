@@ -54,20 +54,40 @@ CHKdoTreeCheck(node * syntax_tree)
 }
 
 static bool 
+isDeclaration(node * arg_node)
+{
+	bool		res = ((NODE_TYPE(arg_node) == N_func) ||
+		     (NODE_TYPE(arg_node) == N_globaldec) ||
+		     (NODE_TYPE(arg_node) == N_globaldef));
+	return (res);
+}
+static bool 
 isExpr(node * arg_node)
 {
 	bool		res = ((NODE_TYPE(arg_node) == N_binop) ||
 		     (NODE_TYPE(arg_node) == N_bool) ||
+		     (NODE_TYPE(arg_node) == N_cast) ||
 		     (NODE_TYPE(arg_node) == N_float) ||
+		     (NODE_TYPE(arg_node) == N_functioncallexpr) ||
+		     (NODE_TYPE(arg_node) == N_monop) ||
 		     (NODE_TYPE(arg_node) == N_num) ||
 		     (NODE_TYPE(arg_node) == N_var));
 	return (res);
 }
-static bool	isStmt(node * arg_node) {
-	bool		res = ((NODE_TYPE(arg_node) == N_assign));
+static bool 
+isStmt(node * arg_node)
+{
+	bool		res = ((NODE_TYPE(arg_node) == N_assign) ||
+		     (NODE_TYPE(arg_node) == N_dowhile) ||
+		     (NODE_TYPE(arg_node) == N_for) ||
+		     (NODE_TYPE(arg_node) == N_functioncallstmt) ||
+		     (NODE_TYPE(arg_node) == N_if) ||
+		     (NODE_TYPE(arg_node) == N_return) ||
+		     (NODE_TYPE(arg_node) == N_while));
 	return (res);
 }
 void		isDummy   () {
+	isDeclaration(NULL);
 	isExpr(NULL);
 	isStmt(NULL);
 }
@@ -200,6 +220,189 @@ node           *CHKbool(node * arg_node, info * arg_info) {
 }
 /** <!--******************************************************************-->
  *
+ * @fn CHKcast
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Cast node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKcast(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKcast");
+
+	/*
+	 * Son check: CAST_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(CAST_EXPR(arg_node), arg_node, "mandatory son CAST_EXPR is NULL");
+		if (CAST_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(CAST_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "CAST_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(CAST_EXPR(arg_node), arg_node, "attribute CAST_EXPR must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (CAST_EXPR(arg_node) != NULL) {
+		CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKdeclarations
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Declarations node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKdeclarations(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKdeclarations");
+
+	/*
+	 * Son check: DECLARATIONS_DECLARATION
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(DECLARATIONS_DECLARATION(arg_node), arg_node, "mandatory son DECLARATIONS_DECLARATION is NULL");
+		if (DECLARATIONS_DECLARATION(arg_node) != NULL) {
+			if (!((FALSE) || (isDeclaration(DECLARATIONS_DECLARATION(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "DECLARATIONS_DECLARATION hasnt the right type." " It should be: " "Nodeset: Declaration");
+			}
+		}
+	} else {
+		CHKnotExist(DECLARATIONS_DECLARATION(arg_node), arg_node, "attribute DECLARATIONS_DECLARATION must be NULL");
+	}
+
+	/*
+	 * Son check: DECLARATIONS_NEXT
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (DECLARATIONS_NEXT(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(DECLARATIONS_NEXT(arg_node)) == N_declarations))) {
+				CHKcorrectTypeInsertError(arg_node, "DECLARATIONS_NEXT hasnt the right type." " It should be: " "N_declarations");
+			}
+		}
+	} else {
+		CHKnotExist(DECLARATIONS_NEXT(arg_node), arg_node, "attribute DECLARATIONS_NEXT must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (DECLARATIONS_DECLARATION(arg_node) != NULL) {
+		DECLARATIONS_DECLARATION(arg_node) = TRAVdo(DECLARATIONS_DECLARATION(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (DECLARATIONS_NEXT(arg_node) != NULL) {
+		DECLARATIONS_NEXT(arg_node) = TRAVdo(DECLARATIONS_NEXT(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKdowhile
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node DoWhile node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKdowhile(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKdowhile");
+
+	/*
+	 * Son check: DOWHILE_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(DOWHILE_STMTS(arg_node), arg_node, "mandatory son DOWHILE_STMTS is NULL");
+		if (DOWHILE_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(DOWHILE_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "DOWHILE_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(DOWHILE_STMTS(arg_node), arg_node, "attribute DOWHILE_STMTS must be NULL");
+	}
+
+	/*
+	 * Son check: DOWHILE_WHILE
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(DOWHILE_WHILE(arg_node), arg_node, "mandatory son DOWHILE_WHILE is NULL");
+		if (DOWHILE_WHILE(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(DOWHILE_WHILE(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "DOWHILE_WHILE hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(DOWHILE_WHILE(arg_node), arg_node, "attribute DOWHILE_WHILE must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (DOWHILE_STMTS(arg_node) != NULL) {
+		DOWHILE_STMTS(arg_node) = TRAVdo(DOWHILE_STMTS(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (DOWHILE_WHILE(arg_node) != NULL) {
+		DOWHILE_WHILE(arg_node) = TRAVdo(DOWHILE_WHILE(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKelse
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Else node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKelse(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKelse");
+
+	/*
+	 * Son check: ELSE_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(ELSE_STMTS(arg_node), arg_node, "mandatory son ELSE_STMTS is NULL");
+		if (ELSE_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(ELSE_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "ELSE_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(ELSE_STMTS(arg_node), arg_node, "attribute ELSE_STMTS must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (ELSE_STMTS(arg_node) != NULL) {
+		ELSE_STMTS(arg_node) = TRAVdo(ELSE_STMTS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
  * @fn CHKerror
  *
  * @brief Check the node and its sons/attributes
@@ -244,6 +447,60 @@ node           *CHKerror(node * arg_node, info * arg_info) {
 }
 /** <!--******************************************************************-->
  *
+ * @fn CHKexpressions
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Expressions node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKexpressions(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKexpressions");
+
+	/*
+	 * Son check: EXPRESSIONS_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (EXPRESSIONS_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(EXPRESSIONS_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "EXPRESSIONS_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(EXPRESSIONS_EXPR(arg_node), arg_node, "attribute EXPRESSIONS_EXPR must be NULL");
+	}
+
+	/*
+	 * Son check: EXPRESSIONS_NEXT
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (EXPRESSIONS_NEXT(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(EXPRESSIONS_NEXT(arg_node)) == N_expressions))) {
+				CHKcorrectTypeInsertError(arg_node, "EXPRESSIONS_NEXT hasnt the right type." " It should be: " "N_expressions");
+			}
+		}
+	} else {
+		CHKnotExist(EXPRESSIONS_NEXT(arg_node), arg_node, "attribute EXPRESSIONS_NEXT must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (EXPRESSIONS_EXPR(arg_node) != NULL) {
+		EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (EXPRESSIONS_NEXT(arg_node) != NULL) {
+		EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
  * @fn CHKfloat
  *
  * @brief Check the node and its sons/attributes
@@ -257,6 +514,449 @@ node           *CHKerror(node * arg_node, info * arg_info) {
 node           *CHKfloat(node * arg_node, info * arg_info) {
 	DBUG_ENTER("CHKfloat");
 	DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKfor
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node For node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKfor(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKfor");
+
+	/*
+	 * Son check: FOR_ASSIGN
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(FOR_ASSIGN(arg_node), arg_node, "mandatory son FOR_ASSIGN is NULL");
+		if (FOR_ASSIGN(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FOR_ASSIGN(arg_node)) == N_assign))) {
+				CHKcorrectTypeInsertError(arg_node, "FOR_ASSIGN hasnt the right type." " It should be: " "N_assign");
+			}
+		}
+	} else {
+		CHKnotExist(FOR_ASSIGN(arg_node), arg_node, "attribute FOR_ASSIGN must be NULL");
+	}
+
+	/*
+	 * Son check: FOR_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(FOR_EXPR(arg_node), arg_node, "mandatory son FOR_EXPR is NULL");
+		if (FOR_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(FOR_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "FOR_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(FOR_EXPR(arg_node), arg_node, "attribute FOR_EXPR must be NULL");
+	}
+
+	/*
+	 * Son check: FOR_EXPROPT
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FOR_EXPROPT(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(FOR_EXPROPT(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "FOR_EXPROPT hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(FOR_EXPROPT(arg_node), arg_node, "attribute FOR_EXPROPT must be NULL");
+	}
+
+	/*
+	 * Son check: FOR_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(FOR_STMTS(arg_node), arg_node, "mandatory son FOR_STMTS is NULL");
+		if (FOR_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FOR_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "FOR_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(FOR_STMTS(arg_node), arg_node, "attribute FOR_STMTS must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FOR_ASSIGN(arg_node) != NULL) {
+		FOR_ASSIGN(arg_node) = TRAVdo(FOR_ASSIGN(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FOR_EXPR(arg_node) != NULL) {
+		FOR_EXPR(arg_node) = TRAVdo(FOR_EXPR(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FOR_EXPROPT(arg_node) != NULL) {
+		FOR_EXPROPT(arg_node) = TRAVdo(FOR_EXPROPT(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FOR_STMTS(arg_node) != NULL) {
+		FOR_STMTS(arg_node) = TRAVdo(FOR_STMTS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKfunc
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Func node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKfunc(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKfunc");
+
+	/*
+	 * Son check: FUNC_FUNCBODY
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNC_FUNCBODY(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNC_FUNCBODY(arg_node)) == N_funcbody))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNC_FUNCBODY hasnt the right type." " It should be: " "N_funcbody");
+			}
+		}
+	} else {
+		CHKnotExist(FUNC_FUNCBODY(arg_node), arg_node, "attribute FUNC_FUNCBODY must be NULL");
+	}
+
+	/*
+	 * Son check: FUNC_PARAMETERS
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNC_PARAMETERS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNC_PARAMETERS(arg_node)) == N_parameters))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNC_PARAMETERS hasnt the right type." " It should be: " "N_parameters");
+			}
+		}
+	} else {
+		CHKnotExist(FUNC_PARAMETERS(arg_node), arg_node, "attribute FUNC_PARAMETERS must be NULL");
+	}
+
+	/*
+	 * Attribute check: FUNC_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(FUNC_NAME(arg_node), arg_node, "mandatory attribute FUNC_NAME is NULL");
+	} else {
+		CHKnotExist(FUNC_NAME(arg_node), arg_node, "attribute FUNC_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNC_FUNCBODY(arg_node) != NULL) {
+		FUNC_FUNCBODY(arg_node) = TRAVdo(FUNC_FUNCBODY(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNC_PARAMETERS(arg_node) != NULL) {
+		FUNC_PARAMETERS(arg_node) = TRAVdo(FUNC_PARAMETERS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKfuncbody
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node FuncBody node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKfuncbody(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKfuncbody");
+
+	/*
+	 * Son check: FUNCBODY_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNCBODY_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNCBODY_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNCBODY_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(FUNCBODY_STMTS(arg_node), arg_node, "attribute FUNCBODY_STMTS must be NULL");
+	}
+
+	/*
+	 * Son check: FUNCBODY_VARDECLARATIONS
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNCBODY_VARDECLARATIONS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNCBODY_VARDECLARATIONS(arg_node)) == N_varlet))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNCBODY_VARDECLARATIONS hasnt the right type." " It should be: " "N_varlet");
+			}
+		}
+	} else {
+		CHKnotExist(FUNCBODY_VARDECLARATIONS(arg_node), arg_node, "attribute FUNCBODY_VARDECLARATIONS must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNCBODY_STMTS(arg_node) != NULL) {
+		FUNCBODY_STMTS(arg_node) = TRAVdo(FUNCBODY_STMTS(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNCBODY_VARDECLARATIONS(arg_node) != NULL) {
+		FUNCBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCBODY_VARDECLARATIONS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKfunctioncallexpr
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node FunctionCallExpr node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKfunctioncallexpr(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKfunctioncallexpr");
+
+	/*
+	 * Son check: FUNCTIONCALLEXPR_EXPRESSIONS
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node)) == N_expressions))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNCTIONCALLEXPR_EXPRESSIONS hasnt the right type." " It should be: " "N_expressions");
+			}
+		}
+	} else {
+		CHKnotExist(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_node, "attribute FUNCTIONCALLEXPR_EXPRESSIONS must be NULL");
+	}
+
+	/*
+	 * Attribute check: FUNCTIONCALLEXPR_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(FUNCTIONCALLEXPR_NAME(arg_node), arg_node, "mandatory attribute FUNCTIONCALLEXPR_NAME is NULL");
+	} else {
+		CHKnotExist(FUNCTIONCALLEXPR_NAME(arg_node), arg_node, "attribute FUNCTIONCALLEXPR_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL) {
+		FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKfunctioncallstmt
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node FunctionCallStmt node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKfunctioncallstmt(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKfunctioncallstmt");
+
+	/*
+	 * Son check: FUNCTIONCALLSTMT_EXPRESSIONS
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node)) == N_expressions))) {
+				CHKcorrectTypeInsertError(arg_node, "FUNCTIONCALLSTMT_EXPRESSIONS hasnt the right type." " It should be: " "N_expressions");
+			}
+		}
+	} else {
+		CHKnotExist(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_node, "attribute FUNCTIONCALLSTMT_EXPRESSIONS must be NULL");
+	}
+
+	/*
+	 * Attribute check: FUNCTIONCALLSTMT_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(FUNCTIONCALLSTMT_NAME(arg_node), arg_node, "mandatory attribute FUNCTIONCALLSTMT_NAME is NULL");
+	} else {
+		CHKnotExist(FUNCTIONCALLSTMT_NAME(arg_node), arg_node, "attribute FUNCTIONCALLSTMT_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL) {
+		FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKglobaldec
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node GlobalDec node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKglobaldec(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKglobaldec");
+
+	/*
+	 * Attribute check: GLOBALDEC_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(GLOBALDEC_NAME(arg_node), arg_node, "mandatory attribute GLOBALDEC_NAME is NULL");
+	} else {
+		CHKnotExist(GLOBALDEC_NAME(arg_node), arg_node, "attribute GLOBALDEC_NAME must be NULL");
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKglobaldef
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node GlobalDef node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKglobaldef(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKglobaldef");
+
+	/*
+	 * Son check: GLOBALDEF_ASSIGN
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (GLOBALDEF_ASSIGN(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(GLOBALDEF_ASSIGN(arg_node)) == N_assign))) {
+				CHKcorrectTypeInsertError(arg_node, "GLOBALDEF_ASSIGN hasnt the right type." " It should be: " "N_assign");
+			}
+		}
+	} else {
+		CHKnotExist(GLOBALDEF_ASSIGN(arg_node), arg_node, "attribute GLOBALDEF_ASSIGN must be NULL");
+	}
+
+	/*
+	 * Attribute check: GLOBALDEF_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(GLOBALDEF_NAME(arg_node), arg_node, "mandatory attribute GLOBALDEF_NAME is NULL");
+	} else {
+		CHKnotExist(GLOBALDEF_NAME(arg_node), arg_node, "attribute GLOBALDEF_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (GLOBALDEF_ASSIGN(arg_node) != NULL) {
+		GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKif
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node If node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKif(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKif");
+
+	/*
+	 * Son check: IF_ELSE
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (IF_ELSE(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(IF_ELSE(arg_node)) == N_else))) {
+				CHKcorrectTypeInsertError(arg_node, "IF_ELSE hasnt the right type." " It should be: " "N_else");
+			}
+		}
+	} else {
+		CHKnotExist(IF_ELSE(arg_node), arg_node, "attribute IF_ELSE must be NULL");
+	}
+
+	/*
+	 * Son check: IF_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(IF_EXPR(arg_node), arg_node, "mandatory son IF_EXPR is NULL");
+		if (IF_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(IF_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "IF_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(IF_EXPR(arg_node), arg_node, "attribute IF_EXPR must be NULL");
+	}
+
+	/*
+	 * Son check: IF_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(IF_STMTS(arg_node), arg_node, "mandatory son IF_STMTS is NULL");
+		if (IF_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(IF_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "IF_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(IF_STMTS(arg_node), arg_node, "attribute IF_STMTS must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (IF_ELSE(arg_node) != NULL) {
+		IF_ELSE(arg_node) = TRAVdo(IF_ELSE(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (IF_EXPR(arg_node) != NULL) {
+		IF_EXPR(arg_node) = TRAVdo(IF_EXPR(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (IF_STMTS(arg_node) != NULL) {
+		IF_STMTS(arg_node) = TRAVdo(IF_STMTS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
 }
 /** <!--******************************************************************-->
  *
@@ -274,24 +974,60 @@ node           *CHKmodule(node * arg_node, info * arg_info) {
 	DBUG_ENTER("CHKmodule");
 
 	/*
-	 * Son check: MODULE_STMTS
+	 * Son check: MODULE_DECLARATIONS
 	 */
 	if ((FALSE) || (TRUE)) {
-		CHKexistSon(MODULE_STMTS(arg_node), arg_node, "mandatory son MODULE_STMTS is NULL");
-		if (MODULE_STMTS(arg_node) != NULL) {
-			if (!((FALSE) || (NODE_TYPE(MODULE_STMTS(arg_node)) == N_stmts))) {
-				CHKcorrectTypeInsertError(arg_node, "MODULE_STMTS hasnt the right type." " It should be: " "N_stmts");
+		CHKexistSon(MODULE_DECLARATIONS(arg_node), arg_node, "mandatory son MODULE_DECLARATIONS is NULL");
+		if (MODULE_DECLARATIONS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(MODULE_DECLARATIONS(arg_node)) == N_declarations))) {
+				CHKcorrectTypeInsertError(arg_node, "MODULE_DECLARATIONS hasnt the right type." " It should be: " "N_declarations");
 			}
 		}
 	} else {
-		CHKnotExist(MODULE_STMTS(arg_node), arg_node, "attribute MODULE_STMTS must be NULL");
+		CHKnotExist(MODULE_DECLARATIONS(arg_node), arg_node, "attribute MODULE_DECLARATIONS must be NULL");
 	}
 
 	/*
 	 * trav functions: to get all sons
 	 */
-	if (MODULE_STMTS(arg_node) != NULL) {
-		MODULE_STMTS(arg_node) = TRAVdo(MODULE_STMTS(arg_node), arg_info);
+	if (MODULE_DECLARATIONS(arg_node) != NULL) {
+		MODULE_DECLARATIONS(arg_node) = TRAVdo(MODULE_DECLARATIONS(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKmonop
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node MonOp node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKmonop(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKmonop");
+
+	/*
+	 * Son check: MONOP_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(MONOP_EXPR(arg_node), arg_node, "mandatory son MONOP_EXPR is NULL");
+		if (MONOP_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(MONOP_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "MONOP_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(MONOP_EXPR(arg_node), arg_node, "attribute MONOP_EXPR must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (MONOP_EXPR(arg_node) != NULL) {
+		MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
 	} DBUG_RETURN(arg_node);
 }
 /** <!--******************************************************************-->
@@ -309,6 +1045,85 @@ node           *CHKmodule(node * arg_node, info * arg_info) {
 node           *CHKnum(node * arg_node, info * arg_info) {
 	DBUG_ENTER("CHKnum");
 	DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKparameters
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Parameters node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKparameters(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKparameters");
+
+	/*
+	 * Son check: PARAMETERS_NEXT
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (PARAMETERS_NEXT(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(PARAMETERS_NEXT(arg_node)) == N_parameters))) {
+				CHKcorrectTypeInsertError(arg_node, "PARAMETERS_NEXT hasnt the right type." " It should be: " "N_parameters");
+			}
+		}
+	} else {
+		CHKnotExist(PARAMETERS_NEXT(arg_node), arg_node, "attribute PARAMETERS_NEXT must be NULL");
+	}
+
+	/*
+	 * Attribute check: PARAMETERS_NAME
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistAttribute(PARAMETERS_NAME(arg_node), arg_node, "mandatory attribute PARAMETERS_NAME is NULL");
+	} else {
+		CHKnotExist(PARAMETERS_NAME(arg_node), arg_node, "attribute PARAMETERS_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (PARAMETERS_NEXT(arg_node) != NULL) {
+		PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKreturn
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node Return node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKreturn(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKreturn");
+
+	/*
+	 * Son check: RETURN_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (RETURN_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(RETURN_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "RETURN_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(RETURN_EXPR(arg_node), arg_node, "attribute RETURN_EXPR must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (RETURN_EXPR(arg_node) != NULL) {
+		RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
 }
 /** <!--******************************************************************-->
  *
@@ -397,11 +1212,11 @@ node           *CHKvar(node * arg_node, info * arg_info) {
 	DBUG_ENTER("CHKvar");
 
 	/*
-	 * Attribute check: VAR_DECL
+	 * Attribute check: VAR_DECLARATION
 	 */
 	if ((FALSE) || (TRUE)) {
 	} else {
-		CHKnotExist(VAR_DECL(arg_node), arg_node, "attribute VAR_DECL must be NULL");
+		CHKnotExist(VAR_DECLARATION(arg_node), arg_node, "attribute VAR_DECLARATION must be NULL");
 	}
 
 	/*
@@ -429,11 +1244,37 @@ node           *CHKvarlet(node * arg_node, info * arg_info) {
 	DBUG_ENTER("CHKvarlet");
 
 	/*
-	 * Attribute check: VARLET_DECL
+	 * Son check: VARLET_ASSIGN
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (VARLET_ASSIGN(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(VARLET_ASSIGN(arg_node)) == N_assign))) {
+				CHKcorrectTypeInsertError(arg_node, "VARLET_ASSIGN hasnt the right type." " It should be: " "N_assign");
+			}
+		}
+	} else {
+		CHKnotExist(VARLET_ASSIGN(arg_node), arg_node, "attribute VARLET_ASSIGN must be NULL");
+	}
+
+	/*
+	 * Son check: VARLET_NEXT
+	 */
+	if ((FALSE) || (TRUE)) {
+		if (VARLET_NEXT(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(VARLET_NEXT(arg_node)) == N_varlet))) {
+				CHKcorrectTypeInsertError(arg_node, "VARLET_NEXT hasnt the right type." " It should be: " "N_varlet");
+			}
+		}
+	} else {
+		CHKnotExist(VARLET_NEXT(arg_node), arg_node, "attribute VARLET_NEXT must be NULL");
+	}
+
+	/*
+	 * Attribute check: VARLET_DECLARATION
 	 */
 	if ((FALSE) || (TRUE)) {
 	} else {
-		CHKnotExist(VARLET_DECL(arg_node), arg_node, "attribute VARLET_DECL must be NULL");
+		CHKnotExist(VARLET_DECLARATION(arg_node), arg_node, "attribute VARLET_DECLARATION must be NULL");
 	}
 
 	/*
@@ -443,16 +1284,92 @@ node           *CHKvarlet(node * arg_node, info * arg_info) {
 		CHKexistAttribute(VARLET_NAME(arg_node), arg_node, "mandatory attribute VARLET_NAME is NULL");
 	} else {
 		CHKnotExist(VARLET_NAME(arg_node), arg_node, "attribute VARLET_NAME must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (VARLET_ASSIGN(arg_node) != NULL) {
+		VARLET_ASSIGN(arg_node) = TRAVdo(VARLET_ASSIGN(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (VARLET_NEXT(arg_node) != NULL) {
+		VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+	} DBUG_RETURN(arg_node);
+}
+/** <!--******************************************************************-->
+ *
+ * @fn CHKwhile
+ *
+ * @brief Check the node and its sons/attributes
+ *
+ * @param arg_node While node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node           *CHKwhile(node * arg_node, info * arg_info) {
+	DBUG_ENTER("CHKwhile");
+
+	/*
+	 * Son check: WHILE_EXPR
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(WHILE_EXPR(arg_node), arg_node, "mandatory son WHILE_EXPR is NULL");
+		if (WHILE_EXPR(arg_node) != NULL) {
+			if (!((FALSE) || (isExpr(WHILE_EXPR(arg_node))))) {
+				CHKcorrectTypeInsertError(arg_node, "WHILE_EXPR hasnt the right type." " It should be: " "Nodeset: Expr");
+			}
+		}
+	} else {
+		CHKnotExist(WHILE_EXPR(arg_node), arg_node, "attribute WHILE_EXPR must be NULL");
+	}
+
+	/*
+	 * Son check: WHILE_STMTS
+	 */
+	if ((FALSE) || (TRUE)) {
+		CHKexistSon(WHILE_STMTS(arg_node), arg_node, "mandatory son WHILE_STMTS is NULL");
+		if (WHILE_STMTS(arg_node) != NULL) {
+			if (!((FALSE) || (NODE_TYPE(WHILE_STMTS(arg_node)) == N_stmts))) {
+				CHKcorrectTypeInsertError(arg_node, "WHILE_STMTS hasnt the right type." " It should be: " "N_stmts");
+			}
+		}
+	} else {
+		CHKnotExist(WHILE_STMTS(arg_node), arg_node, "attribute WHILE_STMTS must be NULL");
+	}
+
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (WHILE_EXPR(arg_node) != NULL) {
+		WHILE_EXPR(arg_node) = TRAVdo(WHILE_EXPR(arg_node), arg_info);
+	}
+	/*
+	 * trav functions: to get all sons
+	 */
+	if (WHILE_STMTS(arg_node) != NULL) {
+		WHILE_STMTS(arg_node) = TRAVdo(WHILE_STMTS(arg_node), arg_info);
 	} DBUG_RETURN(arg_node);
 }
 
 typedef enum {
 	CHK_binop_op,
 	CHK_bool_value,
+	CHK_cast_basictype,
 	CHK_error_message,
 	CHK_float_value,
-	CHK_module_addition,
+	CHK_func_returntype,
+	CHK_functioncallexpr_name,
+	CHK_functioncallstmt_name,
+	CHK_globaldec_basictype,
+	CHK_globaldef_name,
+	CHK_monop_op,
 	CHK_num_value,
+	CHK_parameters_name,
 	CHK_var_name,
-	CHK_varlet_name
+	CHK_varlet_name,
 }		attr_list;

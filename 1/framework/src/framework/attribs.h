@@ -30,22 +30,61 @@ struct ATTRIBS_N_BINOP {
 struct ATTRIBS_N_BOOL {
 	bool		Value;
 };
+struct ATTRIBS_N_CAST {
+	basictype	BasicType;
+};
+struct ATTRIBS_N_DECLARATIONS {
+};
+struct ATTRIBS_N_DOWHILE {
+};
+struct ATTRIBS_N_ELSE {
+};
 struct ATTRIBS_N_ERROR {
 	char           *message;
 	compiler_phase_t anyphase;
 };
+struct ATTRIBS_N_EXPRESSIONS {
+};
 struct ATTRIBS_N_FLOAT {
 	float		Value;
 };
+struct ATTRIBS_N_FOR {
+};
+struct ATTRIBS_N_FUNC {
+	rettype		ReturnType;
+	char           *Name;
+};
+struct ATTRIBS_N_FUNCBODY {
+};
+struct ATTRIBS_N_FUNCTIONCALLEXPR {
+	char           *Name;
+};
+struct ATTRIBS_N_FUNCTIONCALLSTMT {
+	char           *Name;
+};
+struct ATTRIBS_N_GLOBALDEC {
+	basictype	BasicType;
+	char           *Name;
+};
+struct ATTRIBS_N_GLOBALDEF {
+	char           *Name;
+	basictype	BasicType;
+};
+struct ATTRIBS_N_IF {
+};
 struct ATTRIBS_N_MODULE {
-	int		Addition;
-	int		Subtraction;
-	int		Multiplication;
-	int		Division;
-	int		Modulo;
+};
+struct ATTRIBS_N_MONOP {
+	monop		Op;
 };
 struct ATTRIBS_N_NUM {
 	int		Value;
+};
+struct ATTRIBS_N_PARAMETERS {
+	char           *Name;
+	basictype	BasicType;
+};
+struct ATTRIBS_N_RETURN {
 };
 struct ATTRIBS_N_STMTS {
 };
@@ -53,11 +92,13 @@ struct ATTRIBS_N_SYMBOLTABLEENTRY {
 };
 struct ATTRIBS_N_VAR {
 	char           *Name;
-	node           *Decl;
+	node           *Declaration;
 };
 struct ATTRIBS_N_VARLET {
 	char           *Name;
-	node           *Decl;
+	node           *Declaration;
+};
+struct ATTRIBS_N_WHILE {
 };
 /*****************************************************************************
  * This union handles all different types of attributes. Its members are
@@ -67,13 +108,30 @@ struct ATTRIBUNION {
 	struct ATTRIBS_N_ASSIGN *N_assign;
 	struct ATTRIBS_N_BINOP *N_binop;
 	struct ATTRIBS_N_BOOL *N_bool;
+	struct ATTRIBS_N_CAST *N_cast;
+	struct ATTRIBS_N_DECLARATIONS *N_declarations;
+	struct ATTRIBS_N_DOWHILE *N_dowhile;
+	struct ATTRIBS_N_ELSE *N_else;
 	struct ATTRIBS_N_ERROR *N_error;
+	struct ATTRIBS_N_EXPRESSIONS *N_expressions;
 	struct ATTRIBS_N_FLOAT *N_float;
+	struct ATTRIBS_N_FOR *N_for;
+	struct ATTRIBS_N_FUNC *N_func;
+	struct ATTRIBS_N_FUNCBODY *N_funcbody;
+	struct ATTRIBS_N_FUNCTIONCALLEXPR *N_functioncallexpr;
+	struct ATTRIBS_N_FUNCTIONCALLSTMT *N_functioncallstmt;
+	struct ATTRIBS_N_GLOBALDEC *N_globaldec;
+	struct ATTRIBS_N_GLOBALDEF *N_globaldef;
+	struct ATTRIBS_N_IF *N_if;
 	struct ATTRIBS_N_MODULE *N_module;
+	struct ATTRIBS_N_MONOP *N_monop;
 	struct ATTRIBS_N_NUM *N_num;
+	struct ATTRIBS_N_PARAMETERS *N_parameters;
+	struct ATTRIBS_N_RETURN *N_return;
 	struct ATTRIBS_N_STMTS *N_stmts;
 	struct ATTRIBS_N_SYMBOLTABLEENTRY *N_symboltableentry;
 	struct ATTRIBS_N_VAR *N_var;
 	struct ATTRIBS_N_VARLET *N_varlet;
+	struct ATTRIBS_N_WHILE *N_while;
 };
 #endif				/* _SAC_ATTRIBS_H_ */

@@ -121,6 +121,9 @@
                       <li>
                         <a href="#Stmt">{Stmt}</a>
                       </li>
+                      <li>
+                        <a href="#Declaration">{Declaration}</a>
+                      </li>
                     </ul>
                   </td>
                 </tr>
@@ -144,16 +147,64 @@
                         <a href="#Bool">N_bool</a>
                       </li>
                       <li>
+                        <a href="#Cast">N_cast</a>
+                      </li>
+                      <li>
+                        <a href="#Declarations">N_declarations</a>
+                      </li>
+                      <li>
+                        <a href="#DoWhile">N_dowhile</a>
+                      </li>
+                      <li>
+                        <a href="#Else">N_else</a>
+                      </li>
+                      <li>
                         <a href="#Error">N_error</a>
+                      </li>
+                      <li>
+                        <a href="#Expressions">N_expressions</a>
                       </li>
                       <li>
                         <a href="#Float">N_float</a>
                       </li>
                       <li>
+                        <a href="#For">N_for</a>
+                      </li>
+                      <li>
+                        <a href="#Func">N_func</a>
+                      </li>
+                      <li>
+                        <a href="#FuncBody">N_funcbody</a>
+                      </li>
+                      <li>
+                        <a href="#FunctionCallExpr">N_functioncallexpr</a>
+                      </li>
+                      <li>
+                        <a href="#FunctionCallStmt">N_functioncallstmt</a>
+                      </li>
+                      <li>
+                        <a href="#GlobalDec">N_globaldec</a>
+                      </li>
+                      <li>
+                        <a href="#GlobalDef">N_globaldef</a>
+                      </li>
+                      <li>
+                        <a href="#If">N_if</a>
+                      </li>
+                      <li>
                         <a href="#Module">N_module</a>
                       </li>
                       <li>
+                        <a href="#MonOp">N_monop</a>
+                      </li>
+                      <li>
                         <a href="#Num">N_num</a>
+                      </li>
+                      <li>
+                        <a href="#Parameters">N_parameters</a>
+                      </li>
+                      <li>
+                        <a href="#Return">N_return</a>
                       </li>
                       <li>
                         <a href="#Stmts">N_stmts</a>
@@ -166,6 +217,9 @@
                       </li>
                       <li>
                         <a href="#VarLet">N_varlet</a>
+                      </li>
+                      <li>
+                        <a href="#While">N_while</a>
                       </li>
                     </ul>
                   </td>
@@ -206,10 +260,10 @@
         General Traversals
       </a><ul><li><a href="#TR_PRT">Print Syntax Tree</a></li><li><a href="#TR_COPY">Copy Syntax Tree</a></li><li><a href="#TR_FREE">Free Syntax Tree</a></li><li><a href="#TR_CHK">Check Syntax Tree</a></li><li><a href="#TR_RI">Rename identifiers</a></li><li><a href="#TR_SI">Sum ins</a></li><li><a href="#TR_SO">Sum opts</a></li><li><a href="#TR_SID">Sum identifiers</a></li><li><a href="#TR_OS">Optimise subtraction</a></li></ul></li></ul></li>
         <li> Nodesets
-      <ul><li><a href="#Expr">{Expr}</a></li><li><a href="#Stmt">{Stmt}</a></li></ul></li>
+      <ul><li><a href="#Expr">{Expr}</a></li><li><a href="#Stmt">{Stmt}</a></li><li><a href="#Declaration">{Declaration}</a></li></ul></li>
         <li>
       Nodes
-      <ul><li><a href="#Assign">N_assign</a></li><li><a href="#BinOp">N_binop</a></li><li><a href="#Bool">N_bool</a></li><li><a href="#Error">N_error</a></li><li><a href="#Float">N_float</a></li><li><a href="#Module">N_module</a></li><li><a href="#Num">N_num</a></li><li><a href="#Stmts">N_stmts</a></li><li><a href="#SymbolTableEntry">N_symboltableentry</a></li><li><a href="#Var">N_var</a></li><li><a href="#VarLet">N_varlet</a></li></ul></li>
+      <ul><li><a href="#Assign">N_assign</a></li><li><a href="#BinOp">N_binop</a></li><li><a href="#Bool">N_bool</a></li><li><a href="#Cast">N_cast</a></li><li><a href="#Declarations">N_declarations</a></li><li><a href="#DoWhile">N_dowhile</a></li><li><a href="#Else">N_else</a></li><li><a href="#Error">N_error</a></li><li><a href="#Expressions">N_expressions</a></li><li><a href="#Float">N_float</a></li><li><a href="#For">N_for</a></li><li><a href="#Func">N_func</a></li><li><a href="#FuncBody">N_funcbody</a></li><li><a href="#FunctionCallExpr">N_functioncallexpr</a></li><li><a href="#FunctionCallStmt">N_functioncallstmt</a></li><li><a href="#GlobalDec">N_globaldec</a></li><li><a href="#GlobalDef">N_globaldef</a></li><li><a href="#If">N_if</a></li><li><a href="#Module">N_module</a></li><li><a href="#MonOp">N_monop</a></li><li><a href="#Num">N_num</a></li><li><a href="#Parameters">N_parameters</a></li><li><a href="#Return">N_return</a></li><li><a href="#Stmts">N_stmts</a></li><li><a href="#SymbolTableEntry">N_symboltableentry</a></li><li><a href="#Var">N_var</a></li><li><a href="#VarLet">N_varlet</a></li><li><a href="#While">N_while</a></li></ul></li>
       </ul>
       <h1>Tables</h1>
     </div>
@@ -253,6 +307,24 @@
         <td><a name="atype_BinOp" id="atype_BinOp"></a>BinOp</td>
         <td>binop</td>
         <td>BO_unknown</td>
+        <td>literal<a class="footnote" href="#xpln_cp">*</a></td>
+      </tr>
+      <tr>
+        <td><a name="atype_MonOp" id="atype_MonOp"></a>MonOp</td>
+        <td>monop</td>
+        <td>MO_unknown</td>
+        <td>literal<a class="footnote" href="#xpln_cp">*</a></td>
+      </tr>
+      <tr>
+        <td><a name="atype_RetType" id="atype_RetType"></a>RetType</td>
+        <td>rettype</td>
+        <td>RT_unknown</td>
+        <td>literal<a class="footnote" href="#xpln_cp">*</a></td>
+      </tr>
+      <tr>
+        <td><a name="atype_BasicType" id="atype_BasicType"></a>BasicType</td>
+        <td>basictype</td>
+        <td>BT_unknown</td>
         <td>literal<a class="footnote" href="#xpln_cp">*</a></td>
       </tr>
       <tr>
@@ -379,7 +451,7 @@
           Expr</td>
       </tr>
       <tr>
-        <td> <a href="#BinOp">N_binop</a> <a href="#Var">N_var</a> <a href="#Num">N_num</a> <a href="#Float">N_float</a> <a href="#Bool">N_bool</a></td>
+        <td> <a href="#BinOp">N_binop</a> <a href="#MonOp">N_monop</a> <a href="#Var">N_var</a> <a href="#Num">N_num</a> <a href="#Float">N_float</a> <a href="#Cast">N_cast</a> <a href="#Bool">N_bool</a> <a href="#FunctionCallExpr">N_functioncallexpr</a></td>
       </tr>
       <tr>
         <td class="toclink">
@@ -394,7 +466,22 @@
           Stmt</td>
       </tr>
       <tr>
-        <td> <a href="#Assign">N_assign</a></td>
+        <td> <a href="#Assign">N_assign</a> <a href="#If">N_if</a> <a href="#While">N_while</a> <a href="#DoWhile">N_dowhile</a> <a href="#For">N_for</a> <a href="#Return">N_return</a> <a href="#FunctionCallStmt">N_functioncallstmt</a></td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Declaration" id="Declaration"></a>
+    <table>
+      <tr>
+        <td class="title">Nodeset 
+          Declaration</td>
+      </tr>
+      <tr>
+        <td> <a href="#Func">N_func</a> <a href="#GlobalDec">N_globaldec</a> <a href="#GlobalDef">N_globaldef</a></td>
       </tr>
       <tr>
         <td class="toclink">
@@ -432,8 +519,8 @@
               <td> <a href="#VarLet">N_varlet</a></td>
               <td class="ccode"></td>
               <td>
-         left hand side variable; can be missing to represent procedure calls
-	</td>
+      left hand side variable; can be missing to represent procedure calls
+    </td>
             </tr>
             <tr>
               <td>Expr</td>
@@ -567,6 +654,207 @@
         </td>
       </tr>
     </table>
+    <a name="Cast" id="Cast"></a>
+    <table>
+      <tr>
+        <td class="title">N_cast<div class="description">represents a cast in expression position</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeCast( basictype BasicType ,node * Expr)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents a required expression </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>BasicType</td>
+              <td>
+                <div class="type"><a href="#atype_BasicType">BasicType</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td> BasicType </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Declarations" id="Declarations"></a>
+    <table>
+      <tr>
+        <td class="title">N_declarations<div class="description">represents (sequence of) declarations</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeDeclarations( node * Declaration ,node * Next)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Declaration</td>
+              <td>
+                <a href="#Declaration">{Declaration}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>first declaration in sequence</td>
+            </tr>
+            <tr>
+              <td>Next</td>
+              <td> <a href="#Declarations">N_declarations</a></td>
+              <td class="ccode"></td>
+              <td>remaining declarations in sequence</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="DoWhile" id="DoWhile"></a>
+    <table>
+      <tr>
+        <td class="title">N_dowhile<div class="description">represents a do/while-statement</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeDowhile( node * Stmts ,node * While)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Stmts</td>
+              <td> <a href="#Stmts">N_stmts</a></td>
+              <td class="ccode"></td>
+              <td>represents a block with statement(s) </td>
+            </tr>
+            <tr>
+              <td>While</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents the expression statement </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Else" id="Else"></a>
+    <table>
+      <tr>
+        <td class="title">N_else<div class="description">represents else part of if-statement</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeElse( node * Stmts)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Stmts</td>
+              <td> <a href="#Stmts">N_stmts</a></td>
+              <td class="ccode"></td>
+              <td>represents a block with statement(s) </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
     <a name="Error" id="Error"></a>
     <table>
       <tr>
@@ -638,6 +926,54 @@
         </td>
       </tr>
     </table>
+    <a name="Expressions" id="Expressions"></a>
+    <table>
+      <tr>
+        <td class="title">N_expressions<div class="description">represents an expression node for function calls</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeExpressions( node * Expr ,node * Next)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents an optional expression </td>
+            </tr>
+            <tr>
+              <td>Next</td>
+              <td> <a href="#Expressions">N_expressions</a></td>
+              <td class="ccode"></td>
+              <td>represents an optional expression </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
     <a name="Float" id="Float"></a>
     <table>
       <tr>
@@ -682,10 +1018,10 @@
         </td>
       </tr>
     </table>
-    <a name="Module" id="Module"></a>
+    <a name="For" id="For"></a>
     <table>
       <tr>
-        <td class="title">N_module<div class="description">represents the module</div></td>
+        <td class="title">N_for<div class="description">represents a for-loop statement</div></td>
       </tr>
       <tr>
         <td class="heading">
@@ -693,7 +1029,7 @@
         </td>
       </tr>
       <tr>
-        <td class="ccode">node *TBmakeModule( int Addition ,int Subtraction ,int Multiplication ,int Division ,int Modulo ,node * Stmts)</td>
+        <td class="ccode">node *TBmakeFor( node * Assign ,node * Expr ,node * ExprOpt ,node * Stmts)</td>
       </tr>
       <tr>
         <td class="heading">Sons</td>
@@ -708,10 +1044,78 @@
               <td class="subheading">Comment</td>
             </tr>
             <tr>
+              <td>Assign</td>
+              <td> <a href="#Assign">N_assign</a></td>
+              <td class="ccode"></td>
+              <td>represents assignment statement</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents expression statement</td>
+            </tr>
+            <tr>
+              <td>ExprOpt</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents a second, optional expression statement</td>
+            </tr>
+            <tr>
               <td>Stmts</td>
               <td> <a href="#Stmts">N_stmts</a></td>
               <td class="ccode"></td>
-              <td>statements</td>
+              <td>represents a block with statement(s) </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Func" id="Func"></a>
+    <table>
+      <tr>
+        <td class="title">N_func<div class="description">represents a function declaration + defintion</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeFunc( rettype ReturnType ,char* Name ,node * FuncBody ,node * Parameters)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>FuncBody</td>
+              <td> <a href="#FuncBody">N_funcbody</a></td>
+              <td class="ccode"></td>
+              <td>represents optional body with statement(s) (if funcdef)</td>
+            </tr>
+            <tr>
+              <td>Parameters</td>
+              <td> <a href="#Parameters">N_parameters</a></td>
+              <td class="ccode"></td>
+              <td>represents (optional) parameters. </td>
             </tr>
           </table>
         </td>
@@ -729,44 +1133,472 @@
               <td class="subheading">Comment</td>
             </tr>
             <tr>
-              <td>Addition</td>
+              <td>ReturnType</td>
               <td>
-                <div class="type"><a href="#atype_Int">Int</a> (  ) </div>
+                <div class="type"><a href="#atype_RetType">RetType</a> (  ) </div>
               </td>
               <td class="ccode"></td>
-              <td>amount of addition operators</td>
+              <td>Return Type</td>
             </tr>
             <tr>
-              <td>Subtraction</td>
+              <td>Name</td>
               <td>
-                <div class="type"><a href="#atype_Int">Int</a> (  ) </div>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
               </td>
               <td class="ccode"></td>
-              <td>amount of subtraction operators</td>
+              <td>Identifier in character string representation</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="FuncBody" id="FuncBody"></a>
+    <table>
+      <tr>
+        <td class="title">N_funcbody<div class="description">represents the body of a function (vardec + stmts)</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeFuncbody( node * Stmts ,node * VarDeclarations)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
             </tr>
             <tr>
-              <td>Multiplication</td>
-              <td>
-                <div class="type"><a href="#atype_Int">Int</a> (  ) </div>
-              </td>
+              <td>Stmts</td>
+              <td> <a href="#Stmts">N_stmts</a></td>
               <td class="ccode"></td>
-              <td>amount of multiplication operators</td>
+              <td>represents optional body with statement(s) (if funcdef)</td>
             </tr>
             <tr>
-              <td>Division</td>
-              <td>
-                <div class="type"><a href="#atype_Int">Int</a> (  ) </div>
-              </td>
+              <td>VarDeclarations</td>
+              <td> <a href="#VarLet">N_varlet</a></td>
               <td class="ccode"></td>
-              <td>amount of division operators</td>
+              <td>represents (optional) parameters. </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="FunctionCallExpr" id="FunctionCallExpr"></a>
+    <table>
+      <tr>
+        <td class="title">N_functioncallexpr<div class="description">represents a function call in expression position</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeFunctioncallexpr( char* Name ,node * Expressions)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
             </tr>
             <tr>
-              <td>Modulo</td>
+              <td>Expressions</td>
+              <td> <a href="#Expressions">N_expressions</a></td>
+              <td class="ccode"></td>
+              <td>represents an optional expression </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Name</td>
               <td>
-                <div class="type"><a href="#atype_Int">Int</a> (  ) </div>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
               </td>
               <td class="ccode"></td>
-              <td>amount of modulo operators</td>
+              <td>Identifier in character string representation</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="FunctionCallStmt" id="FunctionCallStmt"></a>
+    <table>
+      <tr>
+        <td class="title">N_functioncallstmt<div class="description">represents a call to a function</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeFunctioncallstmt( char* Name ,node * Expressions)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expressions</td>
+              <td> <a href="#Expressions">N_expressions</a></td>
+              <td class="ccode"></td>
+              <td>represents an optional expression </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Name</td>
+              <td>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>Identifier in character string representation</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="GlobalDec" id="GlobalDec"></a>
+    <table>
+      <tr>
+        <td class="title">N_globaldec<div class="description">represents a global declaration</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeGlobaldec( basictype BasicType ,char* Name)</td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>BasicType</td>
+              <td>
+                <div class="type"><a href="#atype_BasicType">BasicType</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td> BasicType </td>
+            </tr>
+            <tr>
+              <td>Name</td>
+              <td>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>Identifier in character string representation</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="GlobalDef" id="GlobalDef"></a>
+    <table>
+      <tr>
+        <td class="title">N_globaldef<div class="description">represents a global declaration</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeGlobaldef( char* Name ,basictype BasicType ,node * Assign)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Assign</td>
+              <td> <a href="#Assign">N_assign</a></td>
+              <td class="ccode"></td>
+              <td>optional assignment to expression</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Name</td>
+              <td>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>Identifier in character string representation</td>
+            </tr>
+            <tr>
+              <td>BasicType</td>
+              <td>
+                <div class="type"><a href="#atype_BasicType">BasicType</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>BasicType</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="If" id="If"></a>
+    <table>
+      <tr>
+        <td class="title">N_if<div class="description">represents if statement</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeIf( node * Else ,node * Expr ,node * Stmts)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Else</td>
+              <td> <a href="#Else">N_else</a></td>
+              <td class="ccode"></td>
+              <td>... </td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>Respresents the condition(s) </td>
+            </tr>
+            <tr>
+              <td>Stmts</td>
+              <td> <a href="#Stmts">N_stmts</a></td>
+              <td class="ccode"></td>
+              <td>Represents a block with statement(s) </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Module" id="Module"></a>
+    <table>
+      <tr>
+        <td class="title">N_module<div class="description">represents the module</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeModule( node * Declarations)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Declarations</td>
+              <td> <a href="#Declarations">N_declarations</a></td>
+              <td class="ccode"></td>
+              <td>statements</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="MonOp" id="MonOp"></a>
+    <table>
+      <tr>
+        <td class="title">N_monop<div class="description">represents mono operator application</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeMonop( monop Op ,node * Expr)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>operand expression</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Op</td>
+              <td>
+                <div class="type"><a href="#atype_MonOp">MonOp</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td></td>
             </tr>
           </table>
         </td>
@@ -809,6 +1641,119 @@
               </td>
               <td class="ccode"></td>
               <td></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Parameters" id="Parameters"></a>
+    <table>
+      <tr>
+        <td class="title">N_parameters<div class="description">represents (sequence of) statements</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeParameters( char* Name ,basictype BasicType ,node * Next)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Next</td>
+              <td> <a href="#Parameters">N_parameters</a></td>
+              <td class="ccode"></td>
+              <td>remaining parameters in sequence</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="heading">Permanent Attributes</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Type</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Name</td>
+              <td>
+                <div class="type"><a href="#atype_String">String</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>Identifier in character string representation</td>
+            </tr>
+            <tr>
+              <td>BasicType</td>
+              <td>
+                <div class="type"><a href="#atype_BasicType">BasicType</a> (  ) </div>
+              </td>
+              <td class="ccode"></td>
+              <td>BasicType</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="Return" id="Return"></a>
+    <table>
+      <tr>
+        <td class="title">N_return<div class="description">represents a return-statement</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeReturn( node * Expr)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents an optional expression </td>
             </tr>
           </table>
         </td>
@@ -920,7 +1865,7 @@
               <td>Identifier in character string representation</td>
             </tr>
             <tr>
-              <td>Decl</td>
+              <td>Declaration</td>
               <td>
                 <div class="type"><a href="#atype_Link">Link</a> (  ) </div>
               </td>
@@ -947,7 +1892,34 @@
         </td>
       </tr>
       <tr>
-        <td class="ccode">node *TBmakeVarlet( char* Name)</td>
+        <td class="ccode">node *TBmakeVarlet( char* Name ,node * Next ,node * Assign)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Next</td>
+              <td> <a href="#VarLet">N_varlet</a></td>
+              <td class="ccode"></td>
+              <td>remaining varlet declaration in sequence</td>
+            </tr>
+            <tr>
+              <td>Assign</td>
+              <td> <a href="#Assign">N_assign</a></td>
+              <td class="ccode"></td>
+              <td>optional assignment to expression</td>
+            </tr>
+          </table>
+        </td>
       </tr>
       <tr>
         <td class="heading">Permanent Attributes</td>
@@ -970,12 +1942,60 @@
               <td>Identifier in character string representation</td>
             </tr>
             <tr>
-              <td>Decl</td>
+              <td>Declaration</td>
               <td>
                 <div class="type"><a href="#atype_Link">Link</a> (  ) </div>
               </td>
               <td class="ccode"></td>
               <td>Link to symbol table entry</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="toclink">
+          <a href="#toc" class="toclink">top</a>
+        </td>
+      </tr>
+    </table>
+    <a name="While" id="While"></a>
+    <table>
+      <tr>
+        <td class="title">N_while<div class="description">represents a while-statement</div></td>
+      </tr>
+      <tr>
+        <td class="heading">
+          Make Function
+        </td>
+      </tr>
+      <tr>
+        <td class="ccode">node *TBmakeWhile( node * Expr ,node * Stmts)</td>
+      </tr>
+      <tr>
+        <td class="heading">Sons</td>
+      </tr>
+      <tr>
+        <td>
+          <table class="hidden">
+            <tr>
+              <td class="subheading">Name</td>
+              <td class="subheading">Possible Target Nodes</td>
+              <td class="subheading">Default</td>
+              <td class="subheading">Comment</td>
+            </tr>
+            <tr>
+              <td>Expr</td>
+              <td>
+                <a href="#Expr">{Expr}</a>
+              </td>
+              <td class="ccode"></td>
+              <td>represents the condition(s) </td>
+            </tr>
+            <tr>
+              <td>Stmts</td>
+              <td> <a href="#Stmts">N_stmts</a></td>
+              <td class="ccode"></td>
+              <td>represents a block with statement(s) </td>
             </tr>
           </table>
         </td>

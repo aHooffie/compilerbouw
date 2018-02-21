@@ -25,13 +25,60 @@
  * macros and functions for N_module
  *****************************************************************************/
 
-#define MODULE_STMTS( n) ((n)->sons.N_module->Stmts)
-#define MODULE_ADDITION( n) ((n)->attribs.N_module->Addition)
-#define MODULE_SUBTRACTION( n) ((n)->attribs.N_module->Subtraction)
-#define MODULE_MULTIPLICATION( n) ((n)->attribs.N_module->Multiplication)
-#define MODULE_DIVISION( n) ((n)->attribs.N_module->Division)
-#define MODULE_MODULO( n) ((n)->attribs.N_module->Modulo)
-extern node    *TBmakeModule(int Addition, int Subtraction, int Multiplication, int Division, int Modulo, node * Stmts);
+#define MODULE_DECLARATIONS( n) ((n)->sons.N_module->Declarations)
+extern node    *TBmakeModule(node * Declarations);
+
+/*****************************************************************************
+ * macros and functions for N_declarations
+ *****************************************************************************/
+
+#define DECLARATIONS_DECLARATION( n) ((n)->sons.N_declarations->Declaration)
+#define DECLARATIONS_NEXT( n) ((n)->sons.N_declarations->Next)
+extern node    *TBmakeDeclarations(node * Declaration, node * Next);
+
+/*****************************************************************************
+ * macros and functions for N_func
+ *****************************************************************************/
+
+#define FUNC_FUNCBODY( n) ((n)->sons.N_func->FuncBody)
+#define FUNC_PARAMETERS( n) ((n)->sons.N_func->Parameters)
+#define FUNC_RETURNTYPE( n) ((n)->attribs.N_func->ReturnType)
+#define FUNC_NAME( n) ((n)->attribs.N_func->Name)
+extern node    *TBmakeFunc(rettype ReturnType, char *Name, node * FuncBody, node * Parameters);
+
+/*****************************************************************************
+ * macros and functions for N_globaldec
+ *****************************************************************************/
+
+#define GLOBALDEC_BASICTYPE( n) ((n)->attribs.N_globaldec->BasicType)
+#define GLOBALDEC_NAME( n) ((n)->attribs.N_globaldec->Name)
+extern node    *TBmakeGlobaldec(basictype BasicType, char *Name);
+
+/*****************************************************************************
+ * macros and functions for N_globaldef
+ *****************************************************************************/
+
+#define GLOBALDEF_ASSIGN( n) ((n)->sons.N_globaldef->Assign)
+#define GLOBALDEF_NAME( n) ((n)->attribs.N_globaldef->Name)
+#define GLOBALDEF_BASICTYPE( n) ((n)->attribs.N_globaldef->BasicType)
+extern node    *TBmakeGlobaldef(char *Name, basictype BasicType, node * Assign);
+
+/*****************************************************************************
+ * macros and functions for N_funcbody
+ *****************************************************************************/
+
+#define FUNCBODY_STMTS( n) ((n)->sons.N_funcbody->Stmts)
+#define FUNCBODY_VARDECLARATIONS( n) ((n)->sons.N_funcbody->VarDeclarations)
+extern node    *TBmakeFuncbody(node * Stmts, node * VarDeclarations);
+
+/*****************************************************************************
+ * macros and functions for N_parameters
+ *****************************************************************************/
+
+#define PARAMETERS_NEXT( n) ((n)->sons.N_parameters->Next)
+#define PARAMETERS_NAME( n) ((n)->attribs.N_parameters->Name)
+#define PARAMETERS_BASICTYPE( n) ((n)->attribs.N_parameters->BasicType)
+extern node    *TBmakeParameters(char *Name, basictype BasicType, node * Next);
 
 /*****************************************************************************
  * macros and functions for N_stmts
@@ -50,6 +97,71 @@ extern node    *TBmakeStmts(node * Stmt, node * Next);
 extern node    *TBmakeAssign(node * Let, node * Expr);
 
 /*****************************************************************************
+ * macros and functions for N_if
+ *****************************************************************************/
+
+#define IF_ELSE( n) ((n)->sons.N_if->Else)
+#define IF_EXPR( n) ((n)->sons.N_if->Expr)
+#define IF_STMTS( n) ((n)->sons.N_if->Stmts)
+extern node    *TBmakeIf(node * Else, node * Expr, node * Stmts);
+
+/*****************************************************************************
+ * macros and functions for N_else
+ *****************************************************************************/
+
+#define ELSE_STMTS( n) ((n)->sons.N_else->Stmts)
+extern node    *TBmakeElse(node * Stmts);
+
+/*****************************************************************************
+ * macros and functions for N_while
+ *****************************************************************************/
+
+#define WHILE_EXPR( n) ((n)->sons.N_while->Expr)
+#define WHILE_STMTS( n) ((n)->sons.N_while->Stmts)
+extern node    *TBmakeWhile(node * Expr, node * Stmts);
+
+/*****************************************************************************
+ * macros and functions for N_dowhile
+ *****************************************************************************/
+
+#define DOWHILE_STMTS( n) ((n)->sons.N_dowhile->Stmts)
+#define DOWHILE_WHILE( n) ((n)->sons.N_dowhile->While)
+extern node    *TBmakeDowhile(node * Stmts, node * While);
+
+/*****************************************************************************
+ * macros and functions for N_for
+ *****************************************************************************/
+
+#define FOR_ASSIGN( n) ((n)->sons.N_for->Assign)
+#define FOR_EXPR( n) ((n)->sons.N_for->Expr)
+#define FOR_EXPROPT( n) ((n)->sons.N_for->ExprOpt)
+#define FOR_STMTS( n) ((n)->sons.N_for->Stmts)
+extern node    *TBmakeFor(node * Assign, node * Expr, node * ExprOpt, node * Stmts);
+
+/*****************************************************************************
+ * macros and functions for N_return
+ *****************************************************************************/
+
+#define RETURN_EXPR( n) ((n)->sons.N_return->Expr)
+extern node    *TBmakeReturn(node * Expr);
+
+/*****************************************************************************
+ * macros and functions for N_expressions
+ *****************************************************************************/
+
+#define EXPRESSIONS_EXPR( n) ((n)->sons.N_expressions->Expr)
+#define EXPRESSIONS_NEXT( n) ((n)->sons.N_expressions->Next)
+extern node    *TBmakeExpressions(node * Expr, node * Next);
+
+/*****************************************************************************
+ * macros and functions for N_functioncallstmt
+ *****************************************************************************/
+
+#define FUNCTIONCALLSTMT_EXPRESSIONS( n) ((n)->sons.N_functioncallstmt->Expressions)
+#define FUNCTIONCALLSTMT_NAME( n) ((n)->attribs.N_functioncallstmt->Name)
+extern node    *TBmakeFunctioncallstmt(char *Name, node * Expressions);
+
+/*****************************************************************************
  * macros and functions for N_binop
  *****************************************************************************/
 
@@ -59,20 +171,46 @@ extern node    *TBmakeAssign(node * Let, node * Expr);
 extern node    *TBmakeBinop(binop Op, node * Left, node * Right);
 
 /*****************************************************************************
+ * macros and functions for N_monop
+ *****************************************************************************/
+
+#define MONOP_EXPR( n) ((n)->sons.N_monop->Expr)
+#define MONOP_OP( n) ((n)->attribs.N_monop->Op)
+extern node    *TBmakeMonop(monop Op, node * Expr);
+
+/*****************************************************************************
  * macros and functions for N_varlet
  *****************************************************************************/
 
+#define VARLET_NEXT( n) ((n)->sons.N_varlet->Next)
+#define VARLET_ASSIGN( n) ((n)->sons.N_varlet->Assign)
 #define VARLET_NAME( n) ((n)->attribs.N_varlet->Name)
-#define VARLET_DECL( n) ((n)->attribs.N_varlet->Decl)
-extern node    *TBmakeVarlet(char *Name);
+#define VARLET_DECLARATION( n) ((n)->attribs.N_varlet->Declaration)
+extern node    *TBmakeVarlet(char *Name, node * Next, node * Assign);
 
 /*****************************************************************************
  * macros and functions for N_var
  *****************************************************************************/
 
 #define VAR_NAME( n) ((n)->attribs.N_var->Name)
-#define VAR_DECL( n) ((n)->attribs.N_var->Decl)
+#define VAR_DECLARATION( n) ((n)->attribs.N_var->Declaration)
 extern node    *TBmakeVar(char *Name);
+
+/*****************************************************************************
+ * macros and functions for N_cast
+ *****************************************************************************/
+
+#define CAST_EXPR( n) ((n)->sons.N_cast->Expr)
+#define CAST_BASICTYPE( n) ((n)->attribs.N_cast->BasicType)
+extern node    *TBmakeCast(basictype BasicType, node * Expr);
+
+/*****************************************************************************
+ * macros and functions for N_functioncallexpr
+ *****************************************************************************/
+
+#define FUNCTIONCALLEXPR_EXPRESSIONS( n) ((n)->sons.N_functioncallexpr->Expressions)
+#define FUNCTIONCALLEXPR_NAME( n) ((n)->attribs.N_functioncallexpr->Name)
+extern node    *TBmakeFunctioncallexpr(char *Name, node * Expressions);
 
 /*****************************************************************************
  * macros and functions for N_num

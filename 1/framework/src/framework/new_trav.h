@@ -20,13 +20,30 @@
 extern node    *EVALassign(node * arg_node, info * arg_info);
 extern node    *EVALbinop(node * arg_node, info * arg_info);
 extern node    *EVALbool(node * arg_node, info * arg_info);
+extern node    *EVALcast(node * arg_node, info * arg_info);
+extern node    *EVALdeclarations(node * arg_node, info * arg_info);
+extern node    *EVALdowhile(node * arg_node, info * arg_info);
+extern node    *EVALelse(node * arg_node, info * arg_info);
 extern node    *EVALerror(node * arg_node, info * arg_info);
+extern node    *EVALexpressions(node * arg_node, info * arg_info);
 extern node    *EVALfloat(node * arg_node, info * arg_info);
+extern node    *EVALfor(node * arg_node, info * arg_info);
+extern node    *EVALfunc(node * arg_node, info * arg_info);
+extern node    *EVALfuncbody(node * arg_node, info * arg_info);
+extern node    *EVALfunctioncallexpr(node * arg_node, info * arg_info);
+extern node    *EVALfunctioncallstmt(node * arg_node, info * arg_info);
+extern node    *EVALglobaldec(node * arg_node, info * arg_info);
+extern node    *EVALglobaldef(node * arg_node, info * arg_info);
+extern node    *EVALif(node * arg_node, info * arg_info);
 extern node    *EVALmodule(node * arg_node, info * arg_info);
+extern node    *EVALmonop(node * arg_node, info * arg_info);
 extern node    *EVALnum(node * arg_node, info * arg_info);
+extern node    *EVALparameters(node * arg_node, info * arg_info);
+extern node    *EVALreturn(node * arg_node, info * arg_info);
 extern node    *EVALstmts(node * arg_node, info * arg_info);
 extern node    *EVALsymboltableentry(node * arg_node, info * arg_info);
 extern node    *EVALvar(node * arg_node, info * arg_info);
 extern node    *EVALvarlet(node * arg_node, info * arg_info);
+extern node    *EVALwhile(node * arg_node, info * arg_info);
 
 #endif				/* _SAC_EVAL_H_ */

@@ -40,7 +40,7 @@ MakeEmptyNode()
  * N_Module :
  *****************************************************************************/
 
-node           *TBmakeModule(int Addition, int Subtraction, int Multiplication, int Division, int Modulo, node * Stmts){
+node           *TBmakeModule(node * Declarations) {
 	node           *this;
 	DBUG_ENTER("TBmakeModule");
 	DBUG_PRINT("MAKE", ("allocating node structure"));
@@ -53,17 +53,198 @@ node           *TBmakeModule(int Addition, int Subtraction, int Multiplication, 
 	this->attribs.N_module = MEMmalloc(sizeof(struct ATTRIBS_N_MODULE));
 	DBUG_PRINT("MAKE", ("setting node type"));
 	NODE_TYPE(this) = N_module;
-	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
-	MODULE_STMTS(this) = Stmts;
-	MODULE_ADDITION(this) = Addition;
-	MODULE_SUBTRACTION(this) = Subtraction;
-	MODULE_MULTIPLICATION(this) = Multiplication;
-	MODULE_DIVISION(this) = Division;
-	MODULE_MODULO(this) = Modulo;
+	DBUG_PRINT("MAKE", ("assigning son Declarations initial value: %s ", Declarations));
+	MODULE_DECLARATIONS(this) = Declarations;
 #ifndef DBUG_OFF
 	DBUG_PRINT("MAKE", ("doing son target checks"));
-	if ((MODULE_STMTS(this) != NULL) && (NODE_TYPE(MODULE_STMTS(this)) != N_stmts)) {
-		CTIwarn("Field Stmts of node N_Module has non-allowed target node.");
+	if ((MODULE_DECLARATIONS(this) != NULL) && (NODE_TYPE(MODULE_DECLARATIONS(this)) != N_declarations)) {
+		CTIwarn("Field Declarations of node N_Module has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Declarations :
+ *****************************************************************************/
+
+node           *TBmakeDeclarations(node * Declaration, node * Next) {
+	node           *this;
+	DBUG_ENTER("TBmakeDeclarations");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_declarations;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_declarations = MEMmalloc(sizeof(struct SONS_N_DECLARATIONS));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_declarations = MEMmalloc(sizeof(struct ATTRIBS_N_DECLARATIONS));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_declarations;
+	DBUG_PRINT("MAKE", ("assigning son Declaration initial value: %s ", Declaration));
+	DECLARATIONS_DECLARATION(this) = Declaration;
+	DBUG_PRINT("MAKE", ("assigning son Next initial value: %s ", Next));
+	DECLARATIONS_NEXT(this) = Next;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((DECLARATIONS_DECLARATION(this) != NULL) && (NODE_TYPE(DECLARATIONS_DECLARATION(this)) != N_func) && (NODE_TYPE(DECLARATIONS_DECLARATION(this)) != N_globaldec) && (NODE_TYPE(DECLARATIONS_DECLARATION(this)) != N_globaldef)) {
+		CTIwarn("Field Declaration of node N_Declarations has non-allowed target node.");
+	}
+	if ((DECLARATIONS_NEXT(this) != NULL) && (NODE_TYPE(DECLARATIONS_NEXT(this)) != N_declarations)) {
+		CTIwarn("Field Next of node N_Declarations has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Func :
+ *****************************************************************************/
+
+node           *TBmakeFunc(rettype ReturnType, char *Name, node * FuncBody, node * Parameters){
+	node           *this;
+	DBUG_ENTER("TBmakeFunc");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_func;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_func = MEMmalloc(sizeof(struct SONS_N_FUNC));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_func = MEMmalloc(sizeof(struct ATTRIBS_N_FUNC));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_func;
+	DBUG_PRINT("MAKE", ("assigning son FuncBody initial value: %s ", FuncBody));
+	FUNC_FUNCBODY(this) = FuncBody;
+	DBUG_PRINT("MAKE", ("assigning son Parameters initial value: %s ", Parameters));
+	FUNC_PARAMETERS(this) = Parameters;
+	FUNC_RETURNTYPE(this) = ReturnType;
+	FUNC_NAME(this) = Name;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((FUNC_FUNCBODY(this) != NULL) && (NODE_TYPE(FUNC_FUNCBODY(this)) != N_funcbody)) {
+		CTIwarn("Field FuncBody of node N_Func has non-allowed target node.");
+	}
+	if ((FUNC_PARAMETERS(this) != NULL) && (NODE_TYPE(FUNC_PARAMETERS(this)) != N_parameters)) {
+		CTIwarn("Field Parameters of node N_Func has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_GlobalDec :
+ *****************************************************************************/
+
+node           *TBmakeGlobaldec(basictype BasicType, char *Name){
+	node           *this;
+	DBUG_ENTER("TBmakeGlobaldec");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_globaldec;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_globaldec = MEMmalloc(sizeof(struct SONS_N_GLOBALDEC));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_globaldec = MEMmalloc(sizeof(struct ATTRIBS_N_GLOBALDEC));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_globaldec;
+	GLOBALDEC_BASICTYPE(this) = BasicType;
+	GLOBALDEC_NAME(this) = Name;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_GlobalDef :
+ *****************************************************************************/
+
+node           *TBmakeGlobaldef(char *Name, basictype BasicType, node * Assign){
+	node           *this;
+	DBUG_ENTER("TBmakeGlobaldef");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_globaldef;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_globaldef = MEMmalloc(sizeof(struct SONS_N_GLOBALDEF));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_globaldef = MEMmalloc(sizeof(struct ATTRIBS_N_GLOBALDEF));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_globaldef;
+	DBUG_PRINT("MAKE", ("assigning son Assign initial value: %s ", Assign));
+	GLOBALDEF_ASSIGN(this) = Assign;
+	GLOBALDEF_NAME(this) = Name;
+	GLOBALDEF_BASICTYPE(this) = BasicType;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((GLOBALDEF_ASSIGN(this) != NULL) && (NODE_TYPE(GLOBALDEF_ASSIGN(this)) != N_assign)) {
+		CTIwarn("Field Assign of node N_GlobalDef has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_FuncBody :
+ *****************************************************************************/
+
+node           *TBmakeFuncbody(node * Stmts, node * VarDeclarations) {
+	node           *this;
+	DBUG_ENTER("TBmakeFuncbody");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_funcbody;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_funcbody = MEMmalloc(sizeof(struct SONS_N_FUNCBODY));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_funcbody = MEMmalloc(sizeof(struct ATTRIBS_N_FUNCBODY));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_funcbody;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	FUNCBODY_STMTS(this) = Stmts;
+	DBUG_PRINT("MAKE", ("assigning son VarDeclarations initial value: %s ", VarDeclarations));
+	FUNCBODY_VARDECLARATIONS(this) = VarDeclarations;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((FUNCBODY_STMTS(this) != NULL) && (NODE_TYPE(FUNCBODY_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_FuncBody has non-allowed target node.");
+	}
+	if ((FUNCBODY_VARDECLARATIONS(this) != NULL) && (NODE_TYPE(FUNCBODY_VARDECLARATIONS(this)) != N_varlet)) {
+		CTIwarn("Field VarDeclarations of node N_FuncBody has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Parameters :
+ *****************************************************************************/
+
+node           *TBmakeParameters(char *Name, basictype BasicType, node * Next){
+	node           *this;
+	DBUG_ENTER("TBmakeParameters");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_parameters;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_parameters = MEMmalloc(sizeof(struct SONS_N_PARAMETERS));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_parameters = MEMmalloc(sizeof(struct ATTRIBS_N_PARAMETERS));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_parameters;
+	DBUG_PRINT("MAKE", ("assigning son Next initial value: %s ", Next));
+	PARAMETERS_NEXT(this) = Next;
+	PARAMETERS_NAME(this) = Name;
+	PARAMETERS_BASICTYPE(this) = BasicType;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((PARAMETERS_NEXT(this) != NULL) && (NODE_TYPE(PARAMETERS_NEXT(this)) != N_parameters)) {
+		CTIwarn("Field Next of node N_Parameters has non-allowed target node.");
 	}
 #endif				/* DBUG_OFF */
 	DBUG_RETURN(this);
@@ -92,7 +273,7 @@ node           *TBmakeStmts(node * Stmt, node * Next) {
 	STMTS_NEXT(this) = Next;
 #ifndef DBUG_OFF
 	DBUG_PRINT("MAKE", ("doing son target checks"));
-	if ((STMTS_STMT(this) != NULL) && (NODE_TYPE(STMTS_STMT(this)) != N_assign)) {
+	if ((STMTS_STMT(this) != NULL) && (NODE_TYPE(STMTS_STMT(this)) != N_assign) && (NODE_TYPE(STMTS_STMT(this)) != N_if) && (NODE_TYPE(STMTS_STMT(this)) != N_while) && (NODE_TYPE(STMTS_STMT(this)) != N_dowhile) && (NODE_TYPE(STMTS_STMT(this)) != N_for) && (NODE_TYPE(STMTS_STMT(this)) != N_return) && (NODE_TYPE(STMTS_STMT(this)) != N_functioncallstmt)) {
 		CTIwarn("Field Stmt of node N_Stmts has non-allowed target node.");
 	}
 	if ((STMTS_NEXT(this) != NULL) && (NODE_TYPE(STMTS_NEXT(this)) != N_stmts)) {
@@ -128,8 +309,273 @@ node           *TBmakeAssign(node * Let, node * Expr) {
 	if ((ASSIGN_LET(this) != NULL) && (NODE_TYPE(ASSIGN_LET(this)) != N_varlet)) {
 		CTIwarn("Field Let of node N_Assign has non-allowed target node.");
 	}
-	if ((ASSIGN_EXPR(this) != NULL) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_binop) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_var) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_num) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_float) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_bool)) {
+	if ((ASSIGN_EXPR(this) != NULL) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_binop) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_monop) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_var) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_num) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_float) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_cast) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_bool) && (NODE_TYPE(ASSIGN_EXPR(this)) != N_functioncallexpr)) {
 		CTIwarn("Field Expr of node N_Assign has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_If :
+ *****************************************************************************/
+
+node           *TBmakeIf(node * Else, node * Expr, node * Stmts) {
+	node           *this;
+	DBUG_ENTER("TBmakeIf");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_if;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_if = MEMmalloc(sizeof(struct SONS_N_IF));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_if = MEMmalloc(sizeof(struct ATTRIBS_N_IF));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_if;
+	DBUG_PRINT("MAKE", ("assigning son Else initial value: %s ", Else));
+	IF_ELSE(this) = Else;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	IF_EXPR(this) = Expr;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	IF_STMTS(this) = Stmts;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((IF_ELSE(this) != NULL) && (NODE_TYPE(IF_ELSE(this)) != N_else)) {
+		CTIwarn("Field Else of node N_If has non-allowed target node.");
+	}
+	if ((IF_EXPR(this) != NULL) && (NODE_TYPE(IF_EXPR(this)) != N_binop) && (NODE_TYPE(IF_EXPR(this)) != N_monop) && (NODE_TYPE(IF_EXPR(this)) != N_var) && (NODE_TYPE(IF_EXPR(this)) != N_num) && (NODE_TYPE(IF_EXPR(this)) != N_float) && (NODE_TYPE(IF_EXPR(this)) != N_cast) && (NODE_TYPE(IF_EXPR(this)) != N_bool) && (NODE_TYPE(IF_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_If has non-allowed target node.");
+	}
+	if ((IF_STMTS(this) != NULL) && (NODE_TYPE(IF_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_If has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Else :
+ *****************************************************************************/
+
+node           *TBmakeElse(node * Stmts) {
+	node           *this;
+	DBUG_ENTER("TBmakeElse");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_else;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_else = MEMmalloc(sizeof(struct SONS_N_ELSE));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_else = MEMmalloc(sizeof(struct ATTRIBS_N_ELSE));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_else;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	ELSE_STMTS(this) = Stmts;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((ELSE_STMTS(this) != NULL) && (NODE_TYPE(ELSE_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_Else has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_While :
+ *****************************************************************************/
+
+node           *TBmakeWhile(node * Expr, node * Stmts) {
+	node           *this;
+	DBUG_ENTER("TBmakeWhile");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_while;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_while = MEMmalloc(sizeof(struct SONS_N_WHILE));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_while = MEMmalloc(sizeof(struct ATTRIBS_N_WHILE));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_while;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	WHILE_EXPR(this) = Expr;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	WHILE_STMTS(this) = Stmts;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((WHILE_EXPR(this) != NULL) && (NODE_TYPE(WHILE_EXPR(this)) != N_binop) && (NODE_TYPE(WHILE_EXPR(this)) != N_monop) && (NODE_TYPE(WHILE_EXPR(this)) != N_var) && (NODE_TYPE(WHILE_EXPR(this)) != N_num) && (NODE_TYPE(WHILE_EXPR(this)) != N_float) && (NODE_TYPE(WHILE_EXPR(this)) != N_cast) && (NODE_TYPE(WHILE_EXPR(this)) != N_bool) && (NODE_TYPE(WHILE_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_While has non-allowed target node.");
+	}
+	if ((WHILE_STMTS(this) != NULL) && (NODE_TYPE(WHILE_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_While has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_DoWhile :
+ *****************************************************************************/
+
+node           *TBmakeDowhile(node * Stmts, node * While) {
+	node           *this;
+	DBUG_ENTER("TBmakeDowhile");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_dowhile;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_dowhile = MEMmalloc(sizeof(struct SONS_N_DOWHILE));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_dowhile = MEMmalloc(sizeof(struct ATTRIBS_N_DOWHILE));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_dowhile;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	DOWHILE_STMTS(this) = Stmts;
+	DBUG_PRINT("MAKE", ("assigning son While initial value: %s ", While));
+	DOWHILE_WHILE(this) = While;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((DOWHILE_STMTS(this) != NULL) && (NODE_TYPE(DOWHILE_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_DoWhile has non-allowed target node.");
+	}
+	if ((DOWHILE_WHILE(this) != NULL) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_binop) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_monop) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_var) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_num) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_float) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_cast) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_bool) && (NODE_TYPE(DOWHILE_WHILE(this)) != N_functioncallexpr)) {
+		CTIwarn("Field While of node N_DoWhile has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_For :
+ *****************************************************************************/
+
+node           *TBmakeFor(node * Assign, node * Expr, node * ExprOpt, node * Stmts) {
+	node           *this;
+	DBUG_ENTER("TBmakeFor");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_for;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_for = MEMmalloc(sizeof(struct SONS_N_FOR));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_for = MEMmalloc(sizeof(struct ATTRIBS_N_FOR));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_for;
+	DBUG_PRINT("MAKE", ("assigning son Assign initial value: %s ", Assign));
+	FOR_ASSIGN(this) = Assign;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	FOR_EXPR(this) = Expr;
+	DBUG_PRINT("MAKE", ("assigning son ExprOpt initial value: %s ", ExprOpt));
+	FOR_EXPROPT(this) = ExprOpt;
+	DBUG_PRINT("MAKE", ("assigning son Stmts initial value: %s ", Stmts));
+	FOR_STMTS(this) = Stmts;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((FOR_ASSIGN(this) != NULL) && (NODE_TYPE(FOR_ASSIGN(this)) != N_assign)) {
+		CTIwarn("Field Assign of node N_For has non-allowed target node.");
+	}
+	if ((FOR_EXPR(this) != NULL) && (NODE_TYPE(FOR_EXPR(this)) != N_binop) && (NODE_TYPE(FOR_EXPR(this)) != N_monop) && (NODE_TYPE(FOR_EXPR(this)) != N_var) && (NODE_TYPE(FOR_EXPR(this)) != N_num) && (NODE_TYPE(FOR_EXPR(this)) != N_float) && (NODE_TYPE(FOR_EXPR(this)) != N_cast) && (NODE_TYPE(FOR_EXPR(this)) != N_bool) && (NODE_TYPE(FOR_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_For has non-allowed target node.");
+	}
+	if ((FOR_EXPROPT(this) != NULL) && (NODE_TYPE(FOR_EXPROPT(this)) != N_binop) && (NODE_TYPE(FOR_EXPROPT(this)) != N_monop) && (NODE_TYPE(FOR_EXPROPT(this)) != N_var) && (NODE_TYPE(FOR_EXPROPT(this)) != N_num) && (NODE_TYPE(FOR_EXPROPT(this)) != N_float) && (NODE_TYPE(FOR_EXPROPT(this)) != N_cast) && (NODE_TYPE(FOR_EXPROPT(this)) != N_bool) && (NODE_TYPE(FOR_EXPROPT(this)) != N_functioncallexpr)) {
+		CTIwarn("Field ExprOpt of node N_For has non-allowed target node.");
+	}
+	if ((FOR_STMTS(this) != NULL) && (NODE_TYPE(FOR_STMTS(this)) != N_stmts)) {
+		CTIwarn("Field Stmts of node N_For has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Return :
+ *****************************************************************************/
+
+node           *TBmakeReturn(node * Expr) {
+	node           *this;
+	DBUG_ENTER("TBmakeReturn");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_return;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_return = MEMmalloc(sizeof(struct SONS_N_RETURN));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_return = MEMmalloc(sizeof(struct ATTRIBS_N_RETURN));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_return;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	RETURN_EXPR(this) = Expr;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((RETURN_EXPR(this) != NULL) && (NODE_TYPE(RETURN_EXPR(this)) != N_binop) && (NODE_TYPE(RETURN_EXPR(this)) != N_monop) && (NODE_TYPE(RETURN_EXPR(this)) != N_var) && (NODE_TYPE(RETURN_EXPR(this)) != N_num) && (NODE_TYPE(RETURN_EXPR(this)) != N_float) && (NODE_TYPE(RETURN_EXPR(this)) != N_cast) && (NODE_TYPE(RETURN_EXPR(this)) != N_bool) && (NODE_TYPE(RETURN_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_Return has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Expressions :
+ *****************************************************************************/
+
+node           *TBmakeExpressions(node * Expr, node * Next) {
+	node           *this;
+	DBUG_ENTER("TBmakeExpressions");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_expressions;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_expressions = MEMmalloc(sizeof(struct SONS_N_EXPRESSIONS));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_expressions = MEMmalloc(sizeof(struct ATTRIBS_N_EXPRESSIONS));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_expressions;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	EXPRESSIONS_EXPR(this) = Expr;
+	DBUG_PRINT("MAKE", ("assigning son Next initial value: %s ", Next));
+	EXPRESSIONS_NEXT(this) = Next;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((EXPRESSIONS_EXPR(this) != NULL) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_binop) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_monop) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_var) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_num) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_float) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_cast) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_bool) && (NODE_TYPE(EXPRESSIONS_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_Expressions has non-allowed target node.");
+	}
+	if ((EXPRESSIONS_NEXT(this) != NULL) && (NODE_TYPE(EXPRESSIONS_NEXT(this)) != N_expressions)) {
+		CTIwarn("Field Next of node N_Expressions has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_FunctionCallStmt :
+ *****************************************************************************/
+
+node           *TBmakeFunctioncallstmt(char *Name, node * Expressions){
+	node           *this;
+	DBUG_ENTER("TBmakeFunctioncallstmt");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_functioncallstmt;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_functioncallstmt = MEMmalloc(sizeof(struct SONS_N_FUNCTIONCALLSTMT));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_functioncallstmt = MEMmalloc(sizeof(struct ATTRIBS_N_FUNCTIONCALLSTMT));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_functioncallstmt;
+	DBUG_PRINT("MAKE", ("assigning son Expressions initial value: %s ", Expressions));
+	FUNCTIONCALLSTMT_EXPRESSIONS(this) = Expressions;
+	FUNCTIONCALLSTMT_NAME(this) = Name;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((FUNCTIONCALLSTMT_EXPRESSIONS(this) != NULL) && (NODE_TYPE(FUNCTIONCALLSTMT_EXPRESSIONS(this)) != N_expressions)) {
+		CTIwarn("Field Expressions of node N_FunctionCallStmt has non-allowed target node.");
 	}
 #endif				/* DBUG_OFF */
 	DBUG_RETURN(this);
@@ -159,11 +605,40 @@ node           *TBmakeBinop(binop Op, node * Left, node * Right) {
 	BINOP_OP(this) = Op;
 #ifndef DBUG_OFF
 	DBUG_PRINT("MAKE", ("doing son target checks"));
-	if ((BINOP_LEFT(this) != NULL) && (NODE_TYPE(BINOP_LEFT(this)) != N_binop) && (NODE_TYPE(BINOP_LEFT(this)) != N_var) && (NODE_TYPE(BINOP_LEFT(this)) != N_num) && (NODE_TYPE(BINOP_LEFT(this)) != N_float) && (NODE_TYPE(BINOP_LEFT(this)) != N_bool)) {
+	if ((BINOP_LEFT(this) != NULL) && (NODE_TYPE(BINOP_LEFT(this)) != N_binop) && (NODE_TYPE(BINOP_LEFT(this)) != N_monop) && (NODE_TYPE(BINOP_LEFT(this)) != N_var) && (NODE_TYPE(BINOP_LEFT(this)) != N_num) && (NODE_TYPE(BINOP_LEFT(this)) != N_float) && (NODE_TYPE(BINOP_LEFT(this)) != N_cast) && (NODE_TYPE(BINOP_LEFT(this)) != N_bool) && (NODE_TYPE(BINOP_LEFT(this)) != N_functioncallexpr)) {
 		CTIwarn("Field Left of node N_BinOp has non-allowed target node.");
 	}
-	if ((BINOP_RIGHT(this) != NULL) && (NODE_TYPE(BINOP_RIGHT(this)) != N_binop) && (NODE_TYPE(BINOP_RIGHT(this)) != N_var) && (NODE_TYPE(BINOP_RIGHT(this)) != N_num) && (NODE_TYPE(BINOP_RIGHT(this)) != N_float) && (NODE_TYPE(BINOP_RIGHT(this)) != N_bool)) {
+	if ((BINOP_RIGHT(this) != NULL) && (NODE_TYPE(BINOP_RIGHT(this)) != N_binop) && (NODE_TYPE(BINOP_RIGHT(this)) != N_monop) && (NODE_TYPE(BINOP_RIGHT(this)) != N_var) && (NODE_TYPE(BINOP_RIGHT(this)) != N_num) && (NODE_TYPE(BINOP_RIGHT(this)) != N_float) && (NODE_TYPE(BINOP_RIGHT(this)) != N_cast) && (NODE_TYPE(BINOP_RIGHT(this)) != N_bool) && (NODE_TYPE(BINOP_RIGHT(this)) != N_functioncallexpr)) {
 		CTIwarn("Field Right of node N_BinOp has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_MonOp :
+ *****************************************************************************/
+
+node           *TBmakeMonop(monop Op, node * Expr) {
+	node           *this;
+	DBUG_ENTER("TBmakeMonop");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_monop;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_monop = MEMmalloc(sizeof(struct SONS_N_MONOP));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_monop = MEMmalloc(sizeof(struct ATTRIBS_N_MONOP));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_monop;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	MONOP_EXPR(this) = Expr;
+	MONOP_OP(this) = Op;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((MONOP_EXPR(this) != NULL) && (NODE_TYPE(MONOP_EXPR(this)) != N_binop) && (NODE_TYPE(MONOP_EXPR(this)) != N_monop) && (NODE_TYPE(MONOP_EXPR(this)) != N_var) && (NODE_TYPE(MONOP_EXPR(this)) != N_num) && (NODE_TYPE(MONOP_EXPR(this)) != N_float) && (NODE_TYPE(MONOP_EXPR(this)) != N_cast) && (NODE_TYPE(MONOP_EXPR(this)) != N_bool) && (NODE_TYPE(MONOP_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_MonOp has non-allowed target node.");
 	}
 #endif				/* DBUG_OFF */
 	DBUG_RETURN(this);
@@ -173,7 +648,7 @@ node           *TBmakeBinop(binop Op, node * Left, node * Right) {
  * N_VarLet :
  *****************************************************************************/
 
-node           *TBmakeVarlet(char *Name){
+node           *TBmakeVarlet(char *Name, node * Next, node * Assign){
 	node           *this;
 	DBUG_ENTER("TBmakeVarlet");
 	DBUG_PRINT("MAKE", ("allocating node structure"));
@@ -186,10 +661,20 @@ node           *TBmakeVarlet(char *Name){
 	this->attribs.N_varlet = MEMmalloc(sizeof(struct ATTRIBS_N_VARLET));
 	DBUG_PRINT("MAKE", ("setting node type"));
 	NODE_TYPE(this) = N_varlet;
+	DBUG_PRINT("MAKE", ("assigning son Next initial value: %s ", Next));
+	VARLET_NEXT(this) = Next;
+	DBUG_PRINT("MAKE", ("assigning son Assign initial value: %s ", Assign));
+	VARLET_ASSIGN(this) = Assign;
 	VARLET_NAME(this) = Name;
-	VARLET_DECL(this) = NULL;
+	VARLET_DECLARATION(this) = NULL;
 #ifndef DBUG_OFF
 	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((VARLET_NEXT(this) != NULL) && (NODE_TYPE(VARLET_NEXT(this)) != N_varlet)) {
+		CTIwarn("Field Next of node N_VarLet has non-allowed target node.");
+	}
+	if ((VARLET_ASSIGN(this) != NULL) && (NODE_TYPE(VARLET_ASSIGN(this)) != N_assign)) {
+		CTIwarn("Field Assign of node N_VarLet has non-allowed target node.");
+	}
 #endif				/* DBUG_OFF */
 	DBUG_RETURN(this);
 }
@@ -212,9 +697,67 @@ node           *TBmakeVar(char *Name){
 	DBUG_PRINT("MAKE", ("setting node type"));
 	NODE_TYPE(this) = N_var;
 	VAR_NAME(this) = Name;
-	VAR_DECL(this) = NULL;
+	VAR_DECLARATION(this) = NULL;
 #ifndef DBUG_OFF
 	DBUG_PRINT("MAKE", ("doing son target checks"));
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_Cast :
+ *****************************************************************************/
+
+node           *TBmakeCast(basictype BasicType, node * Expr) {
+	node           *this;
+	DBUG_ENTER("TBmakeCast");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_cast;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_cast = MEMmalloc(sizeof(struct SONS_N_CAST));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_cast = MEMmalloc(sizeof(struct ATTRIBS_N_CAST));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_cast;
+	DBUG_PRINT("MAKE", ("assigning son Expr initial value: %s ", Expr));
+	CAST_EXPR(this) = Expr;
+	CAST_BASICTYPE(this) = BasicType;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((CAST_EXPR(this) != NULL) && (NODE_TYPE(CAST_EXPR(this)) != N_binop) && (NODE_TYPE(CAST_EXPR(this)) != N_monop) && (NODE_TYPE(CAST_EXPR(this)) != N_var) && (NODE_TYPE(CAST_EXPR(this)) != N_num) && (NODE_TYPE(CAST_EXPR(this)) != N_float) && (NODE_TYPE(CAST_EXPR(this)) != N_cast) && (NODE_TYPE(CAST_EXPR(this)) != N_bool) && (NODE_TYPE(CAST_EXPR(this)) != N_functioncallexpr)) {
+		CTIwarn("Field Expr of node N_Cast has non-allowed target node.");
+	}
+#endif				/* DBUG_OFF */
+	DBUG_RETURN(this);
+}
+
+/*****************************************************************************
+ * N_FunctionCallExpr :
+ *****************************************************************************/
+
+node           *TBmakeFunctioncallexpr(char *Name, node * Expressions){
+	node           *this;
+	DBUG_ENTER("TBmakeFunctioncallexpr");
+	DBUG_PRINT("MAKE", ("allocating node structure"));
+	this = MakeEmptyNode();
+	NODE_TYPE(this) = N_functioncallexpr;
+	DBUG_PRINT("MAKE", ("address: %s ", this));
+	DBUG_PRINT("MAKE", ("allocating sons structure"));
+	this->sons.N_functioncallexpr = MEMmalloc(sizeof(struct SONS_N_FUNCTIONCALLEXPR));
+	DBUG_PRINT("MAKE", ("allocating attrib structure"));
+	this->attribs.N_functioncallexpr = MEMmalloc(sizeof(struct ATTRIBS_N_FUNCTIONCALLEXPR));
+	DBUG_PRINT("MAKE", ("setting node type"));
+	NODE_TYPE(this) = N_functioncallexpr;
+	DBUG_PRINT("MAKE", ("assigning son Expressions initial value: %s ", Expressions));
+	FUNCTIONCALLEXPR_EXPRESSIONS(this) = Expressions;
+	FUNCTIONCALLEXPR_NAME(this) = Name;
+#ifndef DBUG_OFF
+	DBUG_PRINT("MAKE", ("doing son target checks"));
+	if ((FUNCTIONCALLEXPR_EXPRESSIONS(this) != NULL) && (NODE_TYPE(FUNCTIONCALLEXPR_EXPRESSIONS(this)) != N_expressions)) {
+		CTIwarn("Field Expressions of node N_FunctionCallExpr has non-allowed target node.");
+	}
 #endif				/* DBUG_OFF */
 	DBUG_RETURN(this);
 }

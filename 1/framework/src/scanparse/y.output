@@ -4,6 +4,10 @@ Terminals which are not used
    NE
 
 
+State 1 conflicts: 1 shift/reduce
+State 7 conflicts: 1 shift/reduce
+
+
 Grammar
 
     0 $accept: program $end
@@ -17,64 +21,66 @@ Grammar
 
     5 assign: varlet LET expr SEMICOLON
 
-    6 varlet: ID
+    6 varlet: ID varlet assign
+    7       | ID varlet
+    8       | ID
 
-    7 expr: constant
-    8     | ID
-    9     | BRACKET_L expr binop expr BRACKET_R
+    9 expr: constant
+   10     | ID
+   11     | BRACKET_L expr binop expr BRACKET_R
 
-   10 constant: floatval
-   11         | intval
-   12         | boolval
+   12 constant: floatval
+   13         | intval
+   14         | boolval
 
-   13 floatval: FLOAT
+   15 floatval: FLOAT
 
-   14 intval: NUM
+   16 intval: NUM
 
-   15 boolval: TRUEVAL
-   16        | FALSEVAL
+   17 boolval: TRUEVAL
+   18        | FALSEVAL
 
-   17 binop: PLUS
-   18      | MINUS
-   19      | STAR
-   20      | SLASH
-   21      | PERCENT
-   22      | LE
-   23      | LT
-   24      | GE
-   25      | GT
-   26      | EQ
-   27      | OR
-   28      | AND
+   19 binop: PLUS
+   20      | MINUS
+   21      | STAR
+   22      | SLASH
+   23      | PERCENT
+   24      | LE
+   25      | LT
+   26      | GE
+   27      | GT
+   28      | EQ
+   29      | OR
+   30      | AND
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-BRACKET_L (258) 9
-BRACKET_R (259) 9
+BRACKET_L (258) 11
+BRACKET_R (259) 11
 COMMA (260)
 SEMICOLON (261) 5
-MINUS (262) 18
-PLUS (263) 17
-STAR (264) 19
-SLASH (265) 20
-PERCENT (266) 21
-LE (267) 22
-LT (268) 23
-GE (269) 24
-GT (270) 25
-EQ (271) 26
+MINUS (262) 20
+PLUS (263) 19
+STAR (264) 21
+SLASH (265) 22
+PERCENT (266) 23
+LE (267) 24
+LT (268) 25
+GE (269) 26
+GT (270) 27
+EQ (271) 28
 NE (272)
-OR (273) 27
-AND (274) 28
-TRUEVAL (275) 15
-FALSEVAL (276) 16
+OR (273) 29
+AND (274) 30
+TRUEVAL (275) 17
+FALSEVAL (276) 18
 LET (277) 5
-NUM (278) 14
-FLOAT (279) 13
-ID (280) 6 8
+NUM (278) 16
+FLOAT (279) 15
+ID (280) 6 7 8 10
 
 
 Nonterminals, with rules where they appear
@@ -88,21 +94,21 @@ stmts (28)
 stmt (29)
     on left: 4, on right: 2 3
 assign (30)
-    on left: 5, on right: 4
+    on left: 5, on right: 4 6
 varlet (31)
-    on left: 6, on right: 5
+    on left: 6 7 8, on right: 5 6 7
 expr (32)
-    on left: 7 8 9, on right: 5 9
+    on left: 9 10 11, on right: 5 11
 constant (33)
-    on left: 10 11 12, on right: 7
+    on left: 12 13 14, on right: 9
 floatval (34)
-    on left: 13, on right: 10
+    on left: 15, on right: 12
 intval (35)
-    on left: 14, on right: 11
+    on left: 16, on right: 13
 boolval (36)
-    on left: 15 16, on right: 12
+    on left: 17 18, on right: 14
 binop (37)
-    on left: 17 18 19 20 21 22 23 24 25 26 27 28, on right: 9
+    on left: 19 20 21 22 23 24 25 26 27 28 29 30, on right: 11
 
 
 state 0
@@ -120,16 +126,23 @@ state 0
 
 state 1
 
-    6 varlet: ID .
+    6 varlet: ID . varlet assign
+    7       | ID . varlet
+    8       | ID .
 
-    $default  reduce using rule 6 (varlet)
+    ID  shift, and go to state 1
+
+    ID        [reduce using rule 8 (varlet)]
+    $default  reduce using rule 8 (varlet)
+
+    varlet  go to state 7
 
 
 state 2
 
     0 $accept: program . $end
 
-    $end  shift, and go to state 7
+    $end  shift, and go to state 8
 
 
 state 3
@@ -148,7 +161,7 @@ state 4
 
     $default  reduce using rule 3 (stmts)
 
-    stmts   go to state 8
+    stmts   go to state 9
     stmt    go to state 4
     assign  go to state 5
     varlet  go to state 6
@@ -165,267 +178,288 @@ state 6
 
     5 assign: varlet . LET expr SEMICOLON
 
-    LET  shift, and go to state 9
+    LET  shift, and go to state 10
 
 
 state 7
+
+    6 varlet: ID varlet . assign
+    7       | ID varlet .
+
+    ID  shift, and go to state 1
+
+    ID        [reduce using rule 7 (varlet)]
+    $default  reduce using rule 7 (varlet)
+
+    assign  go to state 11
+    varlet  go to state 6
+
+
+state 8
 
     0 $accept: program $end .
 
     $default  accept
 
 
-state 8
+state 9
 
     2 stmts: stmt stmts .
 
     $default  reduce using rule 2 (stmts)
 
 
-state 9
+state 10
 
     5 assign: varlet LET . expr SEMICOLON
 
-    BRACKET_L  shift, and go to state 10
-    TRUEVAL    shift, and go to state 11
-    FALSEVAL   shift, and go to state 12
-    NUM        shift, and go to state 13
-    FLOAT      shift, and go to state 14
-    ID         shift, and go to state 15
+    BRACKET_L  shift, and go to state 12
+    TRUEVAL    shift, and go to state 13
+    FALSEVAL   shift, and go to state 14
+    NUM        shift, and go to state 15
+    FLOAT      shift, and go to state 16
+    ID         shift, and go to state 17
 
-    expr      go to state 16
-    constant  go to state 17
-    floatval  go to state 18
-    intval    go to state 19
-    boolval   go to state 20
-
-
-state 10
-
-    9 expr: BRACKET_L . expr binop expr BRACKET_R
-
-    BRACKET_L  shift, and go to state 10
-    TRUEVAL    shift, and go to state 11
-    FALSEVAL   shift, and go to state 12
-    NUM        shift, and go to state 13
-    FLOAT      shift, and go to state 14
-    ID         shift, and go to state 15
-
-    expr      go to state 21
-    constant  go to state 17
-    floatval  go to state 18
-    intval    go to state 19
-    boolval   go to state 20
+    expr      go to state 18
+    constant  go to state 19
+    floatval  go to state 20
+    intval    go to state 21
+    boolval   go to state 22
 
 
 state 11
 
-   15 boolval: TRUEVAL .
+    6 varlet: ID varlet assign .
 
-    $default  reduce using rule 15 (boolval)
+    $default  reduce using rule 6 (varlet)
 
 
 state 12
 
-   16 boolval: FALSEVAL .
+   11 expr: BRACKET_L . expr binop expr BRACKET_R
 
-    $default  reduce using rule 16 (boolval)
+    BRACKET_L  shift, and go to state 12
+    TRUEVAL    shift, and go to state 13
+    FALSEVAL   shift, and go to state 14
+    NUM        shift, and go to state 15
+    FLOAT      shift, and go to state 16
+    ID         shift, and go to state 17
+
+    expr      go to state 23
+    constant  go to state 19
+    floatval  go to state 20
+    intval    go to state 21
+    boolval   go to state 22
 
 
 state 13
 
-   14 intval: NUM .
+   17 boolval: TRUEVAL .
 
-    $default  reduce using rule 14 (intval)
+    $default  reduce using rule 17 (boolval)
 
 
 state 14
 
-   13 floatval: FLOAT .
+   18 boolval: FALSEVAL .
 
-    $default  reduce using rule 13 (floatval)
+    $default  reduce using rule 18 (boolval)
 
 
 state 15
 
-    8 expr: ID .
+   16 intval: NUM .
 
-    $default  reduce using rule 8 (expr)
+    $default  reduce using rule 16 (intval)
 
 
 state 16
 
-    5 assign: varlet LET expr . SEMICOLON
+   15 floatval: FLOAT .
 
-    SEMICOLON  shift, and go to state 22
+    $default  reduce using rule 15 (floatval)
 
 
 state 17
 
-    7 expr: constant .
+   10 expr: ID .
 
-    $default  reduce using rule 7 (expr)
+    $default  reduce using rule 10 (expr)
 
 
 state 18
 
-   10 constant: floatval .
+    5 assign: varlet LET expr . SEMICOLON
 
-    $default  reduce using rule 10 (constant)
+    SEMICOLON  shift, and go to state 24
 
 
 state 19
 
-   11 constant: intval .
+    9 expr: constant .
 
-    $default  reduce using rule 11 (constant)
+    $default  reduce using rule 9 (expr)
 
 
 state 20
 
-   12 constant: boolval .
+   12 constant: floatval .
 
     $default  reduce using rule 12 (constant)
 
 
 state 21
 
-    9 expr: BRACKET_L expr . binop expr BRACKET_R
+   13 constant: intval .
 
-    MINUS    shift, and go to state 23
-    PLUS     shift, and go to state 24
-    STAR     shift, and go to state 25
-    SLASH    shift, and go to state 26
-    PERCENT  shift, and go to state 27
-    LE       shift, and go to state 28
-    LT       shift, and go to state 29
-    GE       shift, and go to state 30
-    GT       shift, and go to state 31
-    EQ       shift, and go to state 32
-    OR       shift, and go to state 33
-    AND      shift, and go to state 34
-
-    binop  go to state 35
+    $default  reduce using rule 13 (constant)
 
 
 state 22
+
+   14 constant: boolval .
+
+    $default  reduce using rule 14 (constant)
+
+
+state 23
+
+   11 expr: BRACKET_L expr . binop expr BRACKET_R
+
+    MINUS    shift, and go to state 25
+    PLUS     shift, and go to state 26
+    STAR     shift, and go to state 27
+    SLASH    shift, and go to state 28
+    PERCENT  shift, and go to state 29
+    LE       shift, and go to state 30
+    LT       shift, and go to state 31
+    GE       shift, and go to state 32
+    GT       shift, and go to state 33
+    EQ       shift, and go to state 34
+    OR       shift, and go to state 35
+    AND      shift, and go to state 36
+
+    binop  go to state 37
+
+
+state 24
 
     5 assign: varlet LET expr SEMICOLON .
 
     $default  reduce using rule 5 (assign)
 
 
-state 23
-
-   18 binop: MINUS .
-
-    $default  reduce using rule 18 (binop)
-
-
-state 24
-
-   17 binop: PLUS .
-
-    $default  reduce using rule 17 (binop)
-
-
 state 25
 
-   19 binop: STAR .
-
-    $default  reduce using rule 19 (binop)
-
-
-state 26
-
-   20 binop: SLASH .
+   20 binop: MINUS .
 
     $default  reduce using rule 20 (binop)
 
 
+state 26
+
+   19 binop: PLUS .
+
+    $default  reduce using rule 19 (binop)
+
+
 state 27
 
-   21 binop: PERCENT .
+   21 binop: STAR .
 
     $default  reduce using rule 21 (binop)
 
 
 state 28
 
-   22 binop: LE .
+   22 binop: SLASH .
 
     $default  reduce using rule 22 (binop)
 
 
 state 29
 
-   23 binop: LT .
+   23 binop: PERCENT .
 
     $default  reduce using rule 23 (binop)
 
 
 state 30
 
-   24 binop: GE .
+   24 binop: LE .
 
     $default  reduce using rule 24 (binop)
 
 
 state 31
 
-   25 binop: GT .
+   25 binop: LT .
 
     $default  reduce using rule 25 (binop)
 
 
 state 32
 
-   26 binop: EQ .
+   26 binop: GE .
 
     $default  reduce using rule 26 (binop)
 
 
 state 33
 
-   27 binop: OR .
+   27 binop: GT .
 
     $default  reduce using rule 27 (binop)
 
 
 state 34
 
-   28 binop: AND .
+   28 binop: EQ .
 
     $default  reduce using rule 28 (binop)
 
 
 state 35
 
-    9 expr: BRACKET_L expr binop . expr BRACKET_R
+   29 binop: OR .
 
-    BRACKET_L  shift, and go to state 10
-    TRUEVAL    shift, and go to state 11
-    FALSEVAL   shift, and go to state 12
-    NUM        shift, and go to state 13
-    FLOAT      shift, and go to state 14
-    ID         shift, and go to state 15
-
-    expr      go to state 36
-    constant  go to state 17
-    floatval  go to state 18
-    intval    go to state 19
-    boolval   go to state 20
+    $default  reduce using rule 29 (binop)
 
 
 state 36
 
-    9 expr: BRACKET_L expr binop expr . BRACKET_R
+   30 binop: AND .
 
-    BRACKET_R  shift, and go to state 37
+    $default  reduce using rule 30 (binop)
 
 
 state 37
 
-    9 expr: BRACKET_L expr binop expr BRACKET_R .
+   11 expr: BRACKET_L expr binop . expr BRACKET_R
 
-    $default  reduce using rule 9 (expr)
+    BRACKET_L  shift, and go to state 12
+    TRUEVAL    shift, and go to state 13
+    FALSEVAL   shift, and go to state 14
+    NUM        shift, and go to state 15
+    FLOAT      shift, and go to state 16
+    ID         shift, and go to state 17
+
+    expr      go to state 38
+    constant  go to state 19
+    floatval  go to state 20
+    intval    go to state 21
+    boolval   go to state 22
+
+
+state 38
+
+   11 expr: BRACKET_L expr binop expr . BRACKET_R
+
+    BRACKET_R  shift, and go to state 39
+
+
+state 39
+
+   11 expr: BRACKET_L expr binop expr BRACKET_R .
+
+    $default  reduce using rule 11 (expr)

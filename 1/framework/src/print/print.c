@@ -77,6 +77,16 @@ node *PRTdoPrint(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
+/* Adds module node - changed after assignment 2! */
+node *PRTmodule(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTmodule");
+
+    MODULE_DECLARATIONS(arg_node) = TRAVdo(MODULE_DECLARATIONS(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 /* Prints the declarations. */
 node *PRTdeclarations(node *arg_node, info *arg_info)
 {
@@ -136,16 +146,6 @@ node *PRTglobaldef(node *arg_node, info *arg_info)
     {
         GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
     }
-
-    DBUG_RETURN(arg_node);
-}
-
-/* Adds module node - changed after assignment 2! */
-node *PRTmodule(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("PRTmodule");
-
-    MODULE_DECLARATIONS(arg_node) = TRAVdo(MODULE_DECLARATIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -285,6 +285,18 @@ node *PRTexpressions(node *arg_node, info *arg_info)
 
     EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
     EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Prints the local functions. */
+node *PRTlocalfunction(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTlocalfunction");
+
+    LOCALFUNCTION_NEXT(arg_node) = TRAVdo(LOCALFUNCTION_NEXT(arg_node), arg_info);
+    LOCALFUNCTION_PARAMETERS(arg_node) = TRAVdo(LOCALFUNCTION_PARAMETERS(arg_node), arg_info);
+    LOCALFUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(LOCALFUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

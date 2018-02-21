@@ -13,13 +13,13 @@
 
 /* !! MODULE + DECLARATIONS AKA TOP BELOW!! */
 extern node *PRTdoPrint(node *syntaxtree);
+extern node *PRTmodule(node *arg_node, info *arg_info);
 extern node *PRTdeclarations(node *arg_node, info *arg_info);
 extern node *PRTfunction(node *arg_node, info *arg_info);
 extern node *PRTparameters(node *arg_node, info *arg_info);
 extern node *PRTfunctionbody(node *arg_node, info *arg_info);
 extern node *PRTglobaldec(node *arg_node, info *arg_info);
 extern node *PRTglobaldef(node *arg_node, info *arg_info);
-extern node *PRTmodule(node *arg_node, info *arg_info);
 
 /* !! STATEMENTS BELOW !!*/
 extern node *PRTstmts(node *arg_node, info *arg_info);
@@ -34,6 +34,7 @@ extern node *PRTfor(node *arg_node, info *arg_info);
 extern node *PRTdowhile(node *arg_node, info *arg_info);
 extern node *PRTfunctioncallstmt(node *arg_node, info *arg_info);
 extern node *PRTexpressions(node *arg_node, info *arg_info);
+extern node *PRTlocalfunction(node *arg_node, info *arg_info);
 
 /* !! EXPRESSIONS ARE BELOW !! */
 extern node *PRTbinop(node *arg_node, info *arg_info);

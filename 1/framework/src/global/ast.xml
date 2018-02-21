@@ -208,6 +208,19 @@ traversals to process it.
             </targets>
           </type>
         </attribute>
+        <attribute name="Declaration">
+          <description>Link to symbol table entry</description>
+          <type name="Link">
+            <targets>
+              <target mandatory="no">
+                <node name="SymbolTableEntry" />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
       </attributes>
     </node>
     <!-- Node GlobalDec -->
@@ -669,6 +682,19 @@ Node DoWhile:
             </targets>
           </type>
         </attribute>
+        <attribute name="Declaration">
+          <description>Link to symbol table entry</description>
+          <type name="Link">
+            <targets>
+              <target mandatory="no">
+                <node name="SymbolTableEntry" />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
       </attributes>
     </node>
     <!--
@@ -901,6 +927,19 @@ Node FunctionCallExpr:
             <targets>
               <target mandatory="yes">
                 <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Declaration">
+          <description>Link to symbol table entry</description>
+          <type name="Link">
+            <targets>
+              <target mandatory="no">
+                <node name="SymbolTableEntry" />
                 <phases>
                   <all />
                 </phases>

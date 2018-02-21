@@ -36,8 +36,8 @@ extern node *PRTdowhile(node *arg_node, info *arg_info);
 /* Add function related prints. */
 extern node *PRTdeclarations(node *arg_node, info *arg_info);
 extern node *PRTparameters(node *arg_node, info *arg_info);
-extern node *PRTfunc(node *arg_node, info *arg_info);
-extern node *PRTfuncbody(node *arg_node, info *arg_info);
+extern node *PRTfunction(node *arg_node, info *arg_info);
+extern node *PRTfunctionbody(node *arg_node, info *arg_info);
 extern node *PRTglobaldec(node *arg_node, info *arg_info);
 extern node *PRTglobaldef(node *arg_node, info *arg_info);
 extern node *PRTfunctioncallstmt(node *arg_node, info *arg_info);

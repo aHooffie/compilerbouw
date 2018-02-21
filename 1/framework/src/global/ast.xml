@@ -97,7 +97,7 @@ traversals to process it.
     </nodeset>
     <nodeset name="Declaration">
       <target>
-        <node name="Func" />
+        <node name="Function" />
         <node name="GlobalDec" />
         <node name="GlobalDef" />
       </target>
@@ -155,15 +155,15 @@ traversals to process it.
       <attributes></attributes>
     </node>
     <!-- NODESET DECLS -->
-    <!-- Node Func -->
-    <node name="Func">
+    <!-- Node Function -->
+    <node name="Function">
       <description>represents a function declaration + defintion</description>
       <sons>
-        <son name="FuncBody">
-          <description>represents optional body with statement(s) (if funcdef)</description>
+        <son name="FunctionBody">
+          <description>represents (optional) body with statement(s) (if function == def)</description>
           <targets>
             <target mandatory="no">
-              <node name="FuncBody" />
+              <node name="FunctionBody" />
               <phases>
                 <all />
               </phases>
@@ -184,7 +184,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name = "ReturnType">
-          <description>Return Type</description>
+          <description>represents the return type</description>
           <type name = "RetType">
             <targets>
               <target mandatory="yes">
@@ -197,7 +197,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name= "Name">
-          <description>Identifier in character string representation</description>
+          <description>represents the identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -229,7 +229,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Name">
-          <description>Identifier in character string representation</description>
+          <description>represents the identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -247,7 +247,7 @@ traversals to process it.
       <description>represents a global declaration</description>
       <sons>
         <son name="Assign">
-          <description>optional assignment to expression</description>
+          <description>represents the optional assignment to expression</description>
           <targets>
             <target mandatory="no">
               <node name="Assign" />
@@ -260,7 +260,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>Identifier in character string representation</description>
+          <description>represents the identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -272,7 +272,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="BasicType">
-          <description>BasicType</description>
+          <description>represents the basic types</description>
           <type name="BasicType">
             <targets>
               <target mandatory="yes">
@@ -285,8 +285,8 @@ traversals to process it.
         </attribute>
       </attributes>
     </node>
-    <node name="FuncBody">
-      <description>represents the body of a function (vardec + stmts)</description>
+    <node name="FunctionBody">
+      <description>represents the body of a function (vardeclarations + stmts)</description>
       <sons>
         <son name="Stmts">
           <description>represents optional body with statement(s) (if funcdef)</description>
@@ -300,7 +300,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="VarDeclarations">
-          <description>represents (optional) parameters. </description>
+          <description>represents (optional) parameters</description>
           <targets>
             <target mandatory="no">
               <node name="VarLet" />
@@ -314,10 +314,10 @@ traversals to process it.
     </node>
     <!-- Node parameters -->
     <node name="Parameters">
-      <description>represents (sequence of) statements</description>
+      <description>represents (sequence of) parameters of a function</description>
       <sons>
         <son name="Next">
-          <description>remaining parameters in sequence</description>
+          <description>represents the remaining parameters in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="Parameters" />
@@ -330,7 +330,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>Identifier in character string representation</description>
+          <description>represents the identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -342,7 +342,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="BasicType">
-          <description>BasicType</description>
+          <description>represents the basic types</description>
           <type name="BasicType">
             <targets>
               <target mandatory="yes">
@@ -362,7 +362,7 @@ Node Stmts:
       <description>represents (sequence of) statements</description>
       <sons>
         <son name="Stmt">
-          <description>first statement in sequence</description>
+          <description>represents the first statement in sequence</description>
           <targets>
             <target mandatory="yes">
               <set name="Stmt" />
@@ -373,7 +373,7 @@ Node Stmts:
           </targets>
         </son>
         <son name="Next">
-          <description>remaining statements in sequence</description>
+          <description>represents the (optional) remaining statements in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="Stmts" />
@@ -390,10 +390,10 @@ Node Stmts:
 Node Assign:
 -->
     <node name="Assign">
-      <description>represents assignment statement</description>
+      <description>represents the assignment statement</description>
       <sons>
         <son name="Let">
-          <description>      left hand side variable; can be missing to represent procedure calls    </description>
+          <description>represents the left hand side variable; can be missing to represent procedure calls</description>
           <targets>
             <target mandatory="no">
               <node name="VarLet" />
@@ -404,7 +404,7 @@ Node Assign:
           </targets>
         </son>
         <son name="Expr">
-          <description>right hand side expression</description>
+          <description>represents the right hand side expression</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -421,7 +421,7 @@ Node Assign:
 Node If:
 -->
     <node name="If">
-      <description>represents if statement</description>
+      <description>represents the if-statement</description>
       <sons>
         <son name="Else">
           <description>... </description>
@@ -435,7 +435,7 @@ Node If:
           </targets>
         </son>
         <son name="Expr">
-          <description>Respresents the condition(s) </description>
+          <description>represents the condition(s) of the if-statement </description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -446,7 +446,7 @@ Node If:
           </targets>
         </son>
         <son name="Stmts">
-          <description>Represents a block with statement(s) </description>
+          <description>represents a block with statement(s) </description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -463,10 +463,10 @@ Node If:
 Node Else:
 -->
     <node name="Else">
-      <description>represents else part of if-statement</description>
+      <description>represents the else part of an if-statement</description>
       <sons>
         <son name="Stmts">
-          <description>represents a block with statement(s) </description>
+          <description>represents a block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -486,7 +486,7 @@ Node While:
       <description>represents a while-statement</description>
       <sons>
         <son name="Expr">
-          <description>represents the condition(s) </description>
+          <description>represents the condition(s) of the while-statement</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -497,7 +497,7 @@ Node While:
           </targets>
         </son>
         <son name="Stmts">
-          <description>represents a block with statement(s) </description>
+          <description>represents a block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -517,7 +517,7 @@ Node DoWhile:
       <description>represents a do/while-statement</description>
       <sons>
         <son name="Stmts">
-          <description>represents a block with statement(s) </description>
+          <description>represents a block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -528,7 +528,7 @@ Node DoWhile:
           </targets>
         </son>
         <son name="While">
-          <description>represents the expression statement </description>
+          <description>represents the condition of the do-while statement</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -546,7 +546,7 @@ Node DoWhile:
       <description>represents a for-loop statement</description>
       <sons>
         <son name="Assign">
-          <description>represents assignment statement</description>
+          <description>represents the assignment statement of a for-loop</description>
           <targets>
             <target mandatory="yes">
               <node name="Assign" />
@@ -557,7 +557,7 @@ Node DoWhile:
           </targets>
         </son>
         <son name="Expr">
-          <description>represents expression statement</description>
+          <description>represents the first expression statement of a for-loop</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -568,7 +568,7 @@ Node DoWhile:
           </targets>
         </son>
         <son name="ExprOpt">
-          <description>represents a second, optional expression statement</description>
+          <description>represents a second (optional) expression statement of a for-loop</description>
           <targets>
             <target mandatory="no">
               <set name="Expr" />
@@ -579,7 +579,7 @@ Node DoWhile:
           </targets>
         </son>
         <son name="Stmts">
-          <description>represents a block with statement(s) </description>
+          <description>represents a block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -597,7 +597,7 @@ Node DoWhile:
       <description>represents a return-statement</description>
       <sons>
         <son name="Expr">
-          <description>represents an optional expression </description>
+          <description>represents an optional expression</description>
           <targets>
             <target mandatory="no">
               <set name="Expr" />

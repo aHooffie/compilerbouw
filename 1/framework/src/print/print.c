@@ -529,19 +529,19 @@ extern node *PRTparameters(node *arg_node, info *arg_info)
     PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
-extern node *PRTfunc(node *arg_node, info *arg_info)
+extern node *PRTfunction(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("PRTfunc");
-    FUNC_PARAMETERS(arg_node) = TRAVdo(FUNC_PARAMETERS(arg_node), arg_info);
-    FUNC_FUNCBODY(arg_node) = TRAVdo(FUNC_FUNCBODY(arg_node), arg_info);
+    DBUG_ENTER("PRTfunction");
+    FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
 
-extern node *PRTfuncbody(node *arg_node, info *arg_info)
+extern node *PRTfunctionbody(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("PRTfuncbody");
-    // FUNCBODY_STMTS(arg_node) = TRAVdo(FUNCBODY_STMTS(arg_node), arg_info);
-    // FUNCBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNC_FUNCBODY(arg_node), arg_info);
+    DBUG_ENTER("PRTfunctionbody");
+    FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
+    FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
 

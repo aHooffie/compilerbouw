@@ -26,8 +26,7 @@ extern node *PRTstmts(node *arg_node, info *arg_info);
 extern node *PRTassign(node *arg_node, info *arg_info);
 
 /* !! FUNCTION ELEMENTS BELOW !! */
-extern node *PRTif(node *arg_node, info *arg_info);
-extern node *PRTelse(node *arg_node, info *arg_info);
+extern node *PRTifelse(node *arg_node, info *arg_info);
 extern node *PRTwhile(node *arg_node, info *arg_info);
 extern node *PRTreturn(node *arg_node, info *arg_info);
 extern node *PRTfor(node *arg_node, info *arg_info);
@@ -46,9 +45,11 @@ extern node *PRTvarlet(node *arg_node, info *arg_info);
 extern node *PRTmonop(node *arg_node, info *arg_info);
 extern node *PRTfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *PRTcast(node *arg_node, info *arg_info);
+extern node *PRTarrayexpr(node *arg_node, info *arg_info);
 
 /* MISCELLANEOUS !! */
 extern node *PRTsymboltableentry(node *arg_node, info *arg_info);
 extern node *PRTerror(node *arg_node, info *arg_info);
+extern node *PRTids(node *arg_node, info *arg_info);
 
 #endif /* _SAC_PRT_NODE_H_ */

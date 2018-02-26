@@ -78,11 +78,11 @@ node *PRTdoPrint(node *syntaxtree)
 }
 
 /* Adds module node - changed after assignment 2! */
-node *PRTmodule(node *arg_node, info *arg_info)
+node *PRTprogram(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTmodule");
 
-    MODULE_DECLARATIONS(arg_node) = TRAVdo(MODULE_DECLARATIONS(arg_node), arg_info);
+    PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -90,7 +90,7 @@ node *PRTmodule(node *arg_node, info *arg_info)
 /* Prints the declarations. */
 node *PRTdeclarations(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("PRTdeclaration");
+    DBUG_ENTER("PRTdeclarations");
 
     DECLARATIONS_DECLARATION(arg_node) = TRAVdo(DECLARATIONS_DECLARATION(arg_node), arg_info);
     DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);

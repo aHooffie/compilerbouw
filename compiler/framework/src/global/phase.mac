@@ -44,28 +44,15 @@ SUBPHASE( si,
           "Sum Integers",
           SIdoSumInts, 
           ALWAYS,
-          pet)   
-
-SUBPHASE( so, 
-          "Sum Opts",
-          SOdoSumOpts, 
-          ALWAYS,
-          pet)   
-
-SUBPHASE( sid, 
-          "Sum Identifiers",
-          SIDdoSumIdentifiers, 
-          ALWAYS,
-          pet)      
+          pet)       
    
 SUBPHASE( os, 
           "Optimise subtraction",
           OSdoOptSub, 
-          NEVER,
+          ALWAYS,
           pet)   
       
 ENDPHASE( pet) 
-
 
 /******************************************************************************/
 

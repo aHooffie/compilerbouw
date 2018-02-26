@@ -49,18 +49,6 @@ traversals to process it.
           <node name="Num" />
         </travuser>
       </traversal>
-      <traversal id="SO" name="Sum opts" default="sons" include="sum_opts.h">
-        <travuser>
-          <node name="Module" />
-          <node name="BinOp" />
-        </travuser>
-      </traversal>
-      <traversal id="SID" name="Sum identifiers" default="sons" include="sum_identifiers.h">
-        <travuser>
-          <node name="Var" />
-          <node name="VarLet" />
-        </travuser>
-      </traversal>
       <traversal id="OS" name="Optimise subtraction" default="sons" include="opt_sub.h">
         <travuser>
           <node name="BinOp" />
@@ -107,17 +95,15 @@ traversals to process it.
 =========================================================================
 -->
   <syntaxtree>
-    
     <!-- !! MODULE + DECLARATIONS AKA TOP BELOW!!  -->
-
     <!-- 
       Node Module: 
     -->
-    <node name="Module">
-      <description>represents the module</description>
+    <node name="Program">
+      <description>represents program as a whole</description>
       <sons>
         <son name="Declarations">
-          <description>statements</description>
+          <description>represents all the statements</description>
           <targets>
             <target mandatory="yes">
               <node name="Declarations" />
@@ -137,7 +123,7 @@ traversals to process it.
       <description>represents (sequence of) declarations</description>
       <sons>
         <son name="Declaration">
-          <description>first declaration in sequence</description>
+          <description>represents first declaration in sequence</description>
           <targets>
             <target mandatory="yes">
               <set name="Declaration" />
@@ -148,7 +134,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Next">
-          <description>remaining declarations in sequence</description>
+          <description>represents remaining declarations in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="Declarations" />
@@ -165,7 +151,7 @@ traversals to process it.
       Node Function: 
     -->
     <node name="Function">
-      <description>represents a function declaration + defintion</description>
+      <description>represents function declaration + defintion</description>
       <sons>
         <son name="FunctionBody">
           <description>represents (optional) body with statement(s) (if function == def)</description>
@@ -192,7 +178,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name = "ReturnType">
-          <description>represents the return type</description>
+          <description>represents return type</description>
           <type name = "RetType">
             <targets>
               <target mandatory="yes">
@@ -205,7 +191,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name= "Name">
-          <description>represents the identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -217,7 +203,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -238,7 +224,7 @@ traversals to process it.
       <description>represents (sequence of) parameters of a function</description>
       <sons>
         <son name="Next">
-          <description>represents the remaining parameters in sequence</description>
+          <description>represents remaining parameters in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="Parameters" />
@@ -251,7 +237,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>represents the identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -263,7 +249,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="BasicType">
-          <description>represents the basic types</description>
+          <description>represents basic types</description>
           <type name="BasicType">
             <targets>
               <target mandatory="yes">
@@ -280,10 +266,10 @@ traversals to process it.
       Node FunctionBody: 
     -->
     <node name="FunctionBody">
-      <description>represents the body of a function (vardeclarations + stmts)</description>
+      <description>represents body of a function (vardeclarations + stmts)</description>
       <sons>
         <son name="Stmts">
-          <description>represents optional body with statement(s) (if funcdef)</description>
+          <description>represents (optional) body with statement(s) (if funcdef)</description>
           <targets>
             <target mandatory="no">
               <node name="Stmts" />
@@ -294,7 +280,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="LocalFunction">
-          <description>represents the optional local, nested function</description>
+          <description>represents (optional) local, nested function</description>
           <targets>
             <target mandatory="no">
               <node name="LocalFunction" />
@@ -321,11 +307,11 @@ traversals to process it.
       Node GlobalDec: 
     -->
     <node name="GlobalDec">
-      <description>represents a global declaration</description>
+      <description>represents global declaration</description>
       <sons></sons>
       <attributes>
         <attribute name = "BasicType">
-          <description> BasicType </description>
+          <description>represents basic types</description>
           <type name = "BasicType">
             <targets>
               <target mandatory="yes">
@@ -338,7 +324,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Name">
-          <description>represents the identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -355,10 +341,10 @@ traversals to process it.
       Node GlobalDef: 
     -->
     <node name="GlobalDef">
-      <description>represents a global declaration</description>
+      <description>represents global declaration</description>
       <sons>
         <son name="Assign">
-          <description>represents the optional assignment to expression</description>
+          <description>represents (optional) assignment to expression</description>
           <targets>
             <target mandatory="no">
               <node name="Assign" />
@@ -371,7 +357,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>represents the identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -383,7 +369,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="BasicType">
-          <description>represents the basic types</description>
+          <description>represents basic types</description>
           <type name="BasicType">
             <targets>
               <target mandatory="yes">
@@ -396,9 +382,7 @@ traversals to process it.
         </attribute>
       </attributes>
     </node>
-
     <!-- !! STATEMENTS BELOW !! -->
-
     <!-- 
       Node Stmts: 
     -->
@@ -406,7 +390,7 @@ traversals to process it.
       <description>represents (sequence of) statements</description>
       <sons>
         <son name="Stmt">
-          <description>represents the first statement in sequence</description>
+          <description>represents first statement in sequence</description>
           <targets>
             <target mandatory="yes">
               <set name="Stmt" />
@@ -417,7 +401,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Next">
-          <description>represents the (optional) remaining statements in sequence</description>
+          <description>represents (optional) remaining statements in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="Stmts" />
@@ -434,10 +418,10 @@ traversals to process it.
       Node Assign: 
     -->
     <node name="Assign">
-      <description>represents the assignment statement</description>
+      <description>represents assignment statement</description>
       <sons>
         <son name="Let">
-          <description>represents the left hand side variable; can be missing to represent procedure calls</description>
+          <description>represents left hand side variable; can be missing to represent procedure calls</description>
           <targets>
             <target mandatory="no">
               <node name="VarLet" />
@@ -448,7 +432,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Expr">
-          <description>represents the right hand side expression</description>
+          <description>represents right hand side expression</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -461,17 +445,15 @@ traversals to process it.
       </sons>
       <attributes></attributes>
     </node>
-
     <!-- !! FUNCTION ELEMENTS BELOW !! -->
-
     <!-- 
       Node If: 
     -->
     <node name="If">
-      <description>represents the if-statement</description>
+      <description>represents if-statement</description>
       <sons>
         <son name="Else">
-          <description>represents the else-statements in an if-statement</description>
+          <description>represents else-statements in an if-statement</description>
           <targets>
             <target mandatory="no">
               <node name="Else" />
@@ -482,7 +464,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Expr">
-          <description>represents the condition(s) of the if-statement</description>
+          <description>represents condition(s) of the if-statement</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -493,7 +475,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Stmts">
-          <description>represents a block with statement(s)</description>
+          <description>represents block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -510,10 +492,10 @@ traversals to process it.
       Node Else: 
     -->
     <node name="Else">
-      <description>represents the else part of an if-statement</description>
+      <description>represents else part of an if-statement</description>
       <sons>
         <son name="Stmts">
-          <description>represents a block with statement(s)</description>
+          <description>represents block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -530,10 +512,10 @@ traversals to process it.
       Node While: 
     -->
     <node name="While">
-      <description>represents a while-statement</description>
+      <description>represents while-statement</description>
       <sons>
         <son name="Expr">
-          <description>represents the condition(s) of the while-statement</description>
+          <description>represents condition(s) of the while-statement</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -544,7 +526,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Stmts">
-          <description>represents a block with statement(s)</description>
+          <description>represents block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -561,10 +543,10 @@ traversals to process it.
       Node Return: 
     -->
     <node name="Return">
-      <description>represents a return-statement</description>
+      <description>represents return-statement</description>
       <sons>
         <son name="Expr">
-          <description>represents an optional expression</description>
+          <description>represents (optional) expression</description>
           <targets>
             <target mandatory="no">
               <set name="Expr" />
@@ -581,10 +563,10 @@ traversals to process it.
       Node For: 
     -->
     <node name="For">
-      <description>represents a for-loop statement</description>
+      <description>represents for-loop statement</description>
       <sons>
         <son name="Assign">
-          <description>represents the assignment statement of a for-loop</description>
+          <description>represents assignment statement of a for-loop</description>
           <targets>
             <target mandatory="yes">
               <node name="Assign" />
@@ -595,7 +577,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Expr">
-          <description>represents the first expression statement of a for-loop</description>
+          <description>represents first expression statement of a for-loop</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -606,7 +588,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="ExprOpt">
-          <description>represents a second (optional) expression statement of a for-loop</description>
+          <description>represents second (optional) expression statement of a for-loop</description>
           <targets>
             <target mandatory="no">
               <set name="Expr" />
@@ -617,7 +599,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Stmts">
-          <description>represents a block with statement(s)</description>
+          <description>represents block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -634,10 +616,10 @@ traversals to process it.
       Node DoWhile: 
     -->
     <node name="DoWhile">
-      <description>represents a do/while-statement</description>
+      <description>represents do/while-statement</description>
       <sons>
         <son name="Stmts">
-          <description>represents a block with statement(s)</description>
+          <description>represents block with statement(s)</description>
           <targets>
             <target mandatory="yes">
               <node name="Stmts" />
@@ -648,7 +630,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="While">
-          <description>represents the condition of the do-while statement</description>
+          <description>represents condition of the do-while statement</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -665,10 +647,10 @@ traversals to process it.
       Node FunctionCallStmt: 
     -->
     <node name="FunctionCallStmt">
-      <description>represents a call to a function</description>
+      <description>represents call to a function</description>
       <sons>
         <son name="Expressions">
-          <description>represents an optional expression</description>
+          <description>represents (optional) expression</description>
           <targets>
             <target mandatory="no">
               <node name="Expressions" />
@@ -681,7 +663,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -694,7 +676,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -712,10 +694,10 @@ traversals to process it.
       Node Expression: 
     -->
     <node name="Expressions">
-      <description>represents an expression node for function calls</description>
+      <description>represents expression node for function calls</description>
       <sons>
         <son name="Expr">
-          <description>represents an optional expression</description>
+          <description>represents (optional) expression</description>
           <targets>
             <target mandatory="no">
               <set name="Expr" />
@@ -726,7 +708,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Next">
-          <description>represents an optional expression</description>
+          <description>represents (optional) expression</description>
           <targets>
             <target mandatory="no">
               <node name="Expressions" />
@@ -743,7 +725,7 @@ traversals to process it.
       Node LocalFunction:
     -->
     <node name="LocalFunction">
-      <description>represents a local function declaration + defintion</description>
+      <description>represents local function declaration + defintion</description>
       <sons>
         <son name="Next">
           <description>represents (optional) body with statement(s) (if function == def)</description>
@@ -781,7 +763,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name = "ReturnType">
-          <description>represents the return type</description>
+          <description>represents return type</description>
           <type name = "RetType">
             <targets>
               <target mandatory="yes">
@@ -794,7 +776,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name= "Name">
-          <description>represents the identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -806,7 +788,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -820,9 +802,7 @@ traversals to process it.
         </attribute>
       </attributes>
     </node>
-
     <!-- !! EXPRESSIONS ARE BELOW !!  -->
-
     <!-- 
       Node BinOp: 
     -->
@@ -830,7 +810,7 @@ traversals to process it.
       <description>represents binary operator application</description>
       <sons>
         <son name="Left">
-          <description>left operand expression</description>
+          <description>represents left operand expression</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -841,7 +821,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Right">
-          <description>right operand expression</description>
+          <description>represents right operand expression</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -853,7 +833,7 @@ traversals to process it.
         </son>
       </sons>
       <attributes>
-        <description>operator type</description>
+        <description>represents operator type</description>
         <attribute name="Op">
           <type name="BinOp">
             <targets>
@@ -911,7 +891,7 @@ traversals to process it.
       Node Bool: 
     -->
     <node name="Bool">
-      <description>represents Boolean constant (true/false)</description>
+      <description>represents boolean constant (true/false)</description>
       <sons></sons>
       <attributes>
         <attribute name="Value">
@@ -935,7 +915,7 @@ traversals to process it.
       <sons></sons>
       <attributes>
         <attribute name="Name">
-          <description>identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -947,7 +927,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -968,7 +948,7 @@ traversals to process it.
       <description>represents variable (identifier) in assignment position</description>
       <sons>
         <son name="Next">
-          <description>remaining varlet declaration in sequence</description>
+          <description>represents remaining varlet declaration in sequence</description>
           <targets>
             <target mandatory="no">
               <node name="VarLet" />
@@ -979,7 +959,7 @@ traversals to process it.
           </targets>
         </son>
         <son name="Assign">
-          <description>optional assignment to expression</description>
+          <description>represents (optional) assignment to expression</description>
           <targets>
             <target mandatory="no">
               <node name="Assign" />
@@ -992,7 +972,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>Identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -1005,7 +985,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -1026,7 +1006,7 @@ traversals to process it.
       <description>represents mono operator application</description>
       <sons>
         <son name="Expr">
-          <description>operand expression</description>
+          <description>represents operand expression</description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -1038,7 +1018,7 @@ traversals to process it.
         </son>
       </sons>
       <attributes>
-        <description>operator type</description>
+        <description>represents operator type</description>
         <attribute name="Op">
           <type name="MonOp">
             <targets>
@@ -1057,10 +1037,10 @@ traversals to process it.
       Node FunctionCallExpr: 
     -->
     <node name="FunctionCallExpr">
-      <description>represents a function call in expression position</description>
+      <description>represents function call in expression position</description>
       <sons>
         <son name="Expressions">
-          <description>represents an optional expression</description>
+          <description>represents (optional) expression</description>
           <targets>
             <target mandatory="no">
               <node name="Expressions" />
@@ -1073,7 +1053,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name="Name">
-          <description>identifier in character string representation</description>
+          <description>represents identifier in character string representation</description>
           <type name="String">
             <targets>
               <target mandatory="yes">
@@ -1086,7 +1066,7 @@ traversals to process it.
           </type>
         </attribute>
         <attribute name="Declaration">
-          <description>Link to symbol table entry</description>
+          <description>represents link to symbol table entry</description>
           <type name="Link">
             <targets>
               <target mandatory="no">
@@ -1104,10 +1084,10 @@ traversals to process it.
       Node Cast: 
     -->
     <node name="Cast">
-      <description>represents a cast in expression position</description>
+      <description>represents cast in expression position</description>
       <sons>
         <son name="Expr">
-          <description>represents a required expression </description>
+          <description>represents required expression </description>
           <targets>
             <target mandatory="yes">
               <set name="Expr" />
@@ -1120,7 +1100,7 @@ traversals to process it.
       </sons>
       <attributes>
         <attribute name = "BasicType">
-          <description> BasicType </description>
+          <description> represents basic types </description>
           <type name = "BasicType">
             <targets>
               <target mandatory="yes">
@@ -1134,9 +1114,7 @@ traversals to process it.
         </attribute>
       </attributes>
     </node>
-
     <!-- !! MISCELLANEOUS !! -->
-
     <!-- 
       Node SymbolTableEntry: 
     -->

@@ -13,7 +13,7 @@
 
 /* !! MODULE + DECLARATIONS AKA TOP BELOW!! */
 extern node *PRTdoPrint(node *syntaxtree);
-extern node *PRTmodule(node *arg_node, info *arg_info);
+extern node *PRTprogram(node *arg_node, info *arg_info);
 extern node *PRTdeclarations(node *arg_node, info *arg_info);
 extern node *PRTfunction(node *arg_node, info *arg_info);
 extern node *PRTparameters(node *arg_node, info *arg_info);

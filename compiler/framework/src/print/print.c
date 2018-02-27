@@ -80,7 +80,7 @@ node *PRTdoPrint(node *syntaxtree)
 /* Adds module node - changed after assignment 2! */
 node *PRTprogram(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("PRTmodule");
+    DBUG_ENTER("PRTprogram");
 
     PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 
@@ -133,7 +133,7 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
     if (FUNCTIONBODY_STMTS(arg_node) != NULL)
         FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
     if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
-        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTION_VARDECLARATIONS(arg_node), arg_info);
+        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

@@ -94,7 +94,7 @@ expr: constant
       }
     | ID
       {
-        $$ = TBmakeVar( STRcpy( $1));
+        $$ = TBmakeVar( STRcpy( $1), NULL);
       }
     | BRACKET_L expr binop expr BRACKET_R
       {

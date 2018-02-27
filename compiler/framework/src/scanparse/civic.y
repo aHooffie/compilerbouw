@@ -34,7 +34,7 @@ static int yyerror( char *errname);
 %token BRACKET_L BRACKET_R COMMA SEMICOLON
 %token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
 %token TRUEVAL FALSEVAL LET IF WHILE
-%token INT FLOATTEST BOOL VOID
+%token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
 
 %token <cint> NUM
 %token <cflt> FLOAT
@@ -131,6 +131,10 @@ expr: constant
       {
         $$ = TBmakeCast( $2, $4);
       }
+    | ID BRACKET_L expr BRACKET_R
+    {
+      $$ = TBmakeFunctioncallexpr( STRcpy( $1), $3);
+    }
     ;
 
 constant: floatval
@@ -187,10 +191,10 @@ monop: MINUS      { $$ = MO_neg; }
       | NOT       { $$ = MO_not; }     
       ;
 
-type: INT          { $$ = T_int; }     
-      | FLOATTEST   { $$ = T_float; } 
-      | BOOL        { $$ = T_bool; } 
-      | VOID        { $$ = T_void; } 
+type: INTTYPE            { $$ = T_int; }     
+      | FLOATTYPE       { $$ = T_float; } 
+      | BOOLTYPE        { $$ = T_bool; } 
+      | VOIDTYPE         { $$ = T_void; } 
       ;
 %%
 

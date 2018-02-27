@@ -61,10 +61,10 @@
 "true"                     { FILTER( TRUEVAL); }
 "false"                    { FILTER( FALSEVAL); }
 
-"int"                       { FILTER( INT); }
-"float"                     { FILTER( FLOATTEST); }
-"bool"                      { FILTER( BOOL); }
-"void"                      { FILTER( VOID); }
+"int"                       { FILTER( INTTYPE); }
+"float"                     { FILTER( FLOATTYPE); }
+"bool"                      { FILTER( BOOLTYPE); }
+"void"                      { FILTER( VOIDTYPE); }
 
 [A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
                              FILTER( ID);

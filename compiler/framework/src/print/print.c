@@ -522,9 +522,12 @@ node *PRTfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTfunctioncallstmt");
 
+    printf("%s(", FUNCTIONCALLEXPR_NAME(arg_node));
+
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) =
             TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+    printf(")");
 
     DBUG_RETURN(arg_node);
 }

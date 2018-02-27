@@ -15,8 +15,7 @@ traversals to process it.
         <type name="Float" ctype="float" init="0.0" copy="literal" />
         <type name="BinOp" ctype="binop" init="BO_unknown" copy="literal" />
         <type name="MonOp" ctype="monop" init="MO_unknown" copy="literal" />
-        <type name="RetType" ctype="rettype" init="RT_unknown" copy="literal" />
-        <type name="BasicType" ctype="basictype" init="BT_unknown" copy="literal" />
+        <type name="Type" ctype="type" init="T_unknown" copy="literal" />
         <type name="Link" ctype="node*" init="NULL" copy="lookup" />
         <type name="CompilerPhase" ctype="compiler_phase_t" init="PH_initial" copy="literal" />
     </attributetypes>
@@ -97,7 +96,7 @@ traversals to process it.
 -->
     <syntaxtree>
         <!-- 
-      Node Module: 
+      Node Program: 
     -->
         <node name="Program">
             <description>represents program as a whole</description>
@@ -116,7 +115,7 @@ traversals to process it.
             </sons>
         </node>
         <!-- 
-      Node Declaration: 
+      Node Declarations: 
     -->
         <node name="Declarations">
             <description>represents (sequence of) declarations</description>
@@ -175,9 +174,9 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name ="ReturnType">
+                <attribute name ="Type">
                     <description>represents return type</description>
-                    <type name ="RetType">
+                    <type name ="Type">
                         <targets>
                             <target mandatory="yes">
                                 <any/>
@@ -257,9 +256,9 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="BasicType">
-                    <description>represents basic types</description>
-                    <type name="BasicType">
+                <attribute name="Type">
+                    <description>represents all possible types</description>
+                    <type name="Type">
                         <targets>
                             <target mandatory="yes">
                                 <phases>
@@ -303,7 +302,7 @@ traversals to process it.
                     <description>represents (optional) parameters</description>
                     <targets>
                         <target mandatory="no">
-                            <node name="VarLet" />
+                            <node name="VarDeclaration" />
                             <phases>
                                 <all />
                             </phases>
@@ -330,9 +329,9 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name ="BasicType">
-                    <description>represents basic types</description>
-                    <type name ="BasicType">
+                <attribute name ="Type">
+                    <description>represents all possible types</description>
+                    <type name ="Type">
                         <targets>
                             <target mandatory="yes">
                                 <any/>
@@ -377,7 +376,7 @@ traversals to process it.
                     <description>represents (optional) assignment to expression</description>
                     <targets>
                         <target mandatory="no">
-                            <node name="Assign" />
+                            <set name="Expr" />
                             <phases>
                                 <all />
                             </phases>
@@ -398,9 +397,9 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="BasicType">
-                    <description>represents basic types</description>
-                    <type name="BasicType">
+                <attribute name="Type">
+                    <description>represents all possible types</description>
+                    <type name="Type">
                         <targets>
                             <target mandatory="yes">
                                 <phases>
@@ -412,7 +411,69 @@ traversals to process it.
                 </attribute>
             </attributes>
         </node>
-        <!-- !! STATEMENTS BELOW !! -->
+        <!-- 
+        VarDeclaration
+         -->
+        <node name="VarDeclaration">
+            <sons>
+                <son name="Dimensions">
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Expressions"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Init">
+                    <targets>
+                        <target mandatory="no">
+                            <set name="Expr"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Next">
+                    <targets>
+                        <target mandatory="no">
+                            <node name="VarDeclaration"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+            <attributes>
+                <attribute name="Name">
+                    <type name="String">
+                        <targets>
+                            <target mandatory="yes">
+                                <any/>
+                                <phases>
+                                    <all/>
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Type">
+                    <type name="Type">
+                        <targets>
+                            <target mandatory="yes">
+                                <any/>
+                                <phases>
+                                    <all/>
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
+        </node>
         <!-- 
       Node Stmts: 
     -->
@@ -473,7 +534,6 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-        <!-- !! FUNCTION ELEMENTS BELOW !! -->
         <!-- 
       Node If: 
     -->
@@ -767,7 +827,6 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-        <!-- !! EXPRESSIONS ARE BELOW !!  -->
         <!-- 
       Node BinOp: 
     -->
@@ -877,7 +936,18 @@ traversals to process it.
     -->
         <node name="Var">
             <description>represents variable (identifier) in expression position</description>
-            <sons></sons>
+            <sons>
+                <son name="Indices">
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Expressions"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
             <attributes>
                 <attribute name="Name">
                     <description>represents identifier in character string representation</description>
@@ -923,13 +993,12 @@ traversals to process it.
                         </target>
                     </targets>
                 </son>
-                <son name="Assign">
-                    <description>represents (optional) assignment to expression</description>
+                <son name="Indices">
                     <targets>
                         <target mandatory="no">
-                            <node name="Assign" />
+                            <node name="Expressions"/>
                             <phases>
-                                <all />
+                                <all/>
                             </phases>
                         </target>
                     </targets>
@@ -1017,9 +1086,9 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name ="BasicType">
-                    <description> represents basic types </description>
-                    <type name ="BasicType">
+                <attribute name ="Type">
+                    <description> represents all possible types </description>
+                    <type name ="Type">
                         <targets>
                             <target mandatory="yes">
                                 <any/>
@@ -1098,7 +1167,6 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-        <!-- !! MISCELLANEOUS !! -->
         <!-- 
       Node SymbolTableEntry: 
     -->

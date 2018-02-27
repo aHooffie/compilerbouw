@@ -20,6 +20,7 @@ extern node *PRTparameters(node *arg_node, info *arg_info);
 extern node *PRTfunctionbody(node *arg_node, info *arg_info);
 extern node *PRTglobaldec(node *arg_node, info *arg_info);
 extern node *PRTglobaldef(node *arg_node, info *arg_info);
+extern node *PRTvardeclaration(node *arg_node, info *arg_info);
 
 /* !! STATEMENTS BELOW !!*/
 extern node *PRTstmts(node *arg_node, info *arg_info);

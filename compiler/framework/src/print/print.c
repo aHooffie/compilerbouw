@@ -133,7 +133,7 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
     if (FUNCTIONBODY_STMTS(arg_node) != NULL)
         FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
     if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
-        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTION_VARDECLARATIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -158,6 +158,20 @@ node *PRTglobaldef(node *arg_node, info *arg_info)
         GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
     if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
         GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+node *PRTvardeclaration(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTvardeclaration");
+
+    if (VARDECLARATION_NEXT(arg_node) != NULL)
+        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
+    if (VARDECLARATION_DIMENSIONS(arg_node) != NULL)
+        VARDECLARATION_DIMENSIONS(arg_node) = TRAVdo(VARDECLARATION_DIMENSIONS(arg_node), arg_info);
+    if (VARDECLARATION_INIT(arg_node) != NULL)
+        VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -454,8 +468,6 @@ node *PRTvarlet(node *arg_node, info *arg_info)
 
     if (VARLET_NEXT(arg_node) != NULL)
         VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
-    if (VARLET_ASSIGN(arg_node) != NULL)
-        VARLET_ASSIGN(arg_node) = TRAVdo(VARLET_ASSIGN(arg_node), arg_info);
 
     printf("%s", VARLET_NAME(arg_node));
 
@@ -509,7 +521,7 @@ node *PRTcast(node *arg_node, info *arg_info)
 }
 
 /* Prints the arrayexpression node. */
-extern node *PRTarrayexpr(node *arg_node, info *arg_info)
+node *PRTarrayexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTarrayexpr");
     ARRAYEXPR_EXPRS(arg_node) = TRAVdo(ARRAYEXPR_EXPRS(arg_node), arg_info);
@@ -572,7 +584,7 @@ node *PRTerror(node *arg_node, info *arg_info)
 }
 
 /* Prints the arrayexpression node. */
-extern node *PRTids(node *arg_node, info *arg_info)
+node *PRTids(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTids");
 

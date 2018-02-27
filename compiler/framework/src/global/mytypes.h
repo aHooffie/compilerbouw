@@ -27,15 +27,10 @@ typedef enum { BO_add,
                BO_unknown } binop;
 
 /* These enums define types. */
-typedef enum { RT_void,
-               RT_int,
-               RT_float,
-               RT_bool,
-               RT_unknown } rettype;
-
-typedef enum { BT_int,
-               BT_float,
-               BT_bool,
-               BT_unknown } basictype;
+typedef enum { T_void,
+               T_int,
+               T_float,
+               T_bool,
+               T_unknown } type;
 
 #endif /* _CIVCC_MYTYPES_H_ */

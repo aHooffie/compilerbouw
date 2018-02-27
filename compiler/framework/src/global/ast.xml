@@ -540,17 +540,6 @@ traversals to process it.
         <node name="IfElse">
             <description>represents if-statement</description>
             <sons>
-                <son name="Else">
-                    <description>represents else-statements of an if-statement</description>
-                    <targets>
-                        <target mandatory="no">
-                            <node name="Stmts" />
-                            <phases>
-                                <all />
-                            </phases>
-                        </target>
-                    </targets>
-                </son>
                 <son name="Condition">
                     <description>represents condition(s) of the if-statement</description>
                     <targets>
@@ -566,6 +555,17 @@ traversals to process it.
                     <description>represents block with statement(s)</description>
                     <targets>
                         <target mandatory="yes">
+                            <node name="Stmts" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Else">
+                    <description>represents else-statements of an if-statement</description>
+                    <targets>
+                        <target mandatory="no">
                             <node name="Stmts" />
                             <phases>
                                 <all />

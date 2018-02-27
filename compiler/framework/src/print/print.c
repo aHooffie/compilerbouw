@@ -222,12 +222,16 @@ node *PRTifelse(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTif");
 
+    printf("if (");
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
+    printf(") \n{\n");
+
+    if (IFELSE_THEN(arg_node) != NULL)
+        IFELSE_THEN(arg_node) = TRAVdo(IFELSE_THEN(arg_node), arg_info);
+    printf("}\n");
 
     if (IFELSE_ELSE(arg_node) != NULL)
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
-    if (IFELSE_THEN(arg_node) != NULL)
-        IFELSE_THEN(arg_node) = TRAVdo(IFELSE_THEN(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -236,11 +240,13 @@ node *PRTifelse(node *arg_node, info *arg_info)
 node *PRTwhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTwhile");
-
+    printf("while (");
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+    printf(") \n{\n");
 
     if (WHILE_BLOCK(arg_node) != NULL)
         WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+    printf("}\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -451,6 +457,12 @@ node *PRTbool(node *arg_node, info *arg_info)
 node *PRTvar(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTvar");
+    if (VAR_INDICES(arg_node) != NULL)
+    {
+        printf("[");
+        VAR_INDICES(arg_node) = TRAVdo(VAR_INDICES(arg_node), arg_info);
+        printf("]");
+    }
 
     printf("%s", VAR_NAME(arg_node));
 
@@ -468,6 +480,12 @@ node *PRTvarlet(node *arg_node, info *arg_info)
 
     if (VARLET_NEXT(arg_node) != NULL)
         VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+    if (VARLET_INDICES(arg_node) != NULL)
+    {
+        printf("[");
+        VARLET_INDICES(arg_node) = TRAVdo(VARLET_INDICES(arg_node), arg_info);
+        printf("]");
+    }
 
     printf("%s", VARLET_NAME(arg_node));
 
@@ -480,8 +498,6 @@ node *PRTmonop(node *arg_node, info *arg_info)
     char *tmp;
 
     DBUG_ENTER("PRTmonop");
-
-    MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
 
     switch (MONOP_OP(arg_node))
     {
@@ -496,6 +512,7 @@ node *PRTmonop(node *arg_node, info *arg_info)
     }
 
     printf("%s", tmp);
+    MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -516,6 +533,26 @@ node *PRTfunctioncallexpr(node *arg_node, info *arg_info)
 node *PRTcast(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTcast");
+
+    switch (CAST_TYPE(arg_node))
+    {
+    case T_int:
+        printf("(int) ");
+        break;
+    case T_float:
+        printf("(float) ");
+        break;
+    case T_bool:
+        printf("(bool) ");
+        break;
+    case T_unknown:
+        DBUG_ASSERT(0, "unknown type detected!");
+        break;
+    case T_void:
+        DBUG_ASSERT(0, "cast type cannot be void!");
+        break;
+    }
+
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }

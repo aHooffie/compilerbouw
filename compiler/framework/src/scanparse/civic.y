@@ -26,20 +26,26 @@ static int yyerror( char *errname);
  int                 cint;
  float               cflt;
  binop               cbinop;
+ monop                cmonop;
  node               *node;
+ type               ctype;
 }
 
 %token BRACKET_L BRACKET_R COMMA SEMICOLON
-%token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND
-%token TRUEVAL FALSEVAL LET
+%token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
+%token TRUEVAL FALSEVAL LET IF WHILE
+%token INT FLOATTEST BOOL VOID
 
 %token <cint> NUM
 %token <cflt> FLOAT
 %token <id> ID
 
 %type <node> intval floatval boolval constant expr
-%type <node> stmts stmt assign varlet program
+%type <node> stmts stmt assign varlet program // while if
 %type <cbinop> binop
+%type <cmonop> monop
+%type <ctype> type
+
 
 %start program
 
@@ -65,7 +71,15 @@ stmt: assign
        {
          $$ = $1;
        }
-       ;
+      //  | while
+      //  {
+      //    $$ = $1;
+      //  }
+      // | if
+      //   {
+      //     $$ = $1;
+      //   }
+        ;
 
 assign: varlet LET expr SEMICOLON
         {
@@ -73,10 +87,27 @@ assign: varlet LET expr SEMICOLON
         }
         ;
 
+// while: WHILE BRACKET_L expr BRACKET_R stmts
+//         {
+//           $$ = TBmakeWhile($3, $5);
+//         }
+
+// if: IF expr stmts 
+//         {
+//           $$ = TBmakeIfelse($2, $3, NULL);
+//         }
+//         ;
+
 varlet: ID
         {
           $$ = TBmakeVarlet( STRcpy( $1), NULL, NULL);
         }
+        | ID varlet
+        {
+          $$ = TBmakeVarlet( STRcpy ($1), $2, NULL);
+        }
+            // Mogelijk nog Array indices als input ($3).
+            // Hoe VarLet testen?
         ;
 
 
@@ -91,6 +122,14 @@ expr: constant
     | BRACKET_L expr binop expr BRACKET_R
       {
         $$ = TBmakeBinop( $3, $2, $4);
+      }
+    | monop expr
+      {
+        $$ = TBmakeMonop( $1, $2);
+      }
+    | BRACKET_L type BRACKET_R expr
+      {
+        $$ = TBmakeCast( $2, $4);
       }
     ;
 
@@ -143,7 +182,16 @@ binop: PLUS      { $$ = BO_add; }
      | OR        { $$ = BO_or; }
      | AND       { $$ = BO_and; }
      ;
-      
+
+monop: MINUS      { $$ = MO_neg; }     
+      | NOT       { $$ = MO_not; }     
+      ;
+
+type: INT          { $$ = T_int; }     
+      | FLOATTEST   { $$ = T_float; } 
+      | BOOL        { $$ = T_bool; } 
+      | VOID        { $$ = T_void; } 
+      ;
 %%
 
 static int yyerror( char *error)

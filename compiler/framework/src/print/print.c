@@ -186,11 +186,11 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
 node *PRTstmts(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTstmts");
-
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     if (STMTS_NEXT(arg_node) != NULL)
+    {
         STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
-
+    }
     DBUG_RETURN(arg_node);
 }
 
@@ -202,14 +202,16 @@ node *PRTstmts(node *arg_node, info *arg_info)
 node *PRTassign(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTassign");
-
     if (ASSIGN_LET(arg_node) != NULL)
     {
         ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
         printf(" = ");
     }
 
+    printf("(");
     ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
+    printf(")");
+
     printf(";\n");
 
     DBUG_RETURN(arg_node);
@@ -226,12 +228,17 @@ node *PRTifelse(node *arg_node, info *arg_info)
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
     printf(") \n{\n");
 
-    if (IFELSE_THEN(arg_node) != NULL)
-        IFELSE_THEN(arg_node) = TRAVdo(IFELSE_THEN(arg_node), arg_info);
-    printf("}\n");
-
+    if (IFELSE_BLOCK(arg_node) != NULL)
+    {
+        IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+        printf("}\n");
+    }
     if (IFELSE_ELSE(arg_node) != NULL)
+    {
+        printf("else \n");
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
+        printf("\n");
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -255,9 +262,13 @@ node *PRTwhile(node *arg_node, info *arg_info)
 node *PRTreturn(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTreturn");
-
+    printf("return");
     if (RETURN_EXPR(arg_node) != NULL)
+    {
+        printf(" ");
         RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+    }
+    printf(";\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -309,11 +320,16 @@ node *PRTexpressions(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTexpressions");
 
     if (EXPRESSIONS_EXPR(arg_node) != NULL)
+    {
         EXPRESSIONS_EXPR(arg_node) =
             TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+    }
     if (EXPRESSIONS_NEXT(arg_node) != NULL)
+    {
+        printf(", ");
         EXPRESSIONS_NEXT(arg_node) =
             TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -345,8 +361,6 @@ node *PRTbinop(node *arg_node, info *arg_info)
     char *tmp;
 
     DBUG_ENTER("PRTbinop");
-
-    printf("( ");
 
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 
@@ -398,9 +412,6 @@ node *PRTbinop(node *arg_node, info *arg_info)
     printf(" %s ", tmp);
 
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
-
-    printf(")");
-
     DBUG_RETURN(arg_node);
 }
 

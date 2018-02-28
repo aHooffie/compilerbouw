@@ -551,7 +551,7 @@ traversals to process it.
                         </target>
                     </targets>
                 </son>
-                <son name="Then">
+                <son name="Block">
                     <description>represents block with statement(s)</description>
                     <targets>
                         <target mandatory="yes">

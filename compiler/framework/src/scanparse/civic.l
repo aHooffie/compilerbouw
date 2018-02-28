@@ -32,39 +32,45 @@
 
 %%
 
-"("                        { FILTER( BRACKET_L); }
-")"                        { FILTER( BRACKET_R); }
-","                        { FILTER( COMMA); }
-";"                        { FILTER( SEMICOLON); }
+"("                        { FILTER( BRACKET_L);}
+")"                        { FILTER( BRACKET_R);}
+","                        { FILTER( COMMA);    }
+";"                        { FILTER( SEMICOLON);}
+"{"                        { FILTER( PAR_L);    }
+"}"                        { FILTER( PAR_R);    }
 
-"-"                        { FILTER( MINUS); }
-"+"                        { FILTER( PLUS);  }
-"*"                        { FILTER( STAR);  } 
-"/"                        { FILTER( SLASH);  } 
+"-"                        { FILTER( MINUS);    }
+"+"                        { FILTER( PLUS);     }
+"*"                        { FILTER( STAR);     } 
+"/"                        { FILTER( SLASH);    } 
 "%"                        { FILTER( PERCENT);  } 
 
-"<="                       { FILTER( LE);    }
-"<"                        { FILTER( LT);    } 
-">="                       { FILTER( GE);    }
-">"                        { FILTER( GT);    }
-"=="                       { FILTER( EQ);    }
-"!="                       { FILTER( NE);    }
-"&&"                       { FILTER( AND);    }
-"||"                       { FILTER( OR);    }
-"!"                        { FILTER( NOT);  }
+"<="                       { FILTER( LE);       }
+"<"                        { FILTER( LT);       } 
+">="                       { FILTER( GE);       }
+">"                        { FILTER( GT);       }
+"=="                       { FILTER( EQ);       }
+"!="                       { FILTER( NE);       }
+"&&"                       { FILTER( AND);      }
+"||"                       { FILTER( OR);       }
+"!"                        { FILTER( NOT);      }
 
-"="                        { FILTER( LET);    }
-"if"                       { FILTER( IF);    }
+"="                        { FILTER( LET);      }
+"if"                       { FILTER( IF);       }
+"else"                     { FILTER( ELSE);     }
 "while"                    { FILTER( WHILE);    }
+"do"                       { FILTER( DO);       }
+
+"return"                   { FILTER( RETURN);   }
 
 
-"true"                     { FILTER( TRUEVAL); }
+"true"                     { FILTER( TRUEVAL);  }
 "false"                    { FILTER( FALSEVAL); }
 
-"int"                       { FILTER( INTTYPE); }
-"float"                     { FILTER( FLOATTYPE); }
-"bool"                      { FILTER( BOOLTYPE); }
-"void"                      { FILTER( VOIDTYPE); }
+"int"                      { FILTER( INTTYPE);  }
+"float"                    { FILTER( FLOATTYPE);}
+"bool"                     { FILTER( BOOLTYPE); }
+"void"                     { FILTER( VOIDTYPE); }
 
 [A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
                              FILTER( ID);

@@ -8,22 +8,14 @@ g = foo(1);
 h = foo(1 + 2);
 i = ((!a + c) <= b) <= 3;
 
-if (a == b) {
-    j = foo(1 + 2);
-    k = foo(a + b);
-}
+if (a == b) { j = foo(1 + 2); k = foo(a + b); }
 if (q) 
     l = foo(a + 3);
-else 
+else
     m = foo(a + 4);
 
-while (a < b) {
-    n = test(1);
-    o = test(2);
-}
-
-while (c)
-    p =test(3);
+while (a < b) { n = test(1); o = test(2); }
+while (c) p = test(3);
 
 return 3;
 return;

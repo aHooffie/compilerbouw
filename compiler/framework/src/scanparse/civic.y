@@ -33,7 +33,7 @@ static int yyerror( char *errname);
 
 %token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R
 %token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
-%token TRUEVAL FALSEVAL LET IF ELSE WHILE RETURN
+%token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN
 %token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
 
 %token <cint> NUM
@@ -41,7 +41,7 @@ static int yyerror( char *errname);
 %token <id> ID
 
 %type <node> intval floatval boolval constant exprs expr
-%type <node> stmts stmt assign varlet program if while block return
+%type <node> stmts stmt assign varlet program if while dowhile block return
 %type <node> binop monop
 %type <ctype> type
 
@@ -126,7 +126,7 @@ return: RETURN SEMICOLON
 
 dowhile: DO block WHILE BRACKET_L expr BRACKET_R SEMICOLON
         {
-          $$ = TBmakeDowhile();
+          $$ = TBmakeDowhile($2, $5);
         }
         ;
 

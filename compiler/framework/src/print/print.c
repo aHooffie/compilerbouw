@@ -224,7 +224,7 @@ node *PRTifelse(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTif");
 
-    printf("if (");
+    printf("(if (");
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
     printf(") \n{\n");
 
@@ -239,6 +239,7 @@ node *PRTifelse(node *arg_node, info *arg_info)
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
         printf("\n");
     }
+    printf(")\n");
 
     DBUG_RETURN(arg_node);
 }

@@ -213,6 +213,9 @@ traversals to process it.
                     </type>
                 </attribute>
             </attributes>
+            <flags>
+                <flag name ="IsExport" />
+            </flags>   
         </node>
         <!-- 
       Node parameters: 
@@ -410,6 +413,9 @@ traversals to process it.
                     </type>
                 </attribute>
             </attributes>
+           <flags>
+                <flag name ="IsExport" />
+            </flags> 
         </node>
         <!-- 
         VarDeclaration

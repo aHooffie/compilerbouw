@@ -60,9 +60,11 @@
 "else"                     { FILTER( ELSE);     }
 "while"                    { FILTER( WHILE);    }
 "do"                       { FILTER( DO);       }
+"for"                      { FILTER( FOR);      }
 
 "return"                   { FILTER( RETURN);   }
-
+"extern"                   { FILTER( EXTERN);   }
+"export"                   { FILTER( EXPORT);   }
 
 "true"                     { FILTER( TRUEVAL);  }
 "false"                    { FILTER( FALSEVAL); }

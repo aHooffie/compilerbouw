@@ -33,20 +33,22 @@ static int yyerror( char *errname);
 
 %token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R
 %token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
-%token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN
+%token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN FOR
 %token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
+%token EXTERN EXPORT
 
 %token <cint> NUM
 %token <cflt> FLOAT
 %token <id> ID
 
 %type <node> intval floatval boolval constant exprs expr
-%type <node> stmts stmt assign varlet program if while dowhile block return
+%type <node> funbody vardec vardecs params param
+%type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
 %type <ctype> type
 
 %left MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT NEG
-%left BRACKET_R PAR_R
+%right BRACKET_R PAR_R
 %left ELSE
 %right BRACKET_L PAR_L
 
@@ -54,11 +56,66 @@ static int yyerror( char *errname);
 
 %%
 
-program: stmts 
+program: funbody 
          {
            parseresult = $1;
          }
          ;
+
+params: param params
+        {
+          PARAMETERS_NEXT($1) = $2;
+        } 
+        | param
+        {
+          $$ = $1;
+        } 
+        ;
+
+param: ID type
+        {
+          TBmakeParameters($1, $2, NULL, NULL);
+        }
+        ;   
+
+funbody: vardecs stmts
+        {
+          $$ = TBmakeFunctionbody($2, NULL, $1);
+        }
+        | vardecs
+        {
+          $$ = TBmakeFunctionbody(NULL, NULL, $1);
+        }
+        | stmts
+        { 
+          $$ = TBmakeFunctionbody($1, NULL, NULL);
+        }
+        |
+        {
+          $$ = TBmakeFunctionbody(NULL, NULL, NULL);
+        }
+      
+        ;
+
+vardecs: vardec vardecs // GEEN ARRAY
+          {
+            VARDECLARATION_NEXT($1) = $2;
+          }
+          | vardec
+          {
+            $$ = $1;
+          }
+          ;      
+
+vardec: type ID LET expr SEMICOLON  // GEEN ARRAY GEEN NEXT
+        {
+          $$ = TBmakeVardeclaration($2, $1, NULL, $4, NULL);
+        }
+        | type ID SEMICOLON // GEEN ARRAY GEEN INIT GEEN NEXT
+        {
+          $$ = TBmakeVardeclaration($2, $1, NULL, NULL, NULL);
+        }
+        ;
 
 stmts:  stmt stmts
         {
@@ -74,6 +131,14 @@ stmt:   assign
         {
            $$ = $1;
         }
+        | ID BRACKET_L exprs BRACKET_R SEMICOLON
+        {
+          $$ = TBmakeFunctioncallstmt( STRcpy( $1), $3);
+        }
+        | ID BRACKET_L BRACKET_R SEMICOLON
+        {
+          $$ = TBmakeFunctioncallstmt( STRcpy( $1), NULL);
+        } 
         | while
         {
            $$ = $1;
@@ -90,6 +155,10 @@ stmt:   assign
         {
           $$ = $1;
         }
+        | for
+        {
+          $$ = $1;
+        }
         ;
 
 assign: varlet LET expr SEMICOLON
@@ -99,14 +168,14 @@ assign: varlet LET expr SEMICOLON
         ;
 
 if:     IF BRACKET_L expr BRACKET_R block
-{
-  $$ = TBmakeIfelse($3, $5, NULL);
-}
-| IF BRACKET_L expr BRACKET_R block ELSE block
-{
-  $$ = TBmakeIfelse($3, $5, $7);
-}
-;
+        {
+          $$ = TBmakeIfelse($3, $5, NULL);
+        }
+        | IF BRACKET_L expr BRACKET_R block ELSE block
+        {
+          $$ = TBmakeIfelse($3, $5, $7);
+        }
+        ;
 
 while:  WHILE BRACKET_L expr BRACKET_R block
         {
@@ -140,7 +209,17 @@ block:  PAR_L stmts PAR_R
         }
         | stmt
         {
-          $$ = $1;
+          $$ = TBmakeStmts( $1, NULL);
+        }
+        ;
+
+for:    FOR BRACKET_L INTTYPE ID LET expr COMMA expr COMMA expr BRACKET_R block
+        {
+          $$ = TBmakeFor($4, $6, $8, $10, $12);
+        }
+        | FOR BRACKET_L INTTYPE ID LET expr COMMA expr BRACKET_R block
+        {
+          $$ = TBmakeFor($4, $6, $8, NULL, $10);
         }
         ;
 

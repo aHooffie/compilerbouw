@@ -1,3 +1,6 @@
+int a = a + b;
+int b = 3 + 2;
+
 a = (43-2);
 b = (true * 7);
 c = ((a + b) - c);
@@ -8,7 +11,12 @@ g = foo(1);
 h = foo(1 + 2);
 i = ((!a + c) <= b) <= 3;
 
-if (a == b) { j = foo(1 + 2); k = foo(a + b); }
+if (a == b) 
+{
+     j = foo(1 + 2);
+      k = foo(a + b);
+}
+
 if (q) 
     l = foo(a + 3);
 else
@@ -19,3 +27,15 @@ while (c) p = test(3);
 
 return 3;
 return;
+
+for (int i = 0, i - 3, a + b) {
+    n = foo(bar);
+}
+
+for (int i = 0, i - 3) {
+    n = foo(bar);
+}
+
+foo(bar);
+foo();
+foo(foo, bar);

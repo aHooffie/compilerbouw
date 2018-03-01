@@ -62,6 +62,20 @@ program: funbody
          }
          ;
 
+// [ export ] RetType Id ( [ Param [ , Param ]* ] ) { FunBody }
+
+
+function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
+          {
+            $$ = TBmakeFunction($1, $2, $7, $4);
+          }
+          |
+          type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
+          {
+             $$ = TBmakeFunction($1, $2, $7, NULL);
+          }
+          ;
+
 params: param params
         {
           PARAMETERS_NEXT($1) = $2;

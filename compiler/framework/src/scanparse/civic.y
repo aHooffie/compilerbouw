@@ -42,7 +42,7 @@ static int yyerror( char *errname);
 %token <id> ID
 
 %type <node> intval floatval boolval constant exprs expr
-%type <node> funbody vardec vardecs params param
+%type <node> function funbody vardec vardecs params param
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
 %type <ctype> type
@@ -56,14 +56,11 @@ static int yyerror( char *errname);
 
 %%
 
-program: funbody 
+program: function
          {
            parseresult = $1;
          }
          ;
-
-// [ export ] RetType Id ( [ Param [ , Param ]* ] ) { FunBody }
-
 
 function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
           {
@@ -72,16 +69,28 @@ function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
           |
           type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
           {
-             $$ = TBmakeFunction($1, $2, $7, NULL);
+             $$ = TBmakeFunction($1, $2, $6, NULL);
+          }
+          | EXPORT type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
+          {
+            $$ = TBmakeFunction($2, $3, $8, $5);
+            FUNCTION_ISEXPORT($$) = TRUE;
+          }
+          | EXPORT type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
+          {
+             $$ = TBmakeFunction($2, $3, $7, NULL);
+	            FUNCTION_ISEXPORT($$) = TRUE;
           }
           ;
 
 params: param params
         {
+          printf("TEST");
           PARAMETERS_NEXT($1) = $2;
         } 
         | param
         {
+          printf("HALLO TEST\n");
           $$ = $1;
         } 
         ;

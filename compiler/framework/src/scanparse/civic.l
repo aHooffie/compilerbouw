@@ -74,6 +74,10 @@
 "bool"                     { FILTER( BOOLTYPE); }
 "void"                     { FILTER( VOIDTYPE); }
 
+"//"                        { FILTER( COM); }
+"/*"                        { FILTER( SCOM); }
+"*/"                        { FILTER( ECOM); }
+
 [A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
                              FILTER( ID);
                            }

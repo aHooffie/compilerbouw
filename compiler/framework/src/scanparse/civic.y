@@ -36,13 +36,15 @@ static int yyerror( char *errname);
 %token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN FOR
 %token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
 %token EXTERN EXPORT
+%token COM SCOM ECOM
 
 %token <cint> NUM
 %token <cflt> FLOAT
 %token <id> ID
 
 %type <node> intval floatval boolval constant exprs expr
-%type <node> function funbody vardec vardecs params param
+%type <node> declarations declaration globaldec globaldef function 
+%type <node> funbody vardec vardecs params param
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
 %type <ctype> type
@@ -56,48 +58,96 @@ static int yyerror( char *errname);
 
 %%
 
-program: function
+program: declarations
          {
-           parseresult = $1;
+           parseresult = TBmakeProgram($1);
          }
          ;
 
-function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
-          {
-            $$ = TBmakeFunction($1, $2, $7, $4);
-          }
-          |
-          type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
-          {
-             $$ = TBmakeFunction($1, $2, $6, NULL);
-          }
-          | EXPORT type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
-          {
-            $$ = TBmakeFunction($2, $3, $8, $5);
-            FUNCTION_ISEXPORT($$) = TRUE;
-          }
-          | EXPORT type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
-          {
-             $$ = TBmakeFunction($2, $3, $7, NULL);
-	            FUNCTION_ISEXPORT($$) = TRUE;
-          }
-          ;
-
-params: param params
+declarations: declaration declarations
         {
-          printf("TEST");
-          PARAMETERS_NEXT($1) = $2;
+          $$ = TBmakeDeclarations($1, $2);
+        }
+        | declaration
+        {
+          $$ = TBmakeDeclarations($1, NULL);
+        }
+        ;
+
+declaration: globaldef
+        {
+          $$ = $1;
+        }
+        | globaldec
+        {
+          $$ = $1;
+        }
+        | function
+        {
+          $$ = $1;
+        }
+        ;
+
+globaldec: EXTERN type ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldec($2, $3, NULL);
+        }
+        ;
+
+globaldef: type ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($2, $1, NULL, NULL);
+        }
+        | type ID LET expr SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($2, $1, NULL, $4);
+        }
+        | EXPORT type ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($3, $2, NULL, NULL);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+        }
+        | EXPORT type ID LET expr SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($3, $2, NULL, $5);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+        }
+        ;
+
+function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
+        {
+          $$ = TBmakeFunction($1, $2, $7, $4);
+        }
+        |
+        type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
+        {
+            $$ = TBmakeFunction($1, $2, $6, NULL);
+        }
+        | EXPORT type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
+        {
+          $$ = TBmakeFunction($2, $3, $8, $5);
+          FUNCTION_ISEXPORT($$) = TRUE;
+        }
+        | EXPORT type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
+        {
+            $$ = TBmakeFunction($2, $3, $7, NULL);
+            FUNCTION_ISEXPORT($$) = TRUE;
+        }
+        ;
+
+params: param COMMA params
+        {
+          PARAMETERS_NEXT($1) = $3;
         } 
         | param
         {
-          printf("HALLO TEST\n");
           $$ = $1;
         } 
         ;
 
-param: ID type
+param: type ID
         {
-          TBmakeParameters($1, $2, NULL, NULL);
+          $$ = TBmakeParameters($2, $1, NULL, NULL);
         }
         ;   
 

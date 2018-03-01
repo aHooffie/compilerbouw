@@ -47,8 +47,6 @@ static info *FreeInfo(info *info)
     return info;
 }
 
-/* !! MODULE + DECLARATIONS AKA TOP BELOW!! */
-
 /* @brief Prints the given syntaxtree
  * @param syntaxtree a node structure
  * @return the unchanged nodestructure */
@@ -99,15 +97,123 @@ node *PRTdeclarations(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Prints the global declarations (empty!). */
+node *PRTglobaldec(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTglobaldec");
+    printf("extern ");
+
+    switch (GLOBALDEC_TYPE(arg_node))
+    {
+    case T_int:
+        printf("int ");
+        break;
+    case T_float:
+        printf("float ");
+        break;
+    case T_bool:
+        printf("bool ");
+        break;
+    case T_void:
+        printf("unknown type detected!");
+        break;
+    case T_unknown:
+        DBUG_ASSERT(0, "unknown return type detected!");
+        break;
+    }
+    printf("%s;\n", GLOBALDEC_NAME(arg_node));
+    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Prints the global definiions. */
+node *PRTglobaldef(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTglobaldef");
+    if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
+        printf("export ");
+
+    switch (GLOBALDEF_TYPE(arg_node))
+    {
+    case T_int:
+        printf("int ");
+        break;
+    case T_float:
+        printf("float ");
+        break;
+    case T_bool:
+        printf("bool ");
+        break;
+    case T_void:
+        printf("void ");
+        break;
+    case T_unknown:
+        DBUG_ASSERT(0, "unknown return type detected!");
+        break;
+    }
+
+    printf("%s", GLOBALDEF_NAME(arg_node));
+
+    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    {
+        printf(" = ");
+        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+    }
+
+    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+
+    printf(";\n");
+    DBUG_RETURN(arg_node);
+}
+
 /* Prints the function definitions and declarations. */
 node *PRTfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTfunction");
+    if (FUNCTION_FUNCTIONBODY(arg_node) == NULL)
+        printf("extern ");
+
+    if (FUNCTION_ISEXPORT(arg_node) == TRUE)
+        printf("export ");
+
+    switch (FUNCTION_TYPE(arg_node))
+    {
+    case T_int:
+        printf("int ");
+        break;
+    case T_float:
+        printf("float ");
+        break;
+    case T_bool:
+        printf("bool ");
+        break;
+    case T_void:
+        printf("void ");
+        break;
+    case T_unknown:
+        DBUG_ASSERT(0, "unknown return type detected!");
+        break;
+    }
+
+    printf("%s(", FUNCTION_NAME(arg_node));
 
     if (FUNCTION_PARAMETERS(arg_node) != NULL)
         FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
+
+    printf(")");
+
     if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
+    {
+        printf("\n{\n\t");
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+        printf("}\n");
+    }
+
+    if (FUNCTION_FUNCTIONBODY(arg_node) == NULL)
+        printf(";");
 
     DBUG_RETURN(arg_node);
 }
@@ -118,7 +224,10 @@ node *PRTparameters(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTparameters");
 
     if (PARAMETERS_NEXT(arg_node) != NULL)
+    {
+        printf(", ");
         PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+    }
     if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
         PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
 
@@ -131,33 +240,11 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTfunctionbody");
 
     if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
-        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
+        FUNCTIONBODY_VARDECLARATIONS(arg_node) =
+            TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
+
     if (FUNCTIONBODY_STMTS(arg_node) != NULL)
         FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
-
-    DBUG_RETURN(arg_node);
-}
-
-/* Prints the global declarations (empty!). */
-node *PRTglobaldec(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("PRTglobaldec");
-
-    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
-
-    DBUG_RETURN(arg_node);
-}
-
-/* Prints the global definiions. */
-node *PRTglobaldef(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("PRTglobaldef");
-
-    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
-        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
-    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -201,8 +288,6 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* !! STATEMENTS BELOW !!*/
-
 /* @fn PRTstmts
  * @brief Prints the node and its sons/attributes.
  * @param arg_node BinOp node to process
@@ -211,6 +296,8 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
 node *PRTstmts(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTstmts");
+    printf("\t");
+
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     if (STMTS_NEXT(arg_node) != NULL)
     {
@@ -242,8 +329,6 @@ node *PRTassign(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* !! FUNCTION ELEMENTS BELOW !! */
-
 /* Prints the if-node. */
 node *PRTifelse(node *arg_node, info *arg_info)
 {
@@ -251,20 +336,20 @@ node *PRTifelse(node *arg_node, info *arg_info)
 
     printf("(if (");
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
-    printf(") \n{\n");
+    printf(") \n\t{\n");
 
     if (IFELSE_BLOCK(arg_node) != NULL)
     {
         IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
-        printf("}\n");
+        printf("\t}\n");
     }
     if (IFELSE_ELSE(arg_node) != NULL)
     {
-        printf("else \n");
+        printf("\t else \n");
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
         printf("\n");
     }
-    printf(")\n");
+    printf("\t)\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -275,11 +360,11 @@ node *PRTwhile(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTwhile");
     printf("while (");
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
-    printf(") \n{\n");
+    printf(") \n\t{\n");
 
     if (WHILE_BLOCK(arg_node) != NULL)
         WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
-    printf("}\n");
+    printf("\t}\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -316,9 +401,9 @@ node *PRTfor(node *arg_node, info *arg_info)
     printf(") \n");
     if (FOR_BLOCK(arg_node) != NULL)
     {
-        printf("{\n");
+        printf("\t{\n");
         FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
-        printf("}\n");
+        printf("\t}\n");
     }
 
     DBUG_RETURN(arg_node);
@@ -385,8 +470,6 @@ node *PRTlocalfunction(node *arg_node, info *arg_info)
 
     DBUG_RETURN(arg_node);
 }
-
-/* !! EXPRESSIONS ARE BELOW !! */
 
 /* @fn PRTbinop
  * @brief Prints the node and its sons/attributes
@@ -615,8 +698,6 @@ node *PRTarrayexpr(node *arg_node, info *arg_info)
     ARRAYEXPR_EXPRS(arg_node) = TRAVdo(ARRAYEXPR_EXPRS(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
-
-/* MISCELLANEOUS !! */
 
 /* @fn PRTsymboltableentry
  * @brief Prints the node and its sons/attributes

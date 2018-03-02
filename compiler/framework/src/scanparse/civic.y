@@ -49,8 +49,17 @@ static int yyerror( char *errname);
 %type <node> binop monop
 %type <ctype> type
 
-%left MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT NEG
-%right BRACKET_R PAR_R
+%right LET
+%left OR
+%left AND
+%left EQ NE
+%left LE LT GE GT
+%left MINUS PLUS 
+%left STAR SLASH PERCENT
+%left NOT NEG
+
+// UNSURE ABOUT BELOW
+%right BRACKET_R PAR_R 
 %left ELSE
 %right BRACKET_L PAR_L
 

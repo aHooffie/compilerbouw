@@ -113,6 +113,21 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
+            <attributes>
+                <attribute name="Globals">
+                    <description>represents link to symbol table entry with globals</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
         </node>
         <!-- 
       Node Declarations: 
@@ -357,13 +372,26 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Declaration">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
             </attributes>
         </node>
         <!-- 
       Node GlobalDef: 
     -->
         <node name="GlobalDef">
-            <description>represents global declaration</description>
+            <description>represents global definition</description>
             <sons>
                 <son name="Dimensions">
                     <targets>
@@ -405,6 +433,19 @@ traversals to process it.
                     <type name="Type">
                         <targets>
                             <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Declaration">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -473,6 +514,19 @@ traversals to process it.
                                 <any/>
                                 <phases>
                                     <all/>
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Variable declaration">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
                                 </phases>
                             </target>
                         </targets>

@@ -38,6 +38,8 @@
 ";"                        { FILTER( SEMICOLON);}
 "{"                        { FILTER( PAR_L);    }
 "}"                        { FILTER( PAR_R);    }
+"["                        { FILTER( SQBR_L);    }
+"]"                        { FILTER( SQBR_R);    }
 
 "-"                        { FILTER( MINUS);    }
 "+"                        { FILTER( PLUS);     }

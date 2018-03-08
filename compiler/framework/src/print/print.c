@@ -207,7 +207,7 @@ node *PRTfunction(node *arg_node, info *arg_info)
 
     if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
     {
-        printf("\n{\n\t");
+        printf("\n{\n");
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
         printf("}\n");
     }
@@ -296,7 +296,6 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
 node *PRTstmts(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTstmts");
-    printf("\t");
 
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     if (STMTS_NEXT(arg_node) != NULL)
@@ -336,20 +335,20 @@ node *PRTifelse(node *arg_node, info *arg_info)
 
     printf("(if (");
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
-    printf(") \n\t{\n");
+    printf(") \n{\n");
 
     if (IFELSE_BLOCK(arg_node) != NULL)
     {
         IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
-        printf("\t}\n");
+        printf("}\n");
     }
     if (IFELSE_ELSE(arg_node) != NULL)
     {
-        printf("\t else \n");
+        printf(" else \n");
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
         printf("\n");
     }
-    printf("\t)\n");
+    printf(")\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -360,11 +359,11 @@ node *PRTwhile(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTwhile");
     printf("while (");
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
-    printf(") \n\t{\n");
+    printf(") \n{\n");
 
     if (WHILE_BLOCK(arg_node) != NULL)
         WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
-    printf("\t}\n");
+    printf("}\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -401,9 +400,9 @@ node *PRTfor(node *arg_node, info *arg_info)
     printf(") \n");
     if (FOR_BLOCK(arg_node) != NULL)
     {
-        printf("\t{\n");
+        printf("{\n");
         FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
-        printf("\t}\n");
+        printf("}\n");
     }
 
     DBUG_RETURN(arg_node);

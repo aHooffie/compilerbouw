@@ -7,6 +7,8 @@ export void main (int a) {
 int a = a + b;
 int b = 3 + 2;
 
+int hallo (){}
+
 a = (43-2);
 b = (true * 7);
 c = ((a + b) - c);
@@ -19,8 +21,8 @@ i = ((!a + c) <= b) <= 3;
 
 if (a == b) 
 {
-     j = foo(1 + 2);
-      k = foo(a + b);
+    j = foo(1 + 2);
+    k = foo(a + b);
 }
 
 if (q) 

@@ -31,7 +31,7 @@ static int yyerror( char *errname);
  type                ctype;
 }
 
-%token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R
+%token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R SQBR_L SQBR_R
 %token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
 %token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN FOR
 %token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
@@ -42,9 +42,9 @@ static int yyerror( char *errname);
 %token <cflt> FLOAT
 %token <id> ID
 
-%type <node> intval floatval boolval constant exprs expr
-%type <node> declarations declaration globaldec globaldef function 
-%type <node> funbody vardec vardecs params param localfunctions
+%type <node> intval floatval boolval constant exprs expr arrayexprs
+%type <node> declarations declaration globaldec globaldef function ids
+%type <node> funbody vardec vardecs params param
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
 %type <ctype> type
@@ -59,9 +59,8 @@ static int yyerror( char *errname);
 %left NOT NEG
 
 // UNSURE ABOUT BELOW
-%right BRACKET_R PAR_R 
 %left ELSE
-%right BRACKET_L PAR_L
+%right BRACKET_L PAR_L SQBR_L BRACKET_R PAR_R SQBR_R
 
 %start program
 
@@ -101,6 +100,10 @@ globaldec: EXTERN type ID SEMICOLON
         {
           $$ = TBmakeGlobaldec($2, $3, NULL);
         }
+        | EXTERN type SQBR_L ids SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldec($2, $6, $4);
+        }
         ;
 
 globaldef: type ID SEMICOLON
@@ -119,6 +122,25 @@ globaldef: type ID SEMICOLON
         | EXPORT type ID LET expr SEMICOLON
         {
           $$ = TBmakeGlobaldef($3, $2, NULL, $5);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+        }
+        | type SQBR_L expr SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, NULL);
+        }
+        | type SQBR_L expr SQBR_R ID LET arrayexprs SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, $7);
+        }
+        | EXPORT type SQBR_L expr SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($6, $2, $4, NULL);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+
+        }
+        | EXPORT type SQBR_L expr SQBR_R ID LET arrayexprs SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($6, $2, $4, $8);
           GLOBALDEF_ISEXPORT($$) = TRUE;
         }
         ;
@@ -158,31 +180,19 @@ param: type ID
         {
           $$ = TBmakeParameters($2, $1, NULL, NULL);
         }
+        | type SQBR_L ids SQBR_R ID
+        {
+          $$ = TBmakeParameters($5, $1, NULL, $3);
+        }
         ;   
 
-funbody: vardecs localfunctions stmts
-        {
-          $$ = TBmakeFunctionbody($3, $2, $1);
-        }
-        | vardecs localfunctions 
-        {
-          $$ = TBmakeFunctionbody(NULL, $2, $1);
-        }
-        | vardecs stmts
+funbody: vardecs stmts
         {
           $$ = TBmakeFunctionbody($2, NULL, $1);
-        }
-        | localfunctions stmts
-        {
-          $$ = TBmakeFunctionbody($2, $1, NULL);
         }
         | vardecs
         {
           $$ = TBmakeFunctionbody(NULL, NULL, $1);
-        }
-        | localfunctions
-        {
-          $$ = TBmakeFunctionbody(NULL, $1, NULL);
         }
         | stmts
         { 
@@ -192,6 +202,7 @@ funbody: vardecs localfunctions stmts
         {
           $$ = TBmakeFunctionbody(NULL, NULL, NULL);
         }
+      
         ;
 
 vardecs: vardec vardecs // GEEN ARRAY
@@ -332,6 +343,25 @@ varlet: ID
             // Hoe VarLet testen?
         ;
 
+ids: ID COMMA ids
+      {
+        $$ = TBmakeIds($1, $3);
+      }
+      | ID
+      {
+        $$ = TBmakeIds( STRcpy($1), NULL);
+      }
+      ;
+
+arrayexprs: BRACKET_L exprs BRACKET_R
+      {
+        $$ = $2;
+      }
+      | expr
+      {
+        $$ = $1;
+      }
+      ;
 
 exprs: expr COMMA exprs
       {
@@ -374,7 +404,11 @@ expr: BRACKET_L expr BRACKET_R
     | constant
       {
         $$ = $1;
-      }  
+      }
+    | ID SQBR_L exprs SQBR_R
+    {
+      
+    }
     ;
 
 constant: floatval

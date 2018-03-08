@@ -230,7 +230,7 @@ traversals to process it.
             </attributes>
             <flags>
                 <flag name ="IsExport" />
-            </flags>   
+            </flags>
         </node>
         <!-- 
       Node parameters: 
@@ -454,9 +454,9 @@ traversals to process it.
                     </type>
                 </attribute>
             </attributes>
-           <flags>
+            <flags>
                 <flag name ="IsExport" />
-            </flags> 
+            </flags>
         </node>
         <!-- 
         VarDeclaration
@@ -519,7 +519,7 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Variable declaration">
+                <attribute name="Variabledeclaration">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
@@ -942,10 +942,11 @@ traversals to process it.
                 <attribute name="Value">
                     <type name="Float">
                         <targets>
-                            <target mandatory="yes"></target>
-                            <phases>
-                                <all />
-                            </phases>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
                         </targets>
                     </type>
                 </attribute>

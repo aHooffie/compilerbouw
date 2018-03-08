@@ -1,50 +1,61 @@
+// GlobalDec
 extern int a;
+
+// Functiondec
+extern int foo (int p); // PRINT NOG EVEN FIXEN
+
+// GlobalDef
+export int sum = 1 + 2;
+int sum = 4 + 3;
 int a;
-export int a;
-int a = 4 + 3;
 
-export void main (int a) {
-int a = a + b;
-int b = 3 + 2;
+// Functions
+int foo () {}
+int bar (int p) {}
 
-int hallo (){}
+export void main (int a, int b) {
+// Vardeclarations
+    int a = a + b;
+    int b = 3 + 2;
+    int c; // PRINT NOG EVEN FIXEN
 
-a = (43-2);
-b = (true * 7);
-c = ((a + b) - c);
-d = ((7-7) * 0);
-e = (c - c);
-f = (int) a;
-g = foo(1);
-h = foo(1 + 2);
-i = ((!a + c) <= b) <= 3;
+// Localfunctions
+    int hallo (){} // PRINT NOG EVEN FIXEN
 
-if (a == b) 
-{
-    j = foo(1 + 2);
-    k = foo(a + b);
-}
+// Statements
+    a = 43.1234567 - 2;
+    b = true * 7;
+    c = foo(1);
+    d = foo(1 + 2);
+    e = ((!a + c) <= b) <= 3;
+    f(a);
 
-if (q) 
-    l = foo(a + 3);
-else
-    m = foo(a + 4);
+    if (a == b) 
+    {
+        j = foo(1 + 2);
+        k = foo(a + b);
+    }
 
-while (a < b) { n = test(1); o = test(2); }
-while (c) p = test(3);
+    if (q) 
+        l = foo(a + 3);
+    else
+        m = foo(a + 4);
 
-return 3;
-return;
+    while (a < b) { n = test(1); o = test(2); }
+    while (c) p = test(3);
 
-for (int i = 0, i - 3, a + b) {
-    n = foo(bar);
-}
+    for (int i = 0, i - 3, a + b) {
+        n = foo(bar);
+    }
 
-for (int i = 0, i - 3) {
-    n = foo(bar);
-}
+    for (int i = 0, i - 3) {
+        n = foo(bar);
+    }
 
-foo(bar);
-foo();
-foo(foo, bar);
+    return 3;
+    return;
+
+    foo();
+    foo(bar);
+    foo(foo, bar);
 }

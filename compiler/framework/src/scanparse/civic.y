@@ -17,6 +17,7 @@
 static node *parseresult = NULL;
 extern int yylex();
 static int yyerror( char *errname);
+node *reverselist(node *vardecs);
 
 %}
 
@@ -31,12 +32,11 @@ static int yyerror( char *errname);
  type                ctype;
 }
 
-%token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R
+%token BRACKET_L BRACKET_R COMMA SEMICOLON PAR_L PAR_R SQBR_L SQBR_R
 %token MINUS PLUS STAR SLASH PERCENT LE LT GE GT EQ NE OR AND NOT
 %token TRUEVAL FALSEVAL LET IF ELSE WHILE DO RETURN FOR
 %token INTTYPE FLOATTYPE BOOLTYPE VOIDTYPE
 %token EXTERN EXPORT
-%token COM SCOM ECOM
 
 %token <cint> NUM
 %token <cflt> FLOAT
@@ -44,7 +44,7 @@ static int yyerror( char *errname);
 
 %type <node> intval floatval boolval constant exprs expr
 %type <node> declarations declaration globaldec globaldef function 
-%type <node> funbody vardec vardecs params param localfunctions
+%type <node> funbody vardec vardecs params param localfunctions localfunction
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
 %type <ctype> type
@@ -59,7 +59,7 @@ static int yyerror( char *errname);
 %left NOT NEG
 
 // UNSURE ABOUT BELOW
-%right BRACKET_R PAR_R 
+%left BRACKET_R PAR_R 
 %left ELSE
 %right BRACKET_L PAR_L
 
@@ -142,6 +142,14 @@ function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
             $$ = TBmakeFunction($2, $3, $7, NULL);
             FUNCTION_ISEXPORT($$) = TRUE;
         }
+        | EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
+        {
+          $$ = TBmakeFunction($2, $3, NULL, NULL);
+        }
+        | EXTERN type ID BRACKET_L params BRACKET_R SEMICOLON
+        {
+          $$ = TBmakeFunction($2, $3, NULL, $5);
+        }
         ;
 
 params: param COMMA params
@@ -162,14 +170,17 @@ param: type ID
 
 funbody: vardecs localfunctions stmts
         {
+          $1 = reverselist($1);
           $$ = TBmakeFunctionbody($3, $2, $1);
         }
         | vardecs localfunctions 
         {
+          $1 = reverselist($1);
           $$ = TBmakeFunctionbody(NULL, $2, $1);
         }
         | vardecs stmts
         {
+          $1 = reverselist($1);
           $$ = TBmakeFunctionbody($2, NULL, $1);
         }
         | localfunctions stmts
@@ -178,6 +189,7 @@ funbody: vardecs localfunctions stmts
         }
         | vardecs
         {
+          $1 = reverselist($1);
           $$ = TBmakeFunctionbody(NULL, NULL, $1);
         }
         | localfunctions
@@ -194,9 +206,10 @@ funbody: vardecs localfunctions stmts
         }
         ;
 
-vardecs: vardec vardecs // GEEN ARRAY
+vardecs: vardecs vardec // GEEN ARRAY
           {
-            VARDECLARATION_NEXT($1) = $2;
+            VARDECLARATION_NEXT($2) = $1;
+            $$ = $2;
           }
           | vardec
           {
@@ -211,6 +224,22 @@ vardec: type ID LET expr SEMICOLON  // GEEN ARRAY GEEN NEXT
         | type ID SEMICOLON // GEEN ARRAY GEEN INIT GEEN NEXT
         {
           $$ = TBmakeVardeclaration($2, $1, NULL, NULL, NULL);
+        }
+        ;
+
+localfunctions: localfunction localfunctions
+          {
+            LOCALFUNCTION_NEXT($1) = $2;
+          }
+          | localfunction
+          {
+            $$ = $1;
+          }
+          ;   
+
+localfunction: function
+        {
+          $$ = TBmakeLocalfunction($1, NULL);
         }
         ;
 
@@ -296,7 +325,7 @@ dowhile: DO block WHILE BRACKET_L expr BRACKET_R SEMICOLON
         }
         ;
 
-block:  PAR_L stmts PAR_R
+block:  PAR_L stmts PAR_R // hier
         {
           $$ = $2;
         }
@@ -445,6 +474,21 @@ static int yyerror( char *error)
             global.line, global.col, error);
 
   return( 0);
+}
+
+node *reverselist(node *vardecs) {
+  node* prev = NULL;
+  node* current = vardecs;
+  node* next;
+
+  while (current != NULL)
+  {
+      next  = VARDECLARATION_NEXT(current);  
+      VARDECLARATION_NEXT(current) = prev;   
+      prev = current;
+      current = next;
+  }
+  return prev;
 }
 
 node *YYparseTree( void)

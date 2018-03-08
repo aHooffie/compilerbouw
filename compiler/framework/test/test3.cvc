@@ -1,0 +1,11 @@
+extern int a;
+int a;
+export int a;
+int a = 4 + 3;
+
+export void main (int a) {
+int a = 4 + b;
+int b = 3 + c;
+int c = 2 + a;
+int d = 1;
+}

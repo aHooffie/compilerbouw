@@ -76,9 +76,7 @@
 "bool"                     { FILTER( BOOLTYPE); }
 "void"                     { FILTER( VOIDTYPE); }
 
-"//"                        { FILTER( COM); }
-"/*"                        { FILTER( SCOM); }
-"*/"                        { FILTER( ECOM); }
+"//".*                      { global.line += 1; }
 
 [A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
                              FILTER( ID);
@@ -86,6 +84,11 @@
 
 [0-9]+                     { yylval.cint=atoi(yytext);
                              FILTER( NUM);
+                           }
+
+[0-9]*[\.][0-9]*            { yylval.cflt=atof(yytext);
+                              printf("%f\n", atof(yytext));
+                             FILTER( FLOAT);
                            }
 
 \n.*                       { global.line += 1;

@@ -383,6 +383,13 @@ node *PRTreturn(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+node *PRTarraystmt(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTarraystmtn");
+    printf("-- PRINT ARRAY STATEMENT -- \n");
+    DBUG_RETURN(arg_node);
+}
+
 /* Prints the for-loop-node. */
 node *PRTfor(node *arg_node, info *arg_info)
 {

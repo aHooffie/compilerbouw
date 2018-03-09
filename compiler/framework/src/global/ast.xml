@@ -595,7 +595,7 @@ traversals to process it.
             </sons>
         </node>
         <!-- 
-      Node If: 
+      Node IfElse: 
     -->
         <node name="IfElse">
             <description>represents if-statement</description>
@@ -678,6 +678,23 @@ traversals to process it.
                             <set name="Expr" />
                             <phases>
                                 <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+        </node>
+        <!-- 
+        Node Arraystmt
+    -->
+        <node name="ArrayStmt">
+            <sons>
+                <son name="Expr">
+                    <targets>
+                        <target mandatory="yes">
+                            <set name="Expr"/>
+                            <phases>
+                                <all/>
                             </phases>
                         </target>
                     </targets>

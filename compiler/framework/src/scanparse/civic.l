@@ -87,7 +87,6 @@
                            }
 
 [0-9]*[\.][0-9]*            { yylval.cflt=atof(yytext);
-                              printf("%f\n", atof(yytext));
                              FILTER( FLOAT);
                            }
 

@@ -1,5 +1,8 @@
+// SPATIES  + NEWLINES + MULTI LINE COMMENTS FIXEN
+
 // GlobalDec
 extern int a;
+extern int [a, b] a; // PRINT NOG EVEN FIXEN
 
 // Functiondec
 extern int foo (int p); // PRINT NOG EVEN FIXEN
@@ -11,7 +14,8 @@ int a;
 
 // Functions
 int foo () {}
-int bar (int p) {}
+int bar (int p) {} // PARAM PRINT
+int foobar (int [a, b] p) {} // PARAM PRINT
 
 export void main (int a, int b) {
 // Vardeclarations
@@ -19,7 +23,7 @@ export void main (int a, int b) {
     int b = 3 + 2;
     int c; // PRINT NOG EVEN FIXEN
 
-// Localfunctions
+    // Localfunctions
     int hallo (){} // PRINT NOG EVEN FIXEN
 
 // Statements
@@ -29,28 +33,22 @@ export void main (int a, int b) {
     d = foo(1 + 2);
     e = ((!a + c) <= b) <= 3;
     f(a);
+    g = a[1, 2]; // PRINT NOG EVEN FIXEN
+    h = array[a, b]; // PRINT NOG EVEN FIXEN
 
     if (a == b) 
     {
-        j = foo(1 + 2);
-        k = foo(a + b);
+    //    j = foo(1 + 2); FIX BLOCK
+    //    k = foo(a + b); FIX BLOCK
     }
 
-    if (q) 
+     if (q) 
         l = foo(a + 3);
-    else
+     else
         m = foo(a + 4);
 
-    while (a < b) { n = test(1); o = test(2); }
+    // while (a < b) { n = test(1); o = test(2); } FIX BLOCK
     while (c) p = test(3);
-
-    for (int i = 0, i - 3, a + b) {
-        n = foo(bar);
-    }
-
-    for (int i = 0, i - 3) {
-        n = foo(bar);
-    }
 
     return 3;
     return;

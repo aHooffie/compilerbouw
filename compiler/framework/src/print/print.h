@@ -35,6 +35,7 @@ extern node *PRTdowhile(node *arg_node, info *arg_info);
 extern node *PRTfunctioncallstmt(node *arg_node, info *arg_info);
 extern node *PRTexpressions(node *arg_node, info *arg_info);
 extern node *PRTlocalfunction(node *arg_node, info *arg_info);
+extern node *PRTarraystmt(node *arg_node, info *arg_info);
 
 /* !! EXPRESSIONS ARE BELOW !! */
 extern node *PRTbinop(node *arg_node, info *arg_info);

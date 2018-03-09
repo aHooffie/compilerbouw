@@ -14,6 +14,14 @@
 #include "free.h"
 #include "globals.h"
 
+/* MULTIDIMENSIONALE ARRAYS TO DO:
+  - ArrExpr
+  - GlobalDef met ArrExpr
+  - VarDec met ArrExpr
+  - Statement (welke functiecall?)
+  - Nog even kijken naar varlet & var?
+*/
+
 static node *parseresult = NULL;
 extern int yylex();
 static int yyerror( char *errname);
@@ -47,6 +55,7 @@ node *reverselist(node *vardecs);
 %type <node> funbody vardec vardecs params param localfunctions localfunction
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
+%type <node> ids arrayexpr
 %type <ctype> type
 
 %right LET
@@ -100,6 +109,10 @@ declaration: globaldef
 globaldec: EXTERN type ID SEMICOLON
         {
           $$ = TBmakeGlobaldec($2, $3, NULL);
+        }
+        | EXTERN type SQBR_L ids SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldec($2, $6, $4);
         }
         ;
 
@@ -166,7 +179,21 @@ param: type ID
         {
           $$ = TBmakeParameters($2, $1, NULL, NULL);
         }
-        ;   
+        | type SQBR_L ids SQBR_R ID
+        {
+          $$ = TBmakeParameters($5, $1, NULL, $3);
+        }
+        ;
+
+ids: ID COMMA ids
+    {
+      $$ = TBmakeIds( STRcpy( $1), $3);
+    } 
+    | ID
+    {
+      $$ = TBmakeIds( STRcpy( $1), NULL);
+    }  
+    ;
 
 funbody: vardecs localfunctions stmts
         {
@@ -265,6 +292,10 @@ stmt:   assign
         {
           $$ = TBmakeFunctioncallstmt( STRcpy( $1), NULL);
         } 
+        | ID SQBR_L exprs SQBR_R LET expr SEMICOLON
+        {
+          $$ = TBmakeArraystmt($3); // KLOPT DIT??
+        }
         | while
         {
            $$ = $1;
@@ -325,9 +356,9 @@ dowhile: DO block WHILE BRACKET_L expr BRACKET_R SEMICOLON
         }
         ;
 
-block:  PAR_L stmts PAR_R // hier
+block:  PAR_L stmts PAR_R
         {
-          $$ = $2;
+          $$ = reverselist($2);
         }
         | PAR_L PAR_R
         {
@@ -361,6 +392,15 @@ varlet: ID
             // Hoe VarLet testen?
         ;
 
+arrayexpr: SQBR_L exprs SQBR_R 
+        {
+          $$ = TBmakeArrayExpr($2);
+        }
+        | expr
+        {
+          $$ = TBmakeArrayExpr($1);
+        }
+        ;   
 
 exprs: expr COMMA exprs
       {
@@ -396,6 +436,10 @@ expr: BRACKET_L expr BRACKET_R
     {
       $$ = TBmakeFunctioncallexpr( STRcpy( $1), NULL);
     } 
+    | ID SQBR_L exprs SQBR_R
+    {
+      $$ = TBmakeVar( STRcpy( $1), $3);
+    }
     | ID
       {
         $$ = TBmakeVar( STRcpy( $1), NULL);
@@ -457,14 +501,14 @@ binop: expr PLUS expr      { $$ = TBmakeBinop(BO_add, $1, $3); }
      | expr AND expr       { $$ = TBmakeBinop(BO_and, $1, $3); }
      ;
 
-monop: MINUS expr      { $$ = TBmakeMonop(MO_neg, $2); }     
+monop: MINUS expr          { $$ = TBmakeMonop(MO_neg, $2); }     
       | NOT expr       { $$ = TBmakeMonop(MO_not, $2); }     
       ;
 
-type: INTTYPE            { $$ = T_int; }     
-      | FLOATTYPE       { $$ = T_float; } 
-      | BOOLTYPE        { $$ = T_bool; } 
-      | VOIDTYPE         { $$ = T_void; } 
+type: INTTYPE              { $$ = T_int; }     
+      | FLOATTYPE          { $$ = T_float; } 
+      | BOOLTYPE           { $$ = T_bool; } 
+      | VOIDTYPE           { $$ = T_void; } 
       ;
 %%
 

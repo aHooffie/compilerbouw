@@ -53,6 +53,24 @@ traversals to process it.
                     <node name="BinOp" />
                 </travuser>
             </traversal>
+            <traversal id="M" name="Traverse Symbol Table" default="sons" include="add_symboltables.h">
+                <travuser>
+                    <node name="Program" />
+                    <node name="Function" />
+                    <node name="GlobalDec" />
+                    <node name="GlobalDef" />
+
+                    <node name="Declarations" />
+                    <node name="Parameters" />
+                    <node name="VarDeclaration" />
+                    <node name="Stmts" />
+                    <node name="IfElse" />
+                    
+                    <node name="IfElse" />
+                    <node name="IfElse" />
+                    <node name="IfElse" />
+                </travuser>
+            </traversal>
         </general>
     </phases>
     <!--

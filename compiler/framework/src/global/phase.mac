@@ -50,7 +50,13 @@ SUBPHASE( os,
           "Optimise subtraction",
           OSdoOptSub, 
           ALWAYS,
-          pet)   
+          pet) 
+
+SUBPHASE( m, 
+          "SymbolTable",
+          MtravSymbolTable, 
+          ALWAYS,
+          pet)    
       
 ENDPHASE( pet) 
 

@@ -685,23 +685,6 @@ traversals to process it.
             </sons>
         </node>
         <!-- 
-        Node Arraystmt
-    -->
-        <node name="ArrayStmt">
-            <sons>
-                <son name="Expr">
-                    <targets>
-                        <target mandatory="yes">
-                            <set name="Expr"/>
-                            <phases>
-                                <all/>
-                            </phases>
-                        </target>
-                    </targets>
-                </son>
-            </sons>
-        </node>
-        <!-- 
       Node For: 
     -->
         <node name="For">
@@ -1236,6 +1219,17 @@ traversals to process it.
                     <description>represents required expression </description>
                     <targets>
                         <target mandatory="yes">
+                            <node name="Expressions" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Next">
+                    <description>represents required expression </description>
+                    <targets>
+                        <target mandatory="no">
                             <node name="Expressions" />
                             <phases>
                                 <all />

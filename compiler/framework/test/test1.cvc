@@ -1,11 +1,9 @@
-// SPATIES  + NEWLINES + MULTI LINE COMMENTS FIXEN
-
 // GlobalDec
 extern int a;
-extern int [a, b] a; // PRINT NOG EVEN FIXEN
+extern int [a, b] a;
 
 // Functiondec
-extern int foo (int p); // PRINT NOG EVEN FIXEN
+extern int foo (int p);
 
 // GlobalDef
 export int sum = 1 + 2;
@@ -14,17 +12,18 @@ int a;
 
 // Functions
 int foo () {}
-int bar (int p) {} // PARAM PRINT
-int foobar (int [a, b] p) {} // PARAM PRINT
+int bar (int p) {} 
+int foobar (int [a, b] p) {}
 
 export void main (int a, int b) {
 // Vardeclarations
     int a = a + b;
     int b = 3 + 2;
-    int c; // PRINT NOG EVEN FIXEN
+    int c;
 
-    // Localfunctions
-    int hallo (){} // PRINT NOG EVEN FIXEN
+// Localfunctions - PRINT NIET!!
+   int hallo (){} 
+   int hoi (int a, int b) {}
 
 // Statements
     a = 43.1234567 - 2;
@@ -33,13 +32,17 @@ export void main (int a, int b) {
     d = foo(1 + 2);
     e = ((!a + c) <= b) <= 3;
     f(a);
-    g = a[1, 2]; // PRINT NOG EVEN FIXEN
-    h = array[a, b]; // PRINT NOG EVEN FIXEN
+    g = a[1, 2];
+    h = array[a, b];
 
     if (a == b) 
     {
-    //    j = foo(1 + 2); FIX BLOCK
-    //    k = foo(a + b); FIX BLOCK
+        j = foo(1 + 2); 
+        k = foo(a + b); 
+        if (a == c) 
+        {
+            foo(bar(1));
+        }
     }
 
      if (q) 
@@ -47,8 +50,20 @@ export void main (int a, int b) {
      else
         m = foo(a + 4);
 
-    // while (a < b) { n = test(1); o = test(2); } FIX BLOCK
-    while (c) p = test(3);
+    while (a < b)
+    {
+         n = test(1);
+         o = test(2);
+    }
+
+    while (c)
+        p = test(3);
+
+
+    /* 
+        testen
+        van comments
+     */
 
     return 3;
     return;

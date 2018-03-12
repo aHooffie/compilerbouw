@@ -28,6 +28,7 @@
 %e 2000 /* set nodes to 1100 */
 %option noyywrap
 %option nounput
+%x C_COMMENT
 
 
 %%
@@ -76,7 +77,14 @@
 "bool"                     { FILTER( BOOLTYPE); }
 "void"                     { FILTER( VOIDTYPE); }
 
-"//".*                      { global.line += 1; }
+"\/\/".*                   { global.line += 1; }
+
+"/*"                       { BEGIN(C_COMMENT); }
+<C_COMMENT>"*/"            { BEGIN(INITIAL); }
+<C_COMMENT>\n              { }
+<C_COMMENT>.               { }
+
+
 
 [A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
                              FILTER( ID);

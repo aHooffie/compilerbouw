@@ -55,7 +55,7 @@ node *reverselist(node *vardecs);
 %type <node> funbody vardec vardecs params param localfunctions localfunction
 %type <node> stmts stmt assign varlet program if while dowhile block return for
 %type <node> binop monop
-%type <node> ids arrayexpr
+%type <node> ids arrayexprs arrayexpr
 %type <ctype> type
 
 %right LET
@@ -294,7 +294,7 @@ stmt:   assign
         } 
         | ID SQBR_L exprs SQBR_R LET expr SEMICOLON
         {
-          $$ = TBmakeArraystmt($3); // KLOPT DIT??
+          $$ = NULL; // KLOPT DIT??
         }
         | while
         {
@@ -358,7 +358,7 @@ dowhile: DO block WHILE BRACKET_L expr BRACKET_R SEMICOLON
 
 block:  PAR_L stmts PAR_R
         {
-          $$ = reverselist($2);
+          $$ = $2;
         }
         | PAR_L PAR_R
         {
@@ -392,13 +392,23 @@ varlet: ID
             // Hoe VarLet testen?
         ;
 
-arrayexpr: SQBR_L exprs SQBR_R 
+arrayexprs: SQBR_L arrayexpr COMMA arrayexprs SQBR_R 
         {
-          $$ = TBmakeArrayExpr($2);
+          ARRAYEXPR_NEXT($2) = $4;
+        }
+        | arrayexpr
+        {
+          $$ = $1;
+        }
+        ;
+
+arrayexpr: SQBR_L arrayexpr SQBR_R 
+        {
+          $$ = $2;
         }
         | expr
         {
-          $$ = TBmakeArrayExpr($1);
+          $$ = TBmakeArrayExpr($1, NULL);
         }
         ;   
 

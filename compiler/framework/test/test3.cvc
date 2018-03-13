@@ -2,8 +2,16 @@ extern int a;
 int b = 4 + 3;
 
 export void main (int p) {
+    bool a = (42 +  (13 * tutu));
     int q = 4 + b;
     int r = 3 + c;
     int s = 2 + a;
-    int t = 1;
+    int t;
+    a(1);
+    test = test1;
+
+    while (HALLO == HALLO)
+        HOI = TEST;
+    
+    return c;
 }

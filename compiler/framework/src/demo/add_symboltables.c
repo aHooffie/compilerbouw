@@ -44,7 +44,8 @@ node *ASglobaldef(node *arg_node, info *arg_info)
 node *ASfunction(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASfunction");
-  FUNCTION_HIERBENIK( arg_node) = TRAVdo( PROGRAM_DECLARATIONS( arg_node), arg_info);
+  FUNCTION_FUNCTIONBODY( arg_node) = TRAVdo( FUNCTION_FUNCTIONBODY( arg_node), arg_info);
+  FUNCTION_PARAMETERS( arg_node) = TRAVdo( FUNCTION_PARAMETERS( arg_node), arg_info);
 
   printf("Found a FUNCTION %s. Write to global ST & Create own ST.\n", FUNCTION_NAME(arg_node));
   DBUG_RETURN(arg_node);

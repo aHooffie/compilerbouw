@@ -1,4 +1,4 @@
-/*
+/* HOIHOI
  * Module: Traversing and looking for symbol table links
  * Prefix: AS
  */

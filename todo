@@ -6,3 +6,15 @@ Dingen die we niet moeten vergeten:
 - Localfunction node wordt nog niet geprint in print.c/ast.xml/civic.y??
 - ArrayExpr in civic.y geeft nog errors (deel van array extension milestone 4)
 - De linecount klopt niet meer door het invoeren van de comments bij het parsen (civic.l).
+
+Verder deze week (6):
+- Milestone 5 (nog van week 5)
+- Milestone 6 (nog van week 5)
+- Milestone 7
+- Milestone 8
+- Milestone 9
+- Milestone 10
+- Milestone 11
+
+- Assignment 4 voor vrijdag
+

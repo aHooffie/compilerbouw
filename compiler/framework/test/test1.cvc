@@ -20,6 +20,10 @@ export void main (int a, int b) {
     int a = a + b;
     int b = 3 + 2;
     int c;
+    int [1, 2] d;
+    // int [1, 2] g = a;
+    // int [1, 2] e = [a];
+    // int [1, 2] f = [a, b];
 
 // Localfunctions - PRINT NIET!!
    int hallo (){} 
@@ -32,8 +36,11 @@ export void main (int a, int b) {
     d = foo(1 + 2);
     e = ((!a + c) <= b) <= 3;
     f(a);
+
+    // Arrays
     g = a[1, 2];
     h = array[a, b];
+    a[a, b] = 4;
 
     if (a == b) 
     {

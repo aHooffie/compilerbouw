@@ -233,7 +233,7 @@ funbody: vardecs localfunctions stmts
         }
         ;
 
-vardecs: vardecs vardec // GEEN ARRAY
+vardecs: vardecs vardec 
           {
             VARDECLARATION_NEXT($2) = $1;
             $$ = $2;
@@ -244,13 +244,22 @@ vardecs: vardecs vardec // GEEN ARRAY
           }
           ;      
 
-vardec: type ID LET expr SEMICOLON  // GEEN ARRAY GEEN NEXT
+vardec: type ID LET expr SEMICOLON
         {
           $$ = TBmakeVardeclaration($2, $1, NULL, $4, NULL);
         }
-        | type ID SEMICOLON // GEEN ARRAY GEEN INIT GEEN NEXT
+        | type ID SEMICOLON
         {
           $$ = TBmakeVardeclaration($2, $1, NULL, NULL, NULL);
+        }
+        | type SQBR_L exprs SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeVardeclaration($5, $1, $3, NULL, NULL);
+        }
+        | type SQBR_L exprs SQBR_R ID LET arrayexprs
+        {
+          printf("--------ARRAYEXPRS GEVONDEN\n");
+          $$ = TBmakeVardeclaration($5, $1, $3, $7, NULL);
         }
         ;
 
@@ -266,6 +275,7 @@ localfunctions: localfunction localfunctions
 
 localfunction: function
         {
+          printf("MOOIE LOCAL FUNCTIONE\n");
           $$ = TBmakeLocalfunction($1, NULL);
         }
         ;
@@ -292,10 +302,6 @@ stmt:   assign
         {
           $$ = TBmakeFunctioncallstmt( STRcpy( $1), NULL);
         } 
-        | ID SQBR_L exprs SQBR_R LET expr SEMICOLON
-        {
-          $$ = NULL; // KLOPT DIT??
-        }
         | while
         {
            $$ = $1;
@@ -388,13 +394,15 @@ varlet: ID
         {
           $$ = TBmakeVarlet( STRcpy ($1), $2, NULL);
         }
-            // Mogelijk nog Array indices als input ($3).
-            // Hoe VarLet testen?
+        | ID SQBR_L exprs SQBR_R
+        {
+          $$ = TBmakeVarlet( STRcpy ($1), NULL, $3);
+        }
         ;
 
-arrayexprs: SQBR_L arrayexpr COMMA arrayexprs SQBR_R 
+arrayexprs: arrayexpr COMMA arrayexprs 
         {
-          ARRAYEXPR_NEXT($2) = $4;
+          ARRAYEXPR_NEXT($1) = $3;
         }
         | arrayexpr
         {
@@ -408,7 +416,8 @@ arrayexpr: SQBR_L arrayexpr SQBR_R
         }
         | expr
         {
-          $$ = TBmakeArrayExpr($1, NULL);
+          printf("------- ARRAYEXPR GEVONDEN\n");
+          $$ = TBmakeArrayexpr($1, NULL);
         }
         ;   
 

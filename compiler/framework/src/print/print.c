@@ -309,6 +309,13 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
         DBUG_ASSERT(0, "vardeclaration type cannot be void!");
         break;
     }
+
+    if (VARDECLARATION_DIMENSIONS(arg_node) != NULL)
+    {
+        printf("[");
+        VARDECLARATION_DIMENSIONS(arg_node) = TRAVdo(VARDECLARATION_DIMENSIONS(arg_node), arg_info);
+        printf("] ");
+    }
     printf("%s", VARDECLARATION_NAME(arg_node));
 
     if (VARDECLARATION_INIT(arg_node) != NULL)
@@ -319,9 +326,6 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
     }
     else
         printf(";\n");
-
-    if (VARDECLARATION_DIMENSIONS(arg_node) != NULL)
-        VARDECLARATION_DIMENSIONS(arg_node) = TRAVdo(VARDECLARATION_DIMENSIONS(arg_node), arg_info);
 
     if (VARDECLARATION_NEXT(arg_node) != NULL)
         VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
@@ -521,7 +525,7 @@ node *PRTexpressions(node *arg_node, info *arg_info)
 node *PRTlocalfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTlocalfunction");
-    printf("\n\n HIER MOOI \n\n");
+    printf("\n\n---------- HIER MOOI -----------\n\n");
 
     if (LOCALFUNCTION_NEXT(arg_node) != NULL)
         LOCALFUNCTION_NEXT(arg_node) =
@@ -671,8 +675,8 @@ node *PRTvarlet(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTvarlet");
 
-    if (VARLET_NEXT(arg_node) != NULL)
-        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+    printf("%s", VARLET_NAME(arg_node));
+
     if (VARLET_INDICES(arg_node) != NULL)
     {
         printf("[");
@@ -680,7 +684,8 @@ node *PRTvarlet(node *arg_node, info *arg_info)
         printf("]");
     }
 
-    printf("%s", VARLET_NAME(arg_node));
+    if (VARLET_NEXT(arg_node) != NULL)
+        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -757,7 +762,8 @@ node *PRTcast(node *arg_node, info *arg_info)
 node *PRTarrayexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTarrayexpr");
-    ARRAYEXPR_EXPRS(arg_node) = TRAVdo(ARRAYEXPR_EXPRS(arg_node), arg_info);
+    printf("PRINT ARRAY EXPR\n");
+    ARRAYEXPR_EXPRESSIONS(arg_node) = TRAVdo(ARRAYEXPR_EXPRESSIONS(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
 

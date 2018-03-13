@@ -91,18 +91,6 @@ node *ASvarlet(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASvarlet");
   printf("Found a VARLET %s. Write to function ST.", VARLET_NAME(arg_node));
-  
-  if (VARLET_NEXT != NULL)
-  {
-    VARLET_NEXT( arg_node) = TRAVdo( VARLET_NEXT( arg_node), NULL);
-  }
-
-
-  if (VARLET_INDICES != NULL)
-  {
-    FUNCTION_INDICES( arg_node) = TRAVdo( FUNCTION_INDICES( arg_node), NULL);
-  }
-
   DBUG_RETURN(arg_node);
 }
 

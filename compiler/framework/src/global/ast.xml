@@ -129,7 +129,7 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name="Globals">
+                <attribute name="Declaration">
                     <description>represents link to symbol table entry with globals</description>
                     <type name="Link">
                         <targets>
@@ -547,7 +547,7 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Variabledeclaration">
+                <attribute name="Declaration">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
@@ -840,7 +840,7 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="SymbolTableCall">
+                <attribute name="Symboltable">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
@@ -1222,7 +1222,7 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="CalltoSymbolTable">
+                <attribute name="SymbolTable">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>

@@ -4,15 +4,20 @@
 // moet dit hier ook? voor node?
 #include "types.h"
 
-extern node *Mglobaldec(node *arg_node, info *arg_info);
-extern node *Mglobaldefnode( *arg_node, info *arg_info);
+extern node *ASprogram(node *arg_node, info *arg_info);
+extern node *ASglobaldec(node *arg_node, info *arg_info);
+extern node *ASglobaldef(node *arg_node, info *arg_info);
 
-extern node *Mfunction(node *arg_node, info *arg_info);
-extern node *Mfunctioncallstmt(node *arg_node, info *arg_info);
-extern node *Mfunctioncallexpr(node *arg_node, info *arg_info);
+extern node *ASfunction(node *arg_node, info *arg_info);
+extern node *ASfunctioncallstmt(node *arg_node, info *arg_info);
+extern node *ASfunctioncallexpr(node *arg_node, info *arg_info);
+extern node *ASparameters(node *arg_node, info *arg_info);
 
-extern node *Mvar(node *arg_node, info *arg_info);
-extern node *Mvarlet(node *arg_node, info *arg_info);
-extern node *Mvardeclaration(node *arg_node, info *arg_info);
+extern node *ASvar(node *arg_node, info *arg_info);
+extern node *ASvarlet(node *arg_node, info *arg_info);
+extern node *ASvardeclaration(node *arg_node, info *arg_info);
+
+extern node *ASids(node *arg_node, info *arg_info);
+extern node *ASdoAddSymbolTables(node *syntaxtree);
 
 #endif

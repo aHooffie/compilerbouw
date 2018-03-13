@@ -1,6 +1,6 @@
 /*
  * Module: Traversing and looking for symbol table links
- * Prefix: M
+ * Prefix: AS
  */
 
 #include "add_symboltables.h"
@@ -13,215 +13,130 @@
 #include "memory.h"
 #include "ctinfo.h"
 
+/* INFO structure */
 
-
-/*
- * INFO structure
- */
-
-struct INFO {
-  // int sum;
+struct INFO
+{
 };
 
+/* INFO macros */
 
-/*
- * INFO macros
- */
-
-// #define INFO_SUM(n)  ((n)->sum)
-
-
-
-/*
- * INFO functions
- */
-
+/* INFO functions */
 static info *MakeInfo(void)
 {
   info *result;
 
-  DBUG_ENTER( "MakeInfo");
+  DBUG_ENTER("ASakeInfo");
 
   result = (info *)MEMmalloc(sizeof(info));
 
-  // INFO_SUM( result) = 0;
-
-  DBUG_RETURN( result);
+  DBUG_RETURN(result);
 }
 
-static info *FreeInfo( info *info)
+static info *FreeInfo(info *info)
 {
-  DBUG_ENTER ("FreeInfo");
+  DBUG_ENTER("FreeInfo");
 
-  info = MEMfree( info);
+  info = MEMfree(info);
 
-  DBUG_RETURN( info);
+  DBUG_RETURN(info);
 }
-
 
 /* Found a node that should have a symbol table entry (either read or write) */
 
-
-// PROGRAM
-node *Mprog(node *arg_node, info *arg_info)
-{
-  DBUG_ENTER("Mprog");
-  // printf("Found a GLOBALDEC! %s", GLOBALDEC_NAME(arg_node));
-  DBUG_RETURN(arg_node);
-}
-
-
 // GLOBALS
-node *Mdecls(node *arg_node, info *arg_info)
+node *ASprogram(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mdecls");
-  // printf("Found a GLOBALDEC! %s", GLOBALDEC_NAME(arg_node));
+  DBUG_ENTER("ASprog");
+  printf("Found a Program node. This should create a ST!\n");
   DBUG_RETURN(arg_node);
 }
 
-node *Mglobaldec(node *arg_node, info *arg_info)
+node *ASglobaldec(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mglobaldec");
-  printf("Found a GLOBALDEC! %s", GLOBALDEC_NAME(arg_node));
+  DBUG_ENTER("ASglobaldec");
+  printf("Found a GLOBALDEC %s. Write to global ST.\n", GLOBALDEC_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-node *Mglobaldefnode( *arg_node, info *arg_info)
+node *ASglobaldef(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mglobaldefnode");
-  printf("Found a GLOBALDEFNODE! %s", GLOBALDEF_NAME(arg_node));
+  DBUG_ENTER("ASglobaldef");
+  printf("Found a GLOBALDEF %s. Write to global ST.\n", GLOBALDEF_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
-
 
 // FUNCTION RELATED
-node *Mfunction(node *arg_node, info *arg_info)
+node *ASfunction(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mfunction");
-  printf("Found a FUNCTION! %s", FUNCTION_NAME(arg_node));
+  DBUG_ENTER("ASfunction");
+  printf("Found a FUNCTION %s. Write to global ST & Create own ST.\n", FUNCTION_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-node *Mfunctioncallstmt(node *arg_node, info *arg_info)
+node *ASparameters(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mfunctioncallstmt");
-  printf("Found a FUNCTIONCALLSTMT! %s", FUNCTIONCALLSTMT_NAME(arg_node));
+  DBUG_ENTER("ASfunction");
+  printf("Found a PARAMETER %s. Write to function ST.\n", PARAMETERS_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-node *Mfunctioncallexpr(node *arg_node, info *arg_info)
+node *ASvardeclaration(node *arg_node, info *arg_info)
+{
+  DBUG_ENTER("ASfunction");
+  printf("Found a VARDECLARATION %s. Write to function ST.\n", VARDECLARATION_NAME(arg_node));
+  DBUG_RETURN(arg_node);
+}
+
+node *ASfunctioncallstmt(node *arg_node, info *arg_info)
+{
+  DBUG_ENTER("ASfunctioncallstmt");
+  printf("Found a FUNCTIONCALLSTMT %s. Write to function ST??", FUNCTIONCALLSTMT_NAME(arg_node));
+  DBUG_RETURN(arg_node);
+}
+
+node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("FUNCTIONCALLEXPR");
-  printf("Found a XX! %s", FUNCTIONCALLEXPR_NAME(arg_node));
+  printf("Found a FUNCTIONCALLEXPR %s. Write to function ST???", FUNCTIONCALLEXPR_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
-
 
 // VARIABLES INSIDE FUNCTIONS
-node *Mvar(node *arg_node, info *arg_info)
+node *ASvar(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mvar");
-  printf("Found a VAR! %s", VAR_NAME(arg_node));
+  DBUG_ENTER("ASvar");
+  printf("Found a VAR %s. Write to function ST.", VAR_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-node *Mvarlet(node *arg_node, info *arg_info)
+node *ASvarlet(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mvarlet");
-  printf("Found a VARLET! %s", VARLET_NAME(arg_node));
+  DBUG_ENTER("ASvarlet");
+  printf("Found a VARLET %s. Write to function ST.", VARLET_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-node *Mvardeclaration(node *arg_node, info *arg_info)
+// IDS & ARRAYEXPR??
+node *ASids(node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("Mvardeclaration");
-  printf("Found a VARDECLARATION! %s", VARDECLARATION_NAME(arg_node));
+  DBUG_ENTER("ASids");
+  printf("Found an ID! DOES THIS REQUIRE ST?%s", IDS_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
 
-
-// PARAMETERS
-node *Mparams(node *arg_node, info *arg_info)
-{
-  DBUG_ENTER("Mparams");
-  printf("Found a PARAMETER! %s", PARAMETERS_NAME(arg_node));
-  DBUG_RETURN(arg_node);
-}
-
-
-// IDS
-node *Mids(node *arg_node, info *arg_info)
-{
-  DBUG_ENTER("Mids");
-  printf("Found an ID! %s", IDS_NAME(arg_node));
-  DBUG_RETURN(arg_node);
-}
-
-
-// LOOP RELATED
-// node *Mfor(node *arg_node, info *arg_info)
-// {
-//   DBUG_ENTER("Mfor");
-//   // printf("Found a ...! %s", IDS_NAME(arg_node));
-//   DBUG_RETURN(arg_node);
-// }
-
-// node *Mwhileloop(node *arg_node, info *arg_info)
-// {
-//   DBUG_ENTER("Mwhileloop");
-//   // printf("Found a ...! %s", IDS_NAME(arg_node));
-//   DBUG_RETURN(arg_node);
-// }
-
-// node *Mdowhileloop(node *arg_node, info *arg_info)
-// {
-//   DBUG_ENTER("Mdowhileloop");
-//   // printf("Found a ...! %s", IDS_NAME(arg_node));
-//   DBUG_RETURN(arg_node);
-// }
-
-// // IF STATEMENT
-// node *Mif(node *arg_node, info *arg_info)
-// {
-//   DBUG_ENTER("Mif");
-//   // printf("Found a ...! %s", IDS_NAME(arg_node));
-//   DBUG_RETURN(arg_node);
-// }
-
-// RETURN STATEMENT
-node *Mreturn(node *arg_node, info *arg_info)
-{
-  DBUG_ENTER("Mreturn");
-  // printf("Found a ...! %s", NODE_TYPE(arg_node));
-  DBUG_RETURN(arg_node);
-}
-
-// BOOLEAN
-node *Mbool(node *arg_node, info *arg_info)
-{
-  DBUG_ENTER("Mbool");
-  printf("Found a BOOL! %s", BOOL_VALUE(arg_node));
-  DBUG_RETURN(arg_node);
-}
-
-// ARRAYS LOCALFUNCTION (?)!!
-
-
-/*
- * Traversal start function
- */
-
-node *MtravSymbolTable(node *syntaxtree)
+/* Traversal start function */
+node *ASdoAddSymbolTables(node *syntaxtree)
 {
   info *arg_info;
 
-  DBUG_ENTER("MtravSymbolTable");
+  DBUG_ENTER("ASdoAddSymbolTables");
 
   TRAVpush(TR_m);
   syntaxtree = TRAVdo(syntaxtree, arg_info);
   TRAVpop();
 
-  arg_info = FreeInfo( arg_info);
+  arg_info = FreeInfo(arg_info);
 
   CTInote("Traversing done...\n");
 

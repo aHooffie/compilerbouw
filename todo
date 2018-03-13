@@ -1,0 +1,8 @@
+Dingen die we niet moeten vergeten:
+
+- Wanneer worden type unknown errors aangeroepen?
+
+
+- Localfunction node wordt nog niet geprint in print.c/ast.xml/civic.y??
+- ArrayExpr in civic.y geeft nog errors (deel van array extension milestone 4)
+- De linecount klopt niet meer door het invoeren van de comments bij het parsen (civic.l).

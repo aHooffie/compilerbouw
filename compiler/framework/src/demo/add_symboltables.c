@@ -13,42 +13,16 @@
 #include "memory.h"
 #include "ctinfo.h"
 
-/* INFO structure */
-
-struct INFO
-{
-};
-
-/* INFO macros */
-
-/* INFO functions */
-static info *MakeInfo(void)
-{
-  info *result;
-
-  DBUG_ENTER("ASakeInfo");
-
-  result = (info *)MEMmalloc(sizeof(info));
-
-  DBUG_RETURN(result);
-}
-
-static info *FreeInfo(info *info)
-{
-  DBUG_ENTER("FreeInfo");
-
-  info = MEMfree(info);
-
-  DBUG_RETURN(info);
-}
-
 /* Found a node that should have a symbol table entry (either read or write) */
 
 // GLOBALS
 node *ASprogram(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASprog");
+  
   printf("Found a Program node. This should create a ST!\n");
+  PROGRAM_DECLARATIONS( arg_node) = TRAVdo( PROGRAM_DECLARATIONS( arg_node), arg_info);
+
   DBUG_RETURN(arg_node);
 }
 
@@ -70,6 +44,8 @@ node *ASglobaldef(node *arg_node, info *arg_info)
 node *ASfunction(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASfunction");
+  FUNCTION_HIERBENIK( arg_node) = TRAVdo( PROGRAM_DECLARATIONS( arg_node), arg_info);
+
   printf("Found a FUNCTION %s. Write to global ST & Create own ST.\n", FUNCTION_NAME(arg_node));
   DBUG_RETURN(arg_node);
 }
@@ -128,15 +104,12 @@ node *ASids(node *arg_node, info *arg_info)
 /* Traversal start function */
 node *ASdoAddSymbolTables(node *syntaxtree)
 {
-  info *arg_info;
 
   DBUG_ENTER("ASdoAddSymbolTables");
 
-  TRAVpush(TR_m);
-  syntaxtree = TRAVdo(syntaxtree, arg_info);
+  TRAVpush( TR_as);
+  syntaxtree = TRAVdo(syntaxtree, NULL);
   TRAVpop();
-
-  arg_info = FreeInfo(arg_info);
 
   CTInote("Traversing done...\n");
 

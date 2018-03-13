@@ -28,17 +28,13 @@
 # defective, you assume the cost of all servicing, repair, or correction.
 # # ---------------------------------------------------------------------------
 # 
-
-
 ###############################################################################
 #
 # Collection of source directories
 #
 
 
-src = global scanparse print codegen demo framework             
-
-###############################################################################
+src = global scanparse print codegen demo framework             ###############################################################################
 #
 # Collection of object files
 #
@@ -60,5 +56,4 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-demo        = rename_identifiers.o opt_sub.o sum_ints.o
-
+demo        = rename_identifiers.o opt_sub.o sum_ints.o add_symboltables.o

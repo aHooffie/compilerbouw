@@ -77,7 +77,7 @@
 "bool"                     { FILTER( BOOLTYPE); }
 "void"                     { FILTER( VOIDTYPE); }
 
-"\/\/".*                   { global.line += 1; }
+"\/\/".*                   { }
 
 "/*"                       { BEGIN(C_COMMENT); }
 <C_COMMENT>"*/"            { BEGIN(INITIAL); }

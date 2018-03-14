@@ -60,6 +60,7 @@ node *ASprogram(node *arg_node, info *arg_info)
 
 
   // MOET HET IN PROGRAM NOU OOK???
+  /// OF ALLEEN TOEVOEGEN AAN HUIDIGE ARG_INFO?...
 
   // // create new table object
   // info *new_info;

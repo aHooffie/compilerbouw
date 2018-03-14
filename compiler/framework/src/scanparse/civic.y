@@ -124,6 +124,22 @@ globaldef: type ID SEMICOLON
         {
           $$ = TBmakeGlobaldef($2, $1, NULL, $4);
         }
+        | type SQBR_L exprs SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, NULL);
+        }
+         | EXPORT type SQBR_L exprs SQBR_R ID SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($6, $2, $4, NULL);
+        }
+        | type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, $7);
+        }
+        | type SQBR_L exprs SQBR_R ID LET SQBR_L arrayexprs SQBR_R SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, $8);
+        }
         | EXPORT type ID SEMICOLON
         {
           $$ = TBmakeGlobaldef($3, $2, NULL, NULL);
@@ -133,14 +149,6 @@ globaldef: type ID SEMICOLON
         {
           $$ = TBmakeGlobaldef($3, $2, NULL, $5);
           GLOBALDEF_ISEXPORT($$) = TRUE;
-        }
-        | type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
-        {
-          $$ = TBmakeGlobaldef($5, $1, $3, $7);
-        }
-        | type SQBR_L exprs SQBR_R ID LET SQBR_L arrayexprs SQBR_R SEMICOLON
-        {
-          $$ = TBmakeGlobaldef($5, $1, $3, $8);
         }
         | EXPORT type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
         {

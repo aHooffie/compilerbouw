@@ -286,6 +286,10 @@ node *ASids(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASids");
   printf("Found ID %s! DOES THIS REQUIRE ST?\n", IDS_NAME(arg_node));
+  if (IDS_NEXT(arg_node) != NULL) 
+      IDS_NEXT( arg_node) = TRAVdo(IDS_NEXT( arg_node), NULL);
+
+
   DBUG_RETURN(arg_node);
 }
 

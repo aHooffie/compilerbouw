@@ -531,13 +531,15 @@ node *PRTlocalfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTlocalfunction");
 
-    // PRT INDENT!
+    prtIndent(arg_info);
+
     LOCALFUNCTION_FUNCTION(arg_node) = 
         TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
 
     if (LOCALFUNCTION_NEXT(arg_node) != NULL)
         LOCALFUNCTION_NEXT(arg_node) =
             TRAVdo(LOCALFUNCTION_NEXT(arg_node), arg_info);
+    
     
     DBUG_RETURN(arg_node);
 }
@@ -767,8 +769,16 @@ node *PRTcast(node *arg_node, info *arg_info)
 node *PRTarrayexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTarrayexpr");
-    printf("PRTARRAY\n");
+    // printf("[");
     ARRAYEXPR_EXPR(arg_node) = TRAVdo(ARRAYEXPR_EXPR(arg_node), arg_info);
+
+    if (ARRAYEXPR_NEXT(arg_node) != NULL) {
+        printf(", [");
+        ARRAYEXPR_NEXT(arg_node) = TRAVdo(ARRAYEXPR_NEXT(arg_node), arg_info);
+        printf("]");
+    }
+    // printf("]");
+
     DBUG_RETURN(arg_node);
 }
 

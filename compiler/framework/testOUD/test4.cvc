@@ -1,73 +1,73 @@
 // GlobalDec
 extern int a;
-extern int [a, b] a;
+extern int [b, c] d;
 
 // Functiondec
-extern int foo (int p);
+extern int foo (int e);
 
 // GlobalDef
-export int sum = 1 + 2;
-int sum = 4 + 3;
-int a;
+export int f = 1 + 2;
+int g = 4 + 3;
+int h;
 
 // Functions
 int foo () {}
-int bar (int p) {} 
-int foobar (int [a, b] p) {}
+int bar (int i) {} 
+int foobar (int [j, k] l) {}
 
-export void main (int a, int b) {
+export void main (int m, int n) {
 // Vardeclarations
-    int a = a + b;
-    int b = 3 + 2;
-    int c;
-    int [1, 2] d;
-    int [1, 2] g = a;
-    int [1, 2] e = [a];
-    int [1, 2] f = [[a]];
-    int [1, 2] g = [[a], [b]];
-    int [1, 2] h = [a, b];
+    int o = p + q;
+    int r = 3 + 2;
+    int s;
+    int [1, 2] t;
+    int [1, 2] u = v;
+    int [1, 2] w = [x];
+    int [1, 2] y = [[z]];
+    int [1, 2] aa = [[bb], [cc]]; // haakjes printen
+    int [1, 2] dd = [ee, ff];
 
 
 // Localfunctions
-   int hallo (){} 
-   int hoi (int a, int b) {}
+   int gg (){} 
+   int hh (int ii, int jj) {}
 
 // Statements
-    a = 43.1234567 - 2;
-    b = true * 7;
-    c = foo(1);
-    d = foo(1 + 2);
-    e = ((!a + c) <= b) <= 3;
-    f(a);
+    kk = 43.1234567 - 2;
+    ll = true * 7;
+    mm = nn(1);
+    oo = pp(1 + 2);
+    qq = ((!rr + ss) <= tt) <= uu;
+    vv(ww);
 
     // Arrays
-    g = a[1, 2];
-    h = array[a, b];
-    a[a, b] = 4;
+    xx = yy[1, 2];
+    zz = a[b, c];
+    d[e, f] = 4;
 
-    if (a == b) 
+    if (g == h) 
     {
-        j = foo(1 + 2); 
+        i = j(1 + 2); 
         k = foo(a + b); 
-        if (a == c) 
+        if (l == m) 
         {
             foo(bar(1));
         }
     }
 
-     if (q) 
-        l = foo(a + 3);
+     if (n) 
+        o = foo(a + 3);
      else
-        m = foo(a + 4);
+        p = foo(a + 4);
 
-    while (a < b)
+    while (q < r)
     {
-         n = test(1);
-         o = test(2);
+         s = test(1);
+         t = test(2);
     }
 
-    while (c)
-        p = test(3);
+    while (u)
+        v = test(3);
 
 
     /* 

@@ -134,6 +134,24 @@ globaldef: type ID SEMICOLON
           $$ = TBmakeGlobaldef($3, $2, NULL, $5);
           GLOBALDEF_ISEXPORT($$) = TRUE;
         }
+        | type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, $7);
+        }
+        | type SQBR_L exprs SQBR_R ID LET SQBR_L arrayexprs SQBR_R SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($5, $1, $3, $8);
+        }
+        | EXPORT type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($6, $2, $4, $8);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+        }
+        | EXPORT type SQBR_L exprs SQBR_R ID LET SQBR_L arrayexprs SQBR_R SEMICOLON
+        {
+          $$ = TBmakeGlobaldef($6, $2, $4, $9);
+          GLOBALDEF_ISEXPORT($$) = TRUE;
+        }
         ;
 
 function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
@@ -420,7 +438,6 @@ arrayexpr: SQBR_L arrayexpr SQBR_R
         {
           $$ = TBmakeArrayexpr($1, NULL);
         }
-        
         ;   
 
 exprs: expr COMMA exprs

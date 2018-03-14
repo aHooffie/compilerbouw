@@ -57,8 +57,21 @@ node *ASprogram(node *arg_node, info *arg_info)
 
   /* Create a lut for the global scoped variables and functions. */
   printf("Found Program node. This should create a ST!\n");
-  lut_t *global_lut = LUTgenerateLut();
-  INFO_SYMBOLTABLE(arg_info) = global_lut;
+
+  // create new table object
+  info *new_info;
+  new_info = MakeInfo();
+
+  // link new table to prev table
+  INFO_PREV( new_info) = arg_info;
+
+  // add new table to table object
+  INFO_SYMBOLTABLE( new_info) = LUTgenerateLut();
+
+
+  // TO DO; AANPASSEN DOORGEEF NODE/ARG_INFO, MOET OP NIEUWE GEZET WORDEN..
+
+
   // PROGRAM_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
   
   /* Continue with children.*/
@@ -96,10 +109,11 @@ node *ASglobaldef(node *arg_node, info *arg_info)
   /* Found globaldef. Check if there already is one with the same name. */
   printf("Found GLOBALDEF %s. Trying to write to global ST.\n", GLOBALDEF_NAME(arg_node));
   // void **data = LUTsearchInLutS(INFO_SYMBOLTABLE(arg_info), GLOBALDEF_NAME(arg_node));
+
   // if (data != NULL)
   //   printf("------- GLOBALDEF already exists. ABORT! \n\n");
 
-  /* Else, insert the globaldef into the global lut. */
+  /* else, insert the globaldef into the global lut. */
   // INFO_SYMBOLTABLE(arg_info) = LUTinsertIntoLutS(
     // INFO_SYMBOLTABLE(arg_info), GLOBALDEF_NAME(arg_node), GLOBALDEF_TYPE(arg_node));
   // GLOBALDEF_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);

@@ -58,21 +58,21 @@ node *ASprogram(node *arg_node, info *arg_info)
   /* Create a lut for the global scoped variables and functions. */
   printf("Found Program node. This should create a ST!\n");
 
-  // create new table object
-  info *new_info;
-  new_info = MakeInfo();
 
-  // link new table to prev table
-  INFO_PREV( new_info) = arg_info;
+  // MOET HET IN PROGRAM NOU OOK???
 
-  // add new table to table object
-  INFO_SYMBOLTABLE( new_info) = LUTgenerateLut();
+  // // create new table object
+  // info *new_info;
+  // new_info = MakeInfo();
 
+  // // link new table to prev table
+  // INFO_PREV( new_info) = arg_info;
 
-  // TO DO; AANPASSEN DOORGEEF NODE/ARG_INFO, MOET OP NIEUWE GEZET WORDEN..
+  // // add new table to table object
+  // INFO_SYMBOLTABLE( new_info) = LUTgenerateLut();
 
-
-  // PROGRAM_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
+  // // update huidige arg_info
+  // arg_info = new_info;
   
   /* Continue with children.*/
   PROGRAM_DECLARATIONS( arg_node) = TRAVdo( PROGRAM_DECLARATIONS( arg_node), NULL);
@@ -144,10 +144,19 @@ node *ASfunction(node *arg_node, info *arg_info)
     // INFO_SYMBOLTABLE(arg_info), FUNCTION_NAME(arg_node), FUNCTION_TYPE(arg_node));
   // FUNCTION_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
   
-  // info *new = MakeInfo();
-  // lut_t *function_lut = LUTgenerateLut();
-  // INFO_SYMBOLTABLE(new) = function_lut;
-  // INFO_PREV(new) = INFO_SYMBOLTABLE(arg_info);
+
+  // create new table object
+  info *new_info;
+  new_info = MakeInfo();
+
+  // link new table to prev table
+  INFO_PREV( new_info) = arg_info;
+
+  // add new table to table object
+  INFO_SYMBOLTABLE( new_info) = LUTgenerateLut();
+
+  // update current arg_info
+  arg_info = new_info;
 
   /* Continue with children. */
   if (FUNCTION_PARAMETERS( arg_node) != NULL)

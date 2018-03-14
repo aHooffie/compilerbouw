@@ -256,9 +256,12 @@ vardec: type ID LET expr SEMICOLON
         {
           $$ = TBmakeVardeclaration($5, $1, $3, NULL, NULL);
         }
-        | type SQBR_L exprs SQBR_R ID LET arrayexprs
+        | type SQBR_L exprs SQBR_R ID LET SQBR_L arrayexprs SQBR_R SEMICOLON
         {
-          printf("--------ARRAYEXPRS GEVONDEN\n");
+          $$ = TBmakeVardeclaration($5, $1, $3, $8, NULL);
+        }
+        | type SQBR_L exprs SQBR_R ID LET expr SEMICOLON
+        {
           $$ = TBmakeVardeclaration($5, $1, $3, $7, NULL);
         }
         ;
@@ -275,7 +278,6 @@ localfunctions: localfunction localfunctions
 
 localfunction: function
         {
-          printf("MOOIE LOCAL FUNCTIONE\n");
           $$ = TBmakeLocalfunction($1, NULL);
         }
         ;
@@ -400,7 +402,7 @@ varlet: ID
         }
         ;
 
-arrayexprs: arrayexpr COMMA arrayexprs 
+arrayexprs: arrayexpr COMMA arrayexprs
         {
           ARRAYEXPR_NEXT($1) = $3;
         }
@@ -416,9 +418,9 @@ arrayexpr: SQBR_L arrayexpr SQBR_R
         }
         | expr
         {
-          printf("------- ARRAYEXPR GEVONDEN\n");
           $$ = TBmakeArrayexpr($1, NULL);
         }
+        
         ;   
 
 exprs: expr COMMA exprs

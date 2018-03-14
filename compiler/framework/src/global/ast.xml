@@ -1243,11 +1243,11 @@ traversals to process it.
         <node name="ArrayExpr">
             <description>represents the array in expression position</description>
             <sons>
-                <son name="Expressions">
+                <son name="Expr">
                     <description>represents required expression </description>
                     <targets>
                         <target mandatory="yes">
-                            <node name="Expressions" />
+                            <set name="Expr" />
                             <phases>
                                 <all />
                             </phases>

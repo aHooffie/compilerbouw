@@ -280,6 +280,11 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
         FUNCTIONBODY_VARDECLARATIONS(arg_node) =
             TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
 
+    if (FUNCTIONBODY_LOCALFUNCTION(arg_node) != NULL)
+        FUNCTIONBODY_LOCALFUNCTION(arg_node) =
+            TRAVdo(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
+
+
     if (FUNCTIONBODY_STMTS(arg_node) != NULL)
         FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
 
@@ -525,15 +530,15 @@ node *PRTexpressions(node *arg_node, info *arg_info)
 node *PRTlocalfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTlocalfunction");
-    printf("\n\n---------- HIER MOOI -----------\n\n");
+
+    // PRT INDENT!
+    LOCALFUNCTION_FUNCTION(arg_node) = 
+        TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
 
     if (LOCALFUNCTION_NEXT(arg_node) != NULL)
         LOCALFUNCTION_NEXT(arg_node) =
             TRAVdo(LOCALFUNCTION_NEXT(arg_node), arg_info);
-    if (LOCALFUNCTION_FUNCTION(arg_node) != NULL)
-        LOCALFUNCTION_FUNCTION(arg_node) =
-            TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
-
+    
     DBUG_RETURN(arg_node);
 }
 
@@ -762,8 +767,8 @@ node *PRTcast(node *arg_node, info *arg_info)
 node *PRTarrayexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTarrayexpr");
-    printf("PRINT ARRAY EXPR\n");
-    ARRAYEXPR_EXPRESSIONS(arg_node) = TRAVdo(ARRAYEXPR_EXPRESSIONS(arg_node), arg_info);
+    printf("PRTARRAY\n");
+    ARRAYEXPR_EXPR(arg_node) = TRAVdo(ARRAYEXPR_EXPR(arg_node), arg_info);
     DBUG_RETURN(arg_node);
 }
 

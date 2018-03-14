@@ -55,7 +55,7 @@ SUBPHASE( os,
 SUBPHASE( as, 
           "Add Symboltables",
           ASdoAddSymbolTables, 
-          ALWAYS,
+          NEVER,
           pet)    
       
 ENDPHASE( pet) 

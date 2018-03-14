@@ -21,11 +21,14 @@ export void main (int a, int b) {
     int b = 3 + 2;
     int c;
     int [1, 2] d;
-    // int [1, 2] g = a;
-    // int [1, 2] e = [a];
-    // int [1, 2] f = [a, b];
+    int [1, 2] g = a;
+    int [1, 2] e = [a];
+    int [1, 2] f = [[a]];
+    int [1, 2] g = [[a], [b]];
+    int [1, 2] h = [a, b];
 
-// Localfunctions - PRINT NIET!!
+
+// Localfunctions
    int hallo (){} 
    int hoi (int a, int b) {}
 

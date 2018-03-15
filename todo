@@ -1,7 +1,6 @@
 Dingen die we niet moeten vergeten:
 
 - Wanneer worden type unknown errors aangeroepen?
-- Waarom zijn nodes vardeclarations in test3.cvc als het varlet moet zijn? (herkennen type niet?)
 - Array expr moeten nog even goed geprint worden 
 - Integers out of range in parser?
 - scopes.cvc foutje eruit halen?

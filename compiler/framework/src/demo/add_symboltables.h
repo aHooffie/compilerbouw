@@ -4,6 +4,8 @@
 // moet dit hier ook? voor node?
 #include "types.h"
 
+extern char *TypetoString(type Type);
+
 extern node *ASprogram(node *arg_node, info *arg_info);
 extern node *ASglobaldec(node *arg_node, info *arg_info);
 extern node *ASglobaldef(node *arg_node, info *arg_info);

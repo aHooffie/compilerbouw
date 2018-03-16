@@ -224,26 +224,26 @@ ids: ID COMMA ids
 funbody: vardecs localfunctions stmts
         {
           $1 = reverselist($1);
-          $$ = TBmakeFunctionbody($3, $2, $1);
+          $$ = TBmakeFunctionbody($1, $2, $3);
         }
         | vardecs localfunctions 
         {
           $1 = reverselist($1);
-          $$ = TBmakeFunctionbody(NULL, $2, $1);
+          $$ = TBmakeFunctionbody($1, $2, NULL);
         }
         | vardecs stmts
         {
           $1 = reverselist($1);
-          $$ = TBmakeFunctionbody($2, NULL, $1);
+          $$ = TBmakeFunctionbody($1, NULL, $2);
         }
         | localfunctions stmts
         {
-          $$ = TBmakeFunctionbody($2, $1, NULL);
+          $$ = TBmakeFunctionbody(NULL, $1, $2);
         }
         | vardecs
         {
           $1 = reverselist($1);
-          $$ = TBmakeFunctionbody(NULL, NULL, $1);
+          $$ = TBmakeFunctionbody($1, NULL, NULL);
         }
         | localfunctions
         {
@@ -251,7 +251,7 @@ funbody: vardecs localfunctions stmts
         }
         | stmts
         { 
-          $$ = TBmakeFunctionbody($1, NULL, NULL);
+          $$ = TBmakeFunctionbody(NULL, NULL, $1);
         }
         |
         {

@@ -1,14 +1,19 @@
 #ifndef _ADD_SYMBOLTABLES_H_
 #define _ADD_SYMBOLTABLES_H_
 
-// moet dit hier ook? voor node?
 #include "types.h"
 
-extern bool checkDuplicates(node *symboltableentry, char *name);
-extern node *findOriginal(node *symboltableentry, char *name);
 
+extern void stackPush(node *symboltable, info *arg_info);
+extern void stackPop(info *arg_info);
+extern bool stackEmpty(info *arg_info);
+
+extern bool checkDuplicates(node *symboltableentry, char *name);
 extern char *TypetoString(type Type);
 extern node *travList(node *symboltableentry);
+extern node *findOriginal(node *symboltableentry, char *name);
+void printSymboltable(node *symboltableentry);
+
 
 extern node *ASprogram(node *arg_node, info *arg_info);
 extern node *ASglobaldec(node *arg_node, info *arg_info);

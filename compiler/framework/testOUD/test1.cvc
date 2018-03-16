@@ -1,0 +1,18 @@
+export void main (int m, int n) {
+// Vardeclarations
+    int o = 3 * 6;
+    int r = 3 + 2;
+    int s = r + o;
+    int s = o;
+    m = o; 
+}
+
+export int foo(int p) {
+    int a;
+    int b;
+    p = main(a, b); // mag
+    p = main(); // mag niet
+    main(); // mag ook niet
+
+    m = r + s; // mag ook niet
+}

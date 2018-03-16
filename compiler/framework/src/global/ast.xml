@@ -335,11 +335,11 @@ traversals to process it.
         <node name="FunctionBody">
             <description>represents body of a function (vardeclarations + stmts)</description>
             <sons>
-                <son name="Stmts">
-                    <description>represents (optional) body with statement(s) (if funcdef)</description>
+                <son name="VarDeclarations">
+                    <description>represents (optional) parameters</description>
                     <targets>
                         <target mandatory="no">
-                            <node name="Stmts" />
+                            <node name="VarDeclaration" />
                             <phases>
                                 <all />
                             </phases>
@@ -357,11 +357,11 @@ traversals to process it.
                         </target>
                     </targets>
                 </son>
-                <son name="VarDeclarations">
-                    <description>represents (optional) parameters</description>
+                <son name="Stmts">
+                    <description>represents (optional) body with statement(s) (if funcdef)</description>
                     <targets>
                         <target mandatory="no">
-                            <node name="VarDeclaration" />
+                            <node name="Stmts" />
                             <phases>
                                 <all />
                             </phases>
@@ -1280,7 +1280,7 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-    <!-- 
+        <!-- 
         Node SymbolTable
      -->
         <node name="SymbolTable">
@@ -1310,8 +1310,7 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-
-    <!-- 
+        <!-- 
       Node SymbolTableEntry: 
     -->
         <node name="SymbolTableEntry">
@@ -1330,7 +1329,7 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-             <attribute name="Name">
+                <attribute name="Name">
                     <description>represents identifier in character string representation</description>
                     <type name="String">
                         <targets>

@@ -50,8 +50,9 @@ extern node *PRTarrayexpr(node *arg_node, info *arg_info);
 
 /* MISCELLANEOUS !! */
 extern node *PRTsymboltableentry(node *arg_node, info *arg_info);
+extern node *PRTsymboltable(node *arg_node, info *arg_info);
 extern node *PRTerror(node *arg_node, info *arg_info);
 extern node *PRTids(node *arg_node, info *arg_info);
-extern void prtIndent(info *arg_info);
+extern void PRTindent(info *arg_info);
 
 #endif /* _SAC_PRT_NODE_H_ */

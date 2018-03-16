@@ -17,21 +17,14 @@
 /* INFO structure */
 struct INFO 
 {
-  node *luts; // = stack van LUTS (scopes);
-  // Functies: push, pop, isempty();
+  node *symboltable;  // = stack van LUTS (scopes);
+                      // Functies: push, pop, isempty();
 };
 
-struct list
-{
-  lut_t *symboltable;
-  st *prev;
-};
-
-
-
-/* INFO macros */
-// #define INFO_SYMBOLTABLE(n)  ((n)->symboltable)
-// #define INFO_PREV(n)         ((n)->prev)
+/* struct macros */
+#define INFO_LUTS(n)       ((n)->luts)
+#define LL_TABLE(n)        ((n)->table)
+#define LL_PREV(n)         ((n)->prev)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -41,8 +34,7 @@ static info *MakeInfo(void)
   DBUG_ENTER( "MakeInfo");
 
   result = (info *)MEMmalloc(sizeof(info));
-  // INFO_SYMBOLTABLE( result) = NULL;
-  // INFO_PREV( result) = NULL;
+  INFO_SYMBOLTABLE( result) = NULL;
 
   DBUG_RETURN( result);
 }
@@ -88,6 +80,7 @@ node *ASglobaldec(node *arg_node, info *arg_info)
   // char *type = TypetoString(GLOBALDEC_TYPE(arg_node));
   // INFO_SYMBOLTABLE(arg_info) = LUTinsertIntoLutS(
   //   INFO_SYMBOLTABLE(arg_info), GLOBALDEC_NAME(arg_node), type);
+  node *symboltableentry = TBmakeSTE();
   // GLOBALDEC_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
 
   /* Continue with traversing in child nodes. */

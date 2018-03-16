@@ -212,7 +212,7 @@ node *PRTfunction(node *arg_node, info *arg_info)
     if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
     {
         printf("\n");
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("{");
         INFO_INDENT(arg_info) += 4;
         printf("\n");
@@ -220,7 +220,7 @@ node *PRTfunction(node *arg_node, info *arg_info)
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
         INFO_INDENT(arg_info) -= 4;
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("}\n");
     }
 
@@ -294,7 +294,7 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
 node *PRTvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTvardeclaration");
-    prtIndent(arg_info);
+    PRTindent(arg_info);
 
     switch (VARDECLARATION_TYPE(arg_node))
     {
@@ -347,7 +347,7 @@ node *PRTstmts(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTstmts");
 
-    prtIndent(arg_info);
+    PRTindent(arg_info);
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
 
     if (STMTS_NEXT(arg_node) != NULL)
@@ -386,7 +386,7 @@ node *PRTifelse(node *arg_node, info *arg_info)
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
 
     printf(") \n");
-    prtIndent(arg_info);
+    PRTindent(arg_info);
     printf("{\n");
     INFO_INDENT(arg_info) += 4;
 
@@ -394,21 +394,21 @@ node *PRTifelse(node *arg_node, info *arg_info)
     {
         IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
         INFO_INDENT(arg_info) -= 4;
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("}\n");
     }
 
     if (IFELSE_ELSE(arg_node) != NULL)
     {
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("else \n");
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("{\n");
         INFO_INDENT(arg_info) += 4;
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
         INFO_INDENT(arg_info) -= 4;
 
-        prtIndent(arg_info);
+        PRTindent(arg_info);
         printf("}\n");
     }
 
@@ -424,14 +424,14 @@ node *PRTwhile(node *arg_node, info *arg_info)
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
 
     printf(") \n");
-    prtIndent(arg_info);
+    PRTindent(arg_info);
     printf("{\n");
     INFO_INDENT(arg_info) += 4;
 
     if (WHILE_BLOCK(arg_node) != NULL)
         WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
     INFO_INDENT(arg_info) -= 4;
-    prtIndent(arg_info);
+    PRTindent(arg_info);
     printf("}\n");
 
     DBUG_RETURN(arg_node);
@@ -531,7 +531,7 @@ node *PRTlocalfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTlocalfunction");
 
-    prtIndent(arg_info);
+    PRTindent(arg_info);
 
     LOCALFUNCTION_FUNCTION(arg_node) = 
         TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
@@ -791,7 +791,12 @@ node *PRTarrayexpr(node *arg_node, info *arg_info)
 node *PRTsymboltableentry(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTsymboltableentry");
-    // DOES NOTHING YET!
+    DBUG_RETURN(arg_node);
+}
+
+node *PRTsymboltable(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTsymboltable");
     DBUG_RETURN(arg_node);
 }
 
@@ -851,7 +856,7 @@ node *PRTids(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-void prtIndent(info *arg_info)
+void PRTindent(info *arg_info)
 {
     int indent = INFO_INDENT(arg_info);
     for (int i = 0; i < indent; i++)

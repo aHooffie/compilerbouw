@@ -134,7 +134,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -234,7 +234,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -306,7 +306,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -405,7 +405,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -473,7 +473,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -552,7 +552,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -845,7 +845,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1055,7 +1055,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1112,7 +1112,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1227,7 +1227,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTableEntry" />
+                                <node name="SymbolTable" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1270,9 +1270,41 @@ traversals to process it.
         <!-- 
       Node SymbolTableEntry: 
     -->
+        <node name="SymbolTable">
+            <description>represents symbol table</description>
+            <sons>
+                <son name="SymbolTableEntry">
+                    <description>represents first symbol table entry </description>
+                    <targets>
+                        <target mandatory="no">
+                            <node name="SymbolTableEntry" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+        </node>
+
+    <!-- 
+      Node SymbolTableEntry: 
+    -->
         <node name="SymbolTableEntry">
             <description>represents symbol table entry</description>
-            <sons></sons>
+            <sons>
+                <son name="Next">
+                    <description>represents optional next STE </description>
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Expressions" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
         </node>
         <!-- 
       Node Error: 

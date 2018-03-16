@@ -4,7 +4,11 @@
 // moet dit hier ook? voor node?
 #include "types.h"
 
+extern bool checkDuplicates(node *symboltableentry, char *name);
+extern node *findOriginal(node *symboltableentry, char *name);
+
 extern char *TypetoString(type Type);
+extern node *travList(node *symboltableentry);
 
 extern node *ASprogram(node *arg_node, info *arg_info);
 extern node *ASglobaldec(node *arg_node, info *arg_info);

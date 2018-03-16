@@ -17,14 +17,15 @@
 /* INFO structure */
 struct INFO 
 {
-  node *symboltable;  // = stack van LUTS (scopes);
-                      // Functies: push, pop, isempty();
+  node *stack;  
+  int size; // current scope level
+  // = stack van LUTS (scopes): push, pop, isempty();
 };
 
 /* struct macros */
-#define INFO_LUTS(n)       ((n)->luts)
-#define LL_TABLE(n)        ((n)->table)
-#define LL_PREV(n)         ((n)->prev)
+#define INFO_STACK(n)       ((n)->stack)
+#define INFO_SIZE(n)       ((n)->size)
+
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -34,7 +35,8 @@ static info *MakeInfo(void)
   DBUG_ENTER( "MakeInfo");
 
   result = (info *)MEMmalloc(sizeof(info));
-  INFO_SYMBOLTABLE( result) = NULL;
+  INFO_STACK( result) = NULL;
+  INFO_SIZE( result) = 0;
 
   DBUG_RETURN( result);
 }
@@ -54,11 +56,16 @@ node *ASprogram(node *arg_node, info *arg_info)
 
   /* Create a lut for the global scoped variables and functions. */
   printf("Found program node. \n");
-  // INFO_SYMBOLTABLE( arg_info) = LUTgenerateLut();
-  // PROGRAM_SYMBOLTABLE( arg_node) = arg_info;
-  // if (INFO_SYMBOLTABLE (arg_info) == NULL) 
-    // CTInote("Something went wrong with the symboltable in the PROGRAM node. \n");
+  node *globals = TBmakeSymboltable(NULL, NULL);
+  INFO_STACK(arg_info) = globals;
+  INFO_SIZE(arg_info) += 1;
+  printf("nieuwe st in program: stack size: %i\n", INFO_SIZE(arg_info));
 
+  if (INFO_STACK(arg_info) == NULL) 
+    CTInote("Something went wrong with the symboltable in the PROGRAM node. \n");
+  
+  PROGRAM_SYMBOLTABLE(arg_node) = globals;
+  
   /* Continue with traversing in child nodes. */
   PROGRAM_DECLARATIONS( arg_node) = TRAVdo( PROGRAM_DECLARATIONS( arg_node), arg_info);
 
@@ -71,17 +78,22 @@ node *ASglobaldec(node *arg_node, info *arg_info)
 
   /* Found globaldec. Check if there already is one with the same name. */
   printf("Found a globaldec node: %s. \n", GLOBALDEC_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_SYMBOLTABLE(arg_info), GLOBALDEC_NAME(arg_node));
-  // if (data != NULL)
-  //   printf("------- GLOBALDEC already exists. ABORT! \n\n");
 
-  
-  // /* Else, insert the globaldec into the global lut. */
-  // char *type = TypetoString(GLOBALDEC_TYPE(arg_node));
-  // INFO_SYMBOLTABLE(arg_info) = LUTinsertIntoLutS(
-  //   INFO_SYMBOLTABLE(arg_info), GLOBALDEC_NAME(arg_node), type);
-  node *symboltableentry = TBmakeSTE();
-  // GLOBALDEC_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEC_NAME(arg_node)) == FALSE)
+  {
+    printf("globaldec %s is already declared in the symboltable!\n", GLOBALDEC_NAME(arg_node));
+    return NULL;
+  }
+
+  /* Else, insert the globaldec into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(GLOBALDEC_NAME(arg_node), GLOBALDEC_TYPE(arg_node), NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
+  GLOBALDEC_SYMBOLTABLEENTRY(arg_node) = newEntry;
 
   /* Continue with traversing in child nodes. */
   if (GLOBALDEC_DIMENSIONS( arg_node) != NULL)
@@ -96,16 +108,24 @@ node *ASglobaldef(node *arg_node, info *arg_info)
 
   /* Found globaldef. Check if there already is one with the same name. */
   printf("Found GLOBALDEF %s. Trying to write to global ST.\n", GLOBALDEF_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_SYMBOLTABLE(arg_info), GLOBALDEF_NAME(arg_node));
+  
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEF_NAME(arg_node)) == FALSE)
+  {
+    printf("globaldef %s is already declared in the symboltable!\n", GLOBALDEF_NAME(arg_node));
+    return NULL;
+  }
 
-  // if (data != NULL)
-  //   printf("------- GLOBALDEF already exists. ABORT! \n\n");
+  /* Else, insert the globaldef into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(GLOBALDEF_NAME(arg_node), GLOBALDEF_TYPE(arg_node), NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
 
-  /* else, insert the globaldef into the global lut. */
-  // INFO_SYMBOLTABLE(arg_info) = LUTinsertIntoLutS(
-    // INFO_SYMBOLTABLE(arg_info), GLOBALDEF_NAME(arg_node), GLOBALDEF_TYPE(arg_node));
-  // GLOBALDEF_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
-
+  GLOBALDEF_SYMBOLTABLEENTRY(arg_node) = newEntry;
+  
   /* Continue with traversing in child nodes. */
   if (GLOBALDEF_DIMENSIONS( arg_node) != NULL)
       GLOBALDEF_DIMENSIONS( arg_node) = TRAVdo( GLOBALDEF_DIMENSIONS( arg_node), arg_info);
@@ -122,30 +142,35 @@ node *ASfunction(node *arg_node, info *arg_info)
 
   /* Found function. Check if there already is one with the same name in global ST. */
   printf("Found function %s.\n", FUNCTION_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_SYMBOLTABLE(arg_info), FUNCTION_NAME(arg_node));
-  // if (data != NULL)
-    // printf("------- FUNCTION already exists. ABORT! \n\n");
 
-  /* Else, insert the function into the global lut
-    + Create own lut. */
-  // INFO_SYMBOLTABLE(arg_info) = LUTinsertIntoLutS(
-    // INFO_SYMBOLTABLE(arg_info), FUNCTION_NAME(arg_node), FUNCTION_TYPE(arg_node));
-  // FUNCTION_DECLARATION(arg_node) = INFO_SYMBOLTABLE(arg_info);
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), FUNCTION_NAME(arg_node)) == FALSE)
+  {
+    printf("function %s is already declared in the symboltable!\n", FUNCTION_NAME(arg_node));
+    return NULL;
+  }
+
+  /* Else, insert the function into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(FUNCTION_NAME(arg_node), FUNCTION_TYPE(arg_node), NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
+
+  /* Create new symbol table and add it to the stack. */
+  node *functionSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
+  INFO_STACK(arg_info) = functionSymboltable;
+  INFO_SIZE(arg_info) += 1;
+  printf("nieuwe st in function gemaakt: stack size: %i\n", INFO_SIZE(arg_info));
   
+  if (INFO_STACK(arg_info) == NULL) 
+    CTInote("Something went wrong with the symboltable in the FUNCTION node. \n");
 
-  // // create new table object
-  // info *new_info;
-  // new_info = MakeInfo();
-
-  // // link new table to prev table
-  // INFO_PREV( new_info) = arg_info;
-
-  // // add new table to table object
-  // INFO_SYMBOLTABLE( new_info) = LUTgenerateLut();
-
-  // // update current arg_info
-  // arg_info = new_info;
-
+  /* Update function administration. */
+  FUNCTION_SYMBOLTABLEENTRY(arg_node) = newEntry;
+  FUNCTION_SYMBOLTABLE(arg_node) = functionSymboltable;
+  
   /* Continue with traversing in child nodes. */
   if (FUNCTION_PARAMETERS( arg_node) != NULL)
     FUNCTION_PARAMETERS( arg_node) = TRAVdo( FUNCTION_PARAMETERS( arg_node), arg_info);
@@ -160,16 +185,25 @@ node *ASparameters(node *arg_node, info *arg_info)
   DBUG_ENTER("ASparameters");
 
   /* Found parameter. Check if there already is one with the same name. */
-  printf("Found parameter %s. Write to function ST.\n", PARAMETERS_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_(arg_info), PARAMETERS_NAME(arg_node));
-  // if (data != NULL)
-    // printf("------- PARAMETER already exists. ABORT! \n\n");
+  printf("Found parameter %s.\n", PARAMETERS_NAME(arg_node));
 
-  /* Else, insert the parameter into the function lut. */
-  // INFO_FUNCTION(arg_info) = LUTinsertIntoLutS(
-    //  INFO_FUNCTION(arg_info), PARAMETERS_NAME(arg_node), PARAMETERS_TYPE(arg_node));
-  // PARAMETERS_DECLARATION(arg_node) = INFO_FUNCTION(arg_info);
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), PARAMETERS_NAME(arg_node)) == FALSE)
+  {
+    printf("parameter %s is already declared in the symboltable!\n", PARAMETERS_NAME(arg_node));
+    return NULL;
+  }
 
+  /* Else, insert the function into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(PARAMETERS_NAME(arg_node), PARAMETERS_TYPE(arg_node), NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
+
+  PARAMETERS_SYMBOLTABLEENTRY(arg_node) = newEntry;
+  
   /* Continue with traversing in child nodes. */
   if (PARAMETERS_NEXT( arg_node) != NULL)
     PARAMETERS_NEXT( arg_node) = TRAVdo( PARAMETERS_NEXT( arg_node), arg_info);
@@ -185,14 +219,23 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
 
   /* Found vardeclaration. Check if there already is one with the same name. */
   printf("Found VARDECLARATION %s. Write to function ST.\n", VARDECLARATION_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_FUNCTION(arg_info), VARDECLARATION_NAME(arg_node));
-  // if (data != NULL)
-    // printf("------- VARDECLARATION already exists. ABORT! \n\n");
+  
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), VARDECLARATION_NAME(arg_node)) == FALSE)
+  {
+    printf("vardeclaration %s is already declared in the symboltable!\n", VARDECLARATION_NAME(arg_node));
+    return NULL;
+  }
 
-  /* Else, insert the vardeclarations into the function lut. */
-  // INFO_FUNCTION(arg_info) = LUTinsertIntoLutS(
-  //    INFO_FUNCTION(arg_info), VARDECLARATION_NAME(arg_node), VARDECLARATION_TYPE(arg_node));
-  // VARDECLARATION_DECLARATION(arg_node) = INFO_FUNCTION(arg_info);
+  /* Else, insert the globaldef into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(VARDECLARATION_NAME(arg_node), VARDECLARATION_TYPE(arg_node), NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
+
+  VARDECLARATION_SYMBOLTABLEENTRY(arg_node) = newEntry;
 
   /* Continue with traversing in child nodes. */
   if (VARDECLARATION_DIMENSIONS( arg_node) != NULL)
@@ -210,13 +253,26 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
   DBUG_ENTER("ASfunctioncallstmt");
 
   /* Found functioncallstmt. Check if there already is one with the same name. */
-  printf("Found FUNCTIONCALLSTMT %s. Read in function \n", FUNCTIONCALLSTMT_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_FUNCTION(arg_info), FUNCTIONCALLSTMT_NAME(arg_node));
-  // if (data != NULL)
-    // printf("FUNCTIONCALLSTMT already exists. THIS IS OK!! \n\n");
+  printf("Found FUNCTIONCALLSTMT %s. \n", FUNCTIONCALLSTMT_NAME(arg_node));
 
-  // FUNCTIONCALLSTMT_SYMBOLTABLE(arg_node) = INFO_FUNCTION(arg_info);
+  /* Find the original function declaration in the scope above. */ 
+  node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+  node *original;
+
+  while (symboltable != NULL) {
+    original = findOriginal(SYMBOLTABLE_NEXT(symboltable), FUNCTIONCALLSTMT_NAME(arg_node));
+    
+    if (original == NULL) {
+      symboltable = SYMBOLTABLE_PREV(symboltable);
+    } else {
+      // NODE FOUND!
+      FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) = original;
+    }
+  }
   
+  if (FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) == NULL)
+    printf("ERROR - FUNCTIONCALLSTMT BESTAAT NIET!");
+
   /* Continue with traversing in child nodes. */
   if (FUNCTIONCALLSTMT_EXPRESSIONS( arg_node) != NULL)
     FUNCTIONCALLSTMT_EXPRESSIONS( arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS( arg_node), arg_info);
@@ -229,14 +285,26 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
   DBUG_ENTER("FUNCTIONCALLEXPR");
 
   /* Found functioncallexpr. Check if there already is one with the same name. */
-  printf("Found FUNCTIONCALLEXPR %s. Read in function \n", FUNCTIONCALLEXPR_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_FUNCTION(arg_info), FUNCTIONCALLEXPR_NAME(arg_node));
-  // if (data != NULL)
-    // printf("FUNCTIONCALLEXPR already exists. THIS IS OK!!  \n\n");
+  printf("Found FUNCTIONCALLEXPR %s. \n", FUNCTIONCALLEXPR_NAME(arg_node));
+   
+   /* Find the original function declaration in the scope above. */ 
+  node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+  node *original;
 
-  /* Else, insert the functioncallexpr into the function lut. */
-  // FUNCTIONCALLEXPR_SYMBOLTABLE(arg_node) = INFO_FUNCTION(arg_info);
+  while (symboltable != NULL) {
+    original = findOriginal(SYMBOLTABLE_NEXT(symboltable), FUNCTIONCALLEXPR_NAME(arg_node));
+    
+    if (original == NULL) {
+      symboltable = SYMBOLTABLE_PREV(symboltable);
+    } else {
+      // NODE FOUND!
+      FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) = original;
+    }
+  }
   
+  if (FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) == NULL)
+    printf("ERROR - FUNCTIONCALLEXPR BESTAAT NIET!");
+
   /* Continue with traversing in child nodes. */
   if (FUNCTIONCALLEXPR_EXPRESSIONS( arg_node) != NULL)
     FUNCTIONCALLEXPR_EXPRESSIONS( arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS( arg_node), arg_info);
@@ -251,14 +319,24 @@ node *ASvar(node *arg_node, info *arg_info)
 
   /* Found var. Check if there already is one with the same name. */
   printf("Found VAR %s.\n", VAR_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_FUNCTION(arg_info), VAR_NAME(arg_node));
-  // if (data != NULL)
-    // printf("------- VAR %s already exists. ABORT! \n\n", VAR_NAME(arg_node));
+  
+  /* Find the original function declaration in the scope above. */ 
+  node *symboltable = INFO_STACK(arg_info);
+  node *original;
 
-  /* Else, insert the var into the function lut. */
-  // INFO_FUNCTION(arg_info) = LUTinsertIntoLutS(
-    //  INFO_FUNCTION(arg_info), VAR_NAME(arg_node), NULL);   // NOTE: WHAT TYPE IS A VAR?
-  // VAR_DECLARATION(arg_node) = INFO_FUNCTION(arg_info);
+  while (symboltable != NULL) {
+    original = findOriginal(SYMBOLTABLE_NEXT(symboltable), VAR_NAME(arg_node));
+    
+    if (original == NULL) {
+      symboltable = SYMBOLTABLE_PREV(symboltable);
+    } else {
+      // NODE FOUND!
+      VAR_SYMBOLTABLEENTRY(arg_node) = original;
+    }
+  }
+  
+  if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
+    printf("ERROR - VAR BESTAAT NIET!");
   
   /* Continue with traversing in child nodes. */
   if (VAR_INDICES( arg_node) != NULL)
@@ -273,15 +351,25 @@ node *ASvarlet(node *arg_node, info *arg_info)
 
   /* Found varlet. Check if there already is one with the same name. */
   printf("Found VARLET %s.\n", VARLET_NAME(arg_node));
-  // void **data = LUTsearchInLutS(INFO_FUNCTION(arg_info), VARLET_NAME(arg_node));
-  // if (data != NULL)
-    // printf("------- VAR %s already exists. ABORT! \n\n", VARLET_NAME(arg_node));
+  
+  /* Find the original function declaration in the scope above. */ 
+  node *symboltable = INFO_STACK(arg_info);
+  node *original;
 
-  /* Else, insert the varlet into the function lut. */
-  // INFO_FUNCTION(arg_info) = LUTinsertIntoLutS(
-    //  INFO_FUNCTION(arg_info), VARLET_NAME(arg_node), NULL);   // NOTE: WHAT TYPE IS A VAR?
-  // VARLET_DECLARATION(arg_node) = INFO_FUNCTION(arg_info);
-
+  while (symboltable != NULL) {
+    original = findOriginal(SYMBOLTABLE_NEXT(symboltable), VARLET_NAME(arg_node));
+    
+    if (original == NULL) {
+      symboltable = SYMBOLTABLE_PREV(symboltable);
+    } else {
+      // NODE FOUND!
+      VARLET_SYMBOLTABLEENTRY(arg_node) = original;
+    }
+  }
+  
+  if (VARLET_SYMBOLTABLEENTRY(arg_node) == NULL)
+    printf("ERROR - VARLET BESTAAT NIET!");
+  
   /* Continue with traversing in child nodes. */
   if (VARLET_INDICES( arg_node) != NULL)
       VARLET_INDICES( arg_node) = TRAVdo(VARLET_INDICES( arg_node), arg_info);
@@ -295,7 +383,25 @@ node *ASvarlet(node *arg_node, info *arg_info)
 node *ASids(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("ASids");
-  printf("Found ID %s! DOES THIS REQUIRE ST?\n", IDS_NAME(arg_node));
+  printf("Found ID %s! \n", IDS_NAME(arg_node));
+
+  if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), IDS_NAME(arg_node)) == FALSE)
+  {
+    printf("parameter %s is already declared in the symboltable!\n", IDS_NAME(arg_node));
+    return NULL;
+  }
+
+  /* Else, insert the function into the symbol table linked list at the end. */
+  node *newEntry = TBmakeSymboltableentry(IDS_NAME(arg_node), T_int, NULL);
+  node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+  if (last == NULL) {
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+  } else {
+    SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+  }
+
+  IDS_SYMBOLTABLEENTRY(arg_node) = newEntry;
+
   if (IDS_NEXT(arg_node) != NULL) 
       IDS_NEXT( arg_node) = TRAVdo(IDS_NEXT( arg_node), arg_info);
 
@@ -327,6 +433,47 @@ char *TypetoString(type Type)
     }
 
     return typeString;
+}
+
+node *travList(node *symboltableentry) {
+  node *trav = symboltableentry;
+  if (trav == NULL) {
+    return NULL;
+  }
+
+  while (SYMBOLTABLEENTRY_NEXT(trav) != NULL) {
+    trav = SYMBOLTABLEENTRY_NEXT(trav);
+  }
+
+  return trav;
+}
+
+node *findOriginal(node *symboltableentry, char *name) {
+  node *trav = symboltableentry;
+
+  while (trav != NULL) {
+    if (SYMBOLTABLEENTRY_NAME(trav) == name) {
+      return trav;
+    } else {
+      trav = SYMBOLTABLEENTRY_NEXT(trav);
+    }
+  }
+
+  return trav;
+}
+
+bool checkDuplicates(node *symboltableentry, char *name) {
+  node *trav = symboltableentry;
+
+  while (trav != NULL) {
+    if (SYMBOLTABLEENTRY_NAME(trav) == name) {
+      return FALSE;
+    } else {
+      trav = SYMBOLTABLEENTRY_NEXT(trav);
+    }
+  }
+
+  return TRUE;
 }
 
 /* Traversal start function */

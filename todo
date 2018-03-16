@@ -2,6 +2,7 @@ Dingen die we niet moeten vergeten:
 
 - Wanneer worden type unknown errors aangeroepen?
 - Array expr moeten nog even goed geprint worden 
+- Scopes van globaldec arrays? mag int [a, b] c; int [b,d] e;??
 - Integers out of range in parser?
 - scopes.cvc foutje eruit halen?
 

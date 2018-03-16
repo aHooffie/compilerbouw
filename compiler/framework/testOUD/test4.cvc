@@ -1,6 +1,7 @@
 // GlobalDec
 extern int a;
 extern int [b, c] d;
+extern int [a, d] e;
 
 // Functiondec
 extern int foo (int e);

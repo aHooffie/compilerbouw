@@ -129,8 +129,8 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name="Declaration">
-                    <description>represents link to symbol table entry with globals</description>
+                <attribute name="SymbolTable">
+                    <description>represents link to symbol table of the globals</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
@@ -229,8 +229,21 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="SymbolTable">
+                    <description>represents link to its symbol table</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
@@ -301,12 +314,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -400,12 +413,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -468,12 +481,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -547,12 +560,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -840,12 +853,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Symboltable">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1050,12 +1063,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1107,12 +1120,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="Declaration">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1222,12 +1235,12 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="SymbolTable">
+                <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="SymbolTable" />
+                                <node name="SymbolTableEntry" />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1267,17 +1280,28 @@ traversals to process it.
                 </son>
             </sons>
         </node>
-        <!-- 
-      Node SymbolTableEntry: 
-    -->
+    <!-- 
+        Node SymbolTable
+     -->
         <node name="SymbolTable">
             <description>represents symbol table</description>
             <sons>
-                <son name="SymbolTableEntry">
-                    <description>represents first symbol table entry </description>
+                <son name="Next">
+                    <description>represents optional next STE </description>
                     <targets>
                         <target mandatory="no">
                             <node name="SymbolTableEntry" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Prev">
+                    <description>represents possible higher scoped symbol table </description>
+                    <targets>
+                        <target mandatory="no">
+                            <node name="SymbolTable" />
                             <phases>
                                 <all />
                             </phases>
@@ -1297,7 +1321,7 @@ traversals to process it.
                     <description>represents optional next STE </description>
                     <targets>
                         <target mandatory="no">
-                            <node name="Expressions" />
+                            <node name="SymbolTableEntry" />
                             <phases>
                                 <all />
                             </phases>
@@ -1305,6 +1329,32 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
+            <attributes>
+             <attribute name="Name">
+                    <description>represents identifier in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Type">
+                    <description>represents all possible types</description>
+                    <type name="Type">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
         </node>
         <!-- 
       Node Error: 
@@ -1373,6 +1423,19 @@ traversals to process it.
                                 <any/>
                                 <phases>
                                     <all/>
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="SymbolTableEntry">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
                                 </phases>
                             </target>
                         </targets>

@@ -134,7 +134,7 @@ node *ASglobaldec(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the globaldec into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(GLOBALDEC_NAME(arg_node), GLOBALDEC_TYPE(arg_node), global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(GLOBALDEC_NAME(arg_node), GLOBALDEC_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -164,7 +164,7 @@ node *ASglobaldef(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the globaldef into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(GLOBALDEF_NAME(arg_node), GLOBALDEF_TYPE(arg_node), global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(GLOBALDEF_NAME(arg_node), GLOBALDEF_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -199,7 +199,7 @@ node *ASfunction(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(FUNCTION_NAME(arg_node), FUNCTION_TYPE(arg_node), global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(FUNCTION_NAME(arg_node), FUNCTION_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -248,7 +248,7 @@ node *ASparameters(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(PARAMETERS_NAME(arg_node), PARAMETERS_TYPE(arg_node), global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(PARAMETERS_NAME(arg_node), PARAMETERS_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -282,7 +282,7 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the globaldef into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(VARDECLARATION_NAME(arg_node), VARDECLARATION_TYPE(arg_node), global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(VARDECLARATION_NAME(arg_node), VARDECLARATION_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -455,7 +455,7 @@ node *ASids(node *arg_node, info *arg_info)
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(IDS_NAME(arg_node), T_int, global.line, global.col, NULL);
+        node *newEntry = TBmakeSymboltableentry(IDS_NAME(arg_node), T_int, INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)

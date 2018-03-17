@@ -1361,10 +1361,9 @@ traversals to process it.
                 <attribute name="Scope">
                     <type name="Int">
                         <targets>
-                            <target mandatory="no">
-                                <any/>
+                            <target mandatory="yes">
                                 <phases>
-                                    <all/>
+                                    <all />
                                 </phases>
                             </target>
                         </targets>

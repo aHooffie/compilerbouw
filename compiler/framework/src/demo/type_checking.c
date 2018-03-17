@@ -105,7 +105,7 @@ node *TCbinop (node *arg_node, info *arg_info)
 	  	}
 	}
 
-	else if (NODE_TYPE(BINOP_LEFT(arg_node)) == NODE_TYPE(BINOP_RIGHT(arg_node)))
+	else if (NODE_TYPE(BINOP_LEFT(arg_node)) =! NODE_TYPE(BINOP_RIGHT(arg_node)))
 	{
 		CTInote("Type error: types dont match :-(\n");
 

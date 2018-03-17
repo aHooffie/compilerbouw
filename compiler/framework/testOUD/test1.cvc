@@ -11,6 +11,14 @@ export int foo(int p) {
     int a;
     int b;
     int b = a;
+
+
+    int bar (int p) {
+        int c;
+        int d;
+        d = p;
+    }
+
     b = a;
     
     p = main(a, b); // mag

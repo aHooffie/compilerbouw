@@ -10,20 +10,23 @@ TO DO (ctrl v van milestone 5)
 - Moeten we hier de locatie ook printen? Want dan moeten we misschien de regellijn + kolom ook in de ste opslaan. Lijkt me wel handig eigenlijk.
 - Ik heb dit geprobeerd, maar kon niet de juiste lines printen (zie uitgecommend in function & program. )
 
-
 !! Likewise argument numbers in function calls must match parameter numbers of called function. 
 Note that matching types is not done during context analysis but left for a separate type checking
 pass.
+- ??????
 
 !! The compilation process shall as far as possible continue in the presence of context errors in order
 to report multiple such errors in a single compiler run.
+- Gedaan, denk ik.
 
 !! Each symbol table entry would feature the name as a character string, its type & >> nesting level <<
 (starting with zero for the global context). Symbol table entries can and should be extended by
 all information about the variable gathered during the compilation process.
+- Gedaan, denk ik.
 
 !! Make sure that your compiler appropriately prints the symbol table, for instance as a structured
 comment in the beginning of the function body or preceding the entire function definition.
+- Gedaan.
 
 !! Context analysis disambiguates equally named symbols according to the scoping rules of the
 language, both variables and functions. For documentation as well as debugging purposes this
@@ -109,6 +112,15 @@ node *ASprogram(node *arg_node, info *arg_info)
 
     /* Continue with traversing in child nodes. */
     PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
+
+    CTInote("************************************ \n Global symboltable. Scope level: %i. \n************************************\n", INFO_SIZE(arg_info) - 1);
+    node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+    while (entry != NULL)
+    {
+        CTInote("* Name: %s. Type: %s.\n", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        entry = SYMBOLTABLEENTRY_NEXT(entry);
+    }
+    CTInote("************************************\n");
 
     /* Remove the linked list at the end of the traversal. */
     stackPop(arg_info);
@@ -228,6 +240,15 @@ node *ASfunction(node *arg_node, info *arg_info)
         FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
     if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+
+    CTInote("************************************ \n Function %s symboltable. Scope level: %i. \n************************************\n", FUNCTION_NAME(arg_node), INFO_SIZE(arg_info) - 1);
+    node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+    while (entry != NULL)
+    {
+        CTInote("* Name: %s. Type: %s.\n", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        entry = SYMBOLTABLEENTRY_NEXT(entry);
+    }
+    CTInote("************************************\n");
 
     /* Remove the linked list at the end of the traversal. */
     stackPop(arg_info);

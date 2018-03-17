@@ -71,6 +71,7 @@ traversals to process it.
             <traversal id="TC" name="Type checking" default="sons" include="type_checking.h">
                 <travuser>
                     <node name="BinOp" />
+                    <node name="Parameters" />
                 </travuser>
             </traversal>
         </general>

@@ -1,9 +1,26 @@
 // tests voor type checking
 
-// binop
+/*
+	binop test
+*/
 
+// globals
 int a = 0;
-int b = 1;
+int b = 2;
 
-// should  fail:
-float c = a + b;
+float c = 0.045;
+float d = 4.3;
+
+bool e = true;
+bool f = false;
+
+export void main ()
+{
+	a = a + b;
+	b = b + c;
+	// ZOU MOETEN ABORTEN:
+	c = c + e; // doet ie niet
+
+	// MAG NIET:
+	a = a % c; // doet ie wel
+}

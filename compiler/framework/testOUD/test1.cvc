@@ -10,9 +10,12 @@ export void main (int m, int n) {
 export int foo(int p) {
     int a;
     int b;
+    int b = a;
+    b = a;
+    
     p = main(a, b); // mag
-    p = main(); // mag niet
-    main(); // mag ook niet
+    p = main(c, d); // mag niet (parameters)
+    main(); // mag ook niet (parameters)
 
     m = r + s; // mag ook niet
 }

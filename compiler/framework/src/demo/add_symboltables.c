@@ -5,26 +5,26 @@
 
 /* 
 
-TO DO: 
-A proper error message must be produced if the necessary declaration of a used identier is missing
-(no matching declaration/denition) or is ambiguous (multiple matching declarations/denitions).
-Likewise argument numbers in function calls must match parameter numbers of called function.
+TO DO (ctrl v van milestone 5)
+!! A proper error message must be produced: (no matching declaration/definition) or is ambiguous (multiple matching declarations/denitions).
+- Moeten we hier de locatie ook printen? Want dan moeten we misschien de regellijn + kolom ook in de ste opslaan. Lijkt me wel handig eigenlijk.
+
+!! Likewise argument numbers in function calls must match parameter numbers of called function. 
 Note that matching types is not done during context analysis but left for a separate type checking
 pass.
 
-The compilation process shall as far as possible continue in the presence of context errors in order
+!! The compilation process shall as far as possible continue in the presence of context errors in order
 to report multiple such errors in a single compiler run. However, stop compilation after context
-analysis in case errors have occurred.
+analysis in case errors have occurred. 
 
-Each symbol table entry
-would feature the name of the variable as a character string, its type as well as its nesting level
+!! Each symbol table entry would feature the name as a character string, its type & >> nesting level <<
 (starting with zero for the global context). Symbol table entries can and should be extended by
 all information about the variable gathered during the compilation process.
 
-Make sure that your compiler appropriately prints the symbol table, for instance as a structured
-comment in the beginning of the function body or preceding the entire function denition.
+!! Make sure that your compiler appropriately prints the symbol table, for instance as a structured
+comment in the beginning of the function body or preceding the entire function definition.
 
-Context analysis disambiguates equally named symbols according to the scoping rules of the
+!! Context analysis disambiguates equally named symbols according to the scoping rules of the
 language, both variables and functions. For documentation as well as debugging purposes this
 disambiguation should also be visualised when displaying the abstract syntax tree after context
 analysis. This could, for example, be achieved by consistent renaming of identiers incorporating
@@ -32,18 +32,17 @@ a suitable representation of the scope level into the variable name. Alternative
 simply print the scope information together with the variable name when visualising the abstract
 syntax tree.
 
-Last but not least, remove the declaration part from for-loop induction variables and create corre-
+!! Last but not least, remove the declaration part from for-loop induction variables and create corre-
 sponding local variable declarations on the level of the (innermost) function denition. Beware of
 nested for-loops using the same induction variable and occurrences of identically named variables
 outside the scope of the corresponding for-loop. Like explained above, context disambiguation
 and possibly a systematic renaming of for-loop induction variables is needed.
 
-STRINGS COMPARING IN TRAVERSAL -> STRCOMP NIET == !!
-
 */
 
-#include "add_symboltables.h"
+#include <string.h>
 
+#include "add_symboltables.h"
 #include "types.h"
 #include "tree_basic.h"
 #include "traverse.h"
@@ -52,8 +51,6 @@ STRINGS COMPARING IN TRAVERSAL -> STRCOMP NIET == !!
 
 #include "memory.h"
 #include "ctinfo.h"
-
-// NOTE: CALLS OPZOEKEN FAALT NOG ( = TRAVERSEN! )
 
 /* INFO structure */
 struct INFO
@@ -93,24 +90,21 @@ node *ASprogram(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASprogram");
 
-    printf("Found a Program. \n");
-
     /* Create a symbol table node for the global scoped variables and functions. */
     node *globals = TBmakeSymboltable(NULL, NULL);
     stackPush(globals, arg_info);
     PROGRAM_SYMBOLTABLE(arg_node) = globals;
 
     if (INFO_STACK(arg_info) == NULL)
-        CTInote("Something went wrong with the symboltable in the Program node. \n");
+        CTInote("Something went wrong with creating a symboltable in the Program node. \n");
 
     /* Continue with traversing in child nodes. */
     PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 
     /* Remove the linked list at the end of the traversal. */
     stackPop(arg_info);
-
     if (INFO_SIZE(arg_info) != 0)
-        CTInote("!! Error: Stack wasn't empty at the end. Something went wrong.\n");
+        CTInote("Something went wrong. Stack wasn't empty at the end of traversal.\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -120,10 +114,9 @@ node *ASglobaldec(node *arg_node, info *arg_info)
     DBUG_ENTER("ASglobaldec");
 
     /* Found globaldec. Check if there already is one with the same name. */
-    printf("Found a Globaldec: %s. \n", GLOBALDEC_NAME(arg_node));
-
+    // printf("Found a Globaldec: %s. \n", GLOBALDEC_NAME(arg_node));
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEC_NAME(arg_node)) == FALSE)
-        CTInote("Globaldec %s is already declared in the symboltable.\n", GLOBALDEC_NAME(arg_node));
+        CTInote("! Error: Globaldeclaration %s has already been declared.\n", GLOBALDEC_NAME(arg_node));
     else
     {
         /* Else, insert the globaldec into the symbol table linked list at the end. */
@@ -148,11 +141,10 @@ node *ASglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASglobaldef");
 
-    printf("Found a Globaldef: %s.\n", GLOBALDEF_NAME(arg_node));
-
     /* Found globaldef. Check if there already is one with the same name. */
+    // printf("Found a Globaldef: %s.\n", GLOBALDEF_NAME(arg_node));
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEF_NAME(arg_node)) == FALSE)
-        CTInote("Globaldef %s is already declared in the symboltable!\n", GLOBALDEF_NAME(arg_node));
+        CTInote("! Error: Global definition %s has already been declared.\n", GLOBALDEF_NAME(arg_node));
     else
     {
         /* Else, insert the globaldef into the symbol table linked list at the end. */
@@ -181,11 +173,11 @@ node *ASfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfunction");
 
-    printf("Found a function: %s.\n", FUNCTION_NAME(arg_node));
+    // printf("Found a function: %s.\n", FUNCTION_NAME(arg_node));
 
     /* Found function. Check if there already is one with the same name in global ST. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), FUNCTION_NAME(arg_node)) == FALSE)
-        CTInote("Function %s is already declared in the symboltable.\n", FUNCTION_NAME(arg_node));
+        CTInote("! Error: Function %s has already been declared.\n", FUNCTION_NAME(arg_node));
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
@@ -204,10 +196,8 @@ node *ASfunction(node *arg_node, info *arg_info)
     node *functionSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
     stackPush(functionSymboltable, arg_info);
 
-    printf("Nieuwe symbol table voor function %s gemaakt. Size: %i\n", FUNCTION_NAME(arg_node), INFO_SIZE(arg_info));
-
     if (INFO_STACK(arg_info) == NULL)
-        CTInote("Something went wrong with the symboltable in the FUNCTION node. \n");
+        CTInote("Something went wrong with the symboltable in the function %s. \n", FUNCTION_NAME(arg_node));
 
     /* Update function administration. */
     FUNCTION_SYMBOLTABLE(arg_node) = functionSymboltable;
@@ -221,8 +211,6 @@ node *ASfunction(node *arg_node, info *arg_info)
     /* Remove the linked list at the end of the traversal. */
     stackPop(arg_info);
 
-    printf("Seen everything from this function. Popping from stack. Size: %i.\n", INFO_SIZE(arg_info));
-
     DBUG_RETURN(arg_node);
 }
 
@@ -230,11 +218,11 @@ node *ASparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASparameters");
 
-    printf("Found Parameter %s.\n", PARAMETERS_NAME(arg_node));
+    // printf("Found Parameter %s.\n", PARAMETERS_NAME(arg_node));
 
     /* Found parameter. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), PARAMETERS_NAME(arg_node)) == FALSE)
-        CTInote("Parameter %s is already declared in the symboltable!\n", PARAMETERS_NAME(arg_node));
+        CTInote("! Error: Parameter %s has already been declared.\n", PARAMETERS_NAME(arg_node));
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
@@ -263,11 +251,11 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvardeclaration");
 
-    printf("Found Vardeclaration %s. \n", VARDECLARATION_NAME(arg_node));
+    // printf("Found Vardeclaration %s. \n", VARDECLARATION_NAME(arg_node));
 
     /* Found vardeclaration. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), VARDECLARATION_NAME(arg_node)) == FALSE)
-        printf("Vardeclaration %s is already declared in the symboltable!\n", VARDECLARATION_NAME(arg_node));
+        CTInote("! Error: Vardeclaration %s has already been declared.\n", VARDECLARATION_NAME(arg_node));
     else
     {
         /* Else, insert the globaldef into the symbol table linked list at the end. */
@@ -297,7 +285,7 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfunctioncallstmt");
 
-    printf("Found Functioncallstmt %s. \n", FUNCTIONCALLSTMT_NAME(arg_node));
+    // printf("Found Functioncallstmt %s. \n", FUNCTIONCALLSTMT_NAME(arg_node));
 
     /* Find the original function declaration in the scope above. */
     node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
@@ -317,7 +305,7 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
     }
 
     if (FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) == NULL)
-        CTInote("!! Error. Functioncallstmt %s is nog niet gedeclareerd.\n", FUNCTIONCALLSTMT_NAME(arg_node));
+        CTInote("Error: Functioncallstmt %s is nog niet gedeclareerd.\n", FUNCTIONCALLSTMT_NAME(arg_node));
 
     /* Continue with traversing in child nodes. */
     if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
@@ -328,9 +316,9 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
 
 node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("FUNCTIONCALLEXPR");
+    DBUG_ENTER("ASfunctioncallexpr");
 
-    printf("Found Functioncallexpr %s. \n", FUNCTIONCALLEXPR_NAME(arg_node));
+    // printf("Found Functioncallexpr %s. \n", FUNCTIONCALLEXPR_NAME(arg_node));
 
     /* Find the original function declaration in the scope above. */
     node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
@@ -350,7 +338,7 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     }
 
     if (FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) == NULL)
-        CTInote("!! Error. Functioncallexpr %s is nog niet gedeclareerd.\n", FUNCTIONCALLEXPR_NAME(arg_node));
+        CTInote("Error: Functioncallexpr %s is nog niet gedeclareerd.\n", FUNCTIONCALLEXPR_NAME(arg_node));
 
     /* Continue with traversing in child nodes. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
@@ -364,7 +352,7 @@ node *ASvar(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvar");
 
-    printf("Found Var %s.\n", VAR_NAME(arg_node));
+    // printf("Found Var %s.\n", VAR_NAME(arg_node));
 
     /* Find the original function declaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
@@ -384,7 +372,7 @@ node *ASvar(node *arg_node, info *arg_info)
     }
 
     if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
-        CTInote("!! Error. Var %s is nergens gedeclareerd.\n", VAR_NAME(arg_node));
+        CTInote("! Error. Var %s is nog niet gedeclareerd.\n", VAR_NAME(arg_node));
 
     /* Continue with traversing in child nodes. */
     if (VAR_INDICES(arg_node) != NULL)
@@ -397,7 +385,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvarlet");
 
-    printf("Found Varlet %s.\n", VARLET_NAME(arg_node));
+    // printf("Found Varlet %s.\n", VARLET_NAME(arg_node));
 
     /* Find the original function declaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
@@ -417,7 +405,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
     }
 
     if (VARLET_SYMBOLTABLEENTRY(arg_node) == NULL)
-        CTInote("!! Error. Varlet %s is nergens gedeclareerd.\n", VARLET_NAME(arg_node));
+        CTInote("! Error. Varlet %s is nog niet gedeclareerd.\n", VARLET_NAME(arg_node));
 
     /* Continue with traversing in child nodes. */
     if (VARLET_INDICES(arg_node) != NULL)
@@ -435,7 +423,7 @@ node *ASids(node *arg_node, info *arg_info)
     printf("Found Id %s! \n", IDS_NAME(arg_node));
 
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), IDS_NAME(arg_node)) == FALSE)
-        CTInote("ID %s is already declared in the symboltable.\n", IDS_NAME(arg_node));
+        CTInote("! Error: ID %s has already been declared.\n", IDS_NAME(arg_node));
     else
     {
         /* Else, insert the function into the symbol table linked list at the end. */
@@ -509,14 +497,10 @@ node *travList(node *symboltableentry)
 {
     node *trav = symboltableentry;
     if (trav == NULL)
-    {
         return NULL;
-    }
 
     while (SYMBOLTABLEENTRY_NEXT(trav) != NULL)
-    {
         trav = SYMBOLTABLEENTRY_NEXT(trav);
-    }
 
     return trav;
 }
@@ -527,14 +511,10 @@ node *findOriginal(node *symboltableentry, char *name)
 
     while (trav != NULL)
     {
-        if (SYMBOLTABLEENTRY_NAME(trav) == name)
-        {
+        if (strcmp(SYMBOLTABLEENTRY_NAME(trav), name) == 0)
             return trav;
-        }
         else
-        {
             trav = SYMBOLTABLEENTRY_NEXT(trav);
-        }
     }
 
     return trav;
@@ -546,14 +526,10 @@ bool checkDuplicates(node *symboltableentry, char *name)
 
     while (trav != NULL)
     {
-        if (SYMBOLTABLEENTRY_NAME(trav) == name)
-        {
+        if (strcmp(SYMBOLTABLEENTRY_NAME(trav), name) == 0)
             return FALSE;
-        }
         else
-        {
             trav = SYMBOLTABLEENTRY_NEXT(trav);
-        }
     }
 
     return TRUE;
@@ -569,6 +545,7 @@ void printSymboltable(node *symboltableentry)
         trav = SYMBOLTABLEENTRY_NEXT(trav);
     }
 }
+
 /* Traversal start function */
 node *ASdoAddSymbolTables(node *syntaxtree)
 {

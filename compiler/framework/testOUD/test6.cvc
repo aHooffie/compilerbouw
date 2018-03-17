@@ -1,0 +1,9 @@
+// tests voor type checking
+
+// binop
+
+int a = 0;
+int b = 1;
+
+// should  fail:
+float c = a + b;

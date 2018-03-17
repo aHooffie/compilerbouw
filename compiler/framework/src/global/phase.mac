@@ -56,6 +56,12 @@ SUBPHASE( as,
           "Add Symboltables",
           ASdoAddSymbolTables, 
           ALWAYS,
+          pet)
+
+SUBPHASE( tc, 
+          "Type checker",
+          TCdoTypeChecking, 
+          ALWAYS,
           pet)    
       
 ENDPHASE( pet) 

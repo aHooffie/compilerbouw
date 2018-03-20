@@ -63,8 +63,30 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions */
+node *TCglobaldef(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCglobaldef");
+
+    // Check if dimensions are integers
+
+    DBUG_RETURN(arg_node);
+}
+
+node *TCglobaldec(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCglobaldec");
+
+    // Check if dimensions are integers
+
+    DBUG_RETURN(arg_node);
+}
+
+node *TCfunction(node *arg_node, info *arg_info)
+{
+}
 
 // !! NOG EVEN LETTEN OP VOID !!
+/* = Alleen rechter deel van een assign, moet nog in een stack oid komen. */
 node *TCbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCbinop");
@@ -85,6 +107,7 @@ node *TCbinop(node *arg_node, info *arg_info)
             INFO_ERRORS(arg_info) += 1;
         }
     }
+    /* Addition, Subtraction, Multiplication, Div*/
     else if (BINOP_OP(arg_node) == BO_add ||
              BINOP_OP(arg_node) == BO_sub ||
              BINOP_OP(arg_node) == BO_mul ||
@@ -93,7 +116,8 @@ node *TCbinop(node *arg_node, info *arg_info)
         if (left == N_num)
         {
             if (right == N_num)
-                printf("2 Integers\n"); // mag.
+            {
+            }
             else if (right == N_var)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
@@ -133,44 +157,26 @@ node *TCbinop(node *arg_node, info *arg_info)
                 INFO_ERRORS(arg_info) += 1;
             }
         }
-        else if (left == N_bool)
-        {
-            if (right == N_bool)
-                printf("2 Bools\n"); // mag.
-            else if (right == N_var)
-            {
-                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
-                if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                {
-                    CTInote("! Error: Types are not matching..\n");
-                    INFO_ERRORS(arg_info) += 1;
-                }
-                else
-                    printf("2 Bools\n"); // mag.
-            }
-            else
-            {
-                CTInote("! Error: Types are not matching..\n");
-                INFO_ERRORS(arg_info) += 1;
-
-                // Grammatica: mag een bool een 1 of 0 zijn?
-            }
-        }
         else if (left == N_var)
         {
-            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
-                SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
+            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) == T_bool ||
+                SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))) == T_bool)
+            {
+                CTInote("! Error: Bools cannot have arithmetic operations.\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+            else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
+                     SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
             {
                 CTInote("! Error: Types are not matching..\n");
                 INFO_ERRORS(arg_info) += 1;
             }
             else
                 printf("Corresponding vars.\n");
-            // Check if links in symboltables are the same.
         }
         else
         {
-            CTInote("Unknown types.\n");
+            CTInote("! Error: Conflicting type + binop found. \n");
             INFO_ERRORS(arg_info) += 1;
         }
     }
@@ -238,11 +244,16 @@ node *TCbinop(node *arg_node, info *arg_info)
             INFO_ERRORS(arg_info) += 1;
         }
     }
-
-    //    BO_eq ==
-    //    BO_ne !=
-    //    BO_and && BO_or || hoeven niet?
-
+    else if (BINOP_OP(arg_node) == BO_eq ||
+             BINOP_OP(arg_node) == BO_ne)
+    {
+        // num, float & bool
+    }
+    else if (BINOP_OP(arg_node) == BO_and ||
+             BINOP_OP(arg_node) == BO_or)
+    {
+        // bool
+    }
     DBUG_RETURN(arg_node);
 }
 

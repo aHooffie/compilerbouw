@@ -27,9 +27,7 @@ export void main ()
 	b = b > c; // INT + FLOAT
 	c = c <= e; // FLOAT + BOOL
 	a = a % c; // INT + FLOAT
-
+	f = e + true; // varBOOL + BOOL
 
 // Alles hierboven werkt.
-
-// f = e + true; // varBOOL + BOOL
 }

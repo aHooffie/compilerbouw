@@ -3,10 +3,11 @@
 
 #include "types.h"
 
-extern node *TCbinop (node *arg_node, info *arg_info);
-extern node *TCparameters (node *arg_node, info *arg_info);
+extern char *NodetypetoString(node *arg_node);
+
+extern node *TCbinop(node *arg_node, info *arg_info);
+extern node *TCparameters(node *arg_node, info *arg_info);
 
 extern node *TCdoTypeChecking(node *syntaxtree);
-
 
 #endif

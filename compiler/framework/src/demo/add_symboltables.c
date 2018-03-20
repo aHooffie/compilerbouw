@@ -8,7 +8,8 @@
 TO DO (ctrl v van milestone 5)
 !! A proper error message must be produced: (no matching declaration/definition) or is ambiguous (multiple matching declarations/definitions).
 - Moeten we hier de locatie ook printen? Want dan moeten we misschien de regellijn + kolom ook in de ste opslaan. Lijkt me wel handig eigenlijk.
-- Ik heb dit geprobeerd, maar kon niet de juiste lines printen (zie uitgecommend in function & program. )
+
+ZIE TREE_BASIC.H
 
 !! Likewise argument numbers in function calls must match parameter numbers of called function. 
 Note that matching types is not done during context analysis but left for a separate type checking
@@ -49,7 +50,6 @@ and possibly a systematic renaming of for-loop induction variables is needed.
 #include "tree_basic.h"
 #include "traverse.h"
 #include "dbug.h"
-#include "lookup_table.h"
 #include "str.h"
 #include "globals.h"
 
@@ -610,9 +610,7 @@ node *ASdoAddSymbolTables(node *syntaxtree)
     CTInote("Traversing done...\n");
 
     if (INFO_ERRORS(arg_info) != 0)
-    {
         CTIabort("Found %i errors during the context analysis. Aborting the compilation.\n", INFO_ERRORS(arg_info));
-    }
 
     arg_info = FreeInfo(arg_info);
 

@@ -8,19 +8,28 @@
 int a = 0;
 int b = 2;
 
-float c = 0.045;
-float d = 4.3;
+float c = 0.5;
+float d = 4.5;
 
 bool e = true;
 bool f = false;
 
 export void main ()
 {
-	a = a + b;
-	b = b + c;
-	// ZOU MOETEN ABORTEN:
-	c = c + e; // doet ie niet
+	a = 1 * 2; // INT + INT
+	b = 3 - a; // INT + varINT
+	c = 3.4 / c; // FLOAT + varFLOAT
+	a = a + b; // varINT + varINT
+	c = c >= d; // varFLOAT + varFLOAT
 
-	// MAG NIET:
-	a = a % c; // doet ie wel
+// MAG NIET:
+	a = a < d; // varINT + varFLOAT
+	b = b > c; // INT + FLOAT
+	c = c <= e; // FLOAT + BOOL
+	a = a % c; // INT + FLOAT
+
+
+// Alles hierboven werkt.
+
+// f = e + true; // varBOOL + BOOL
 }

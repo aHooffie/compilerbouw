@@ -3,7 +3,6 @@
  * Prefix: TC
  */
 
-
 /*
 
  All binary operators are only defined on operands of exactly the same type,
@@ -17,47 +16,31 @@
  
  The arithmetic operators for addition and multiplication are also defined
  on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
-
  */
 
+// !! CHECK IF ALL THESE INCLUDES ARE NESSECARY...
 
-// !! CHECK IF ALL THESE INCLUDES ARE NESSECARY... 
-
-#include <stdio.h> // for standard error message?? eventueel niet meer nodig
-#include <string.h>
-
+#include <stdio.h> // for standard error message?? eventueel niet meer nodig == printf
+#include "type_checking.h"
 #include "add_symboltables.h"
+
 #include "types.h"
 #include "tree_basic.h"
 #include "traverse.h"
 #include "dbug.h"
-#include "lookup_table.h"
-#include "add_symboltables.h"
-
 #include "memory.h"
 #include "ctinfo.h"
 
-/*
- * INFO structure
- */
-
+/* INFO structure */
 struct INFO
 {
     int errors;
 };
 
-
-/*
- * INFO macros
- */
-
+/* INFO macros */
 #define INFO_ERRORS(n) ((n)->errors)
 
-
-/*
- * INFO functions
- */
-
+/* INFO functions */
 static info *MakeInfo(void)
 {
     info *result;
@@ -79,57 +62,200 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
-
-/*
- * Traversal functions
- */
-
+/* Traversal functions */
 
 // !! NOG EVEN LETTEN OP VOID !!
-
-node *TCbinop (node *arg_node, info *arg_info)
+node *TCbinop(node *arg_node, info *arg_info)
 {
-	DBUG_ENTER("TCbinop");
+    DBUG_ENTER("TCbinop");
 
-	BINOP_LEFT( arg_node) = TRAVdo( BINOP_LEFT( arg_node), arg_info);
-	BINOP_RIGHT( arg_node) = TRAVdo( BINOP_RIGHT( arg_node), arg_info);
+    BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+    BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
-	// check if modulo
-	if (BINOP_OP( arg_node) == BO_mod)
-	{
-		// then only int
-		if (NODE_TYPE(BINOP_LEFT(arg_node)) != T_int || NODE_TYPE(BINOP_RIGHT(arg_node)) != T_int)
-	  	{
-	  		CTInote("Modulo can only be performed on two integers.\n");
-	  		INFO_ERRORS(arg_info) += 1;
-	  	}
-	}
+    nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
+    nodetype right = NODE_TYPE(BINOP_RIGHT(arg_node));
+    printf("Type: %s & Type: %s\n", NodetypetoString(BINOP_LEFT(arg_node)), NodetypetoString(BINOP_RIGHT(arg_node)));
 
-	else if (NODE_TYPE(BINOP_LEFT(arg_node)) =! NODE_TYPE(BINOP_RIGHT(arg_node)))
-	{
-		CTInote("Type error: types dont match :-(\n");
+    /* Modulo; can only be done with integers. */
+    if (BINOP_OP(arg_node) == BO_mod)
+    {
+        if (NODE_TYPE(BINOP_LEFT(arg_node)) != N_num || NODE_TYPE(BINOP_RIGHT(arg_node)) != N_num)
+        {
+            CTInote("! Error: Modulo can only be performed on two integers.\n");
+            INFO_ERRORS(arg_info) += 1;
+        }
+    }
+    else if (BINOP_OP(arg_node) == BO_add ||
+             BINOP_OP(arg_node) == BO_sub ||
+             BINOP_OP(arg_node) == BO_mul ||
+             BINOP_OP(arg_node) == BO_div)
+    {
+        if (left == N_num)
+        {
+            if (right == N_num)
+                printf("2 Integers\n"); // mag.
+            else if (right == N_var)
+            {
+                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
+                if (SYMBOLTABLEENTRY_TYPE(original) != T_int)
+                {
+                    CTInote("! Error: Types are not matching..\n");
+                    INFO_ERRORS(arg_info) += 1;
+                }
+                else
+                    printf("2 Integers\n"); // mag.
+            }
+            else
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+        }
+        else if (left == N_float)
+        {
+            if (right == N_float)
+                printf("2 Floats\n"); // mag.
+            else if (right == N_var)
+            {
+                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
+                if (SYMBOLTABLEENTRY_TYPE(original) != T_float)
+                {
+                    CTInote("! Error: Types are not matching..\n");
+                    INFO_ERRORS(arg_info) += 1;
+                }
 
-		INFO_ERRORS(arg_info) += 1;
-	}
+                else
+                    printf("2 Floats\n"); // mag.
+            }
+            else
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+        }
+        else if (left == N_bool)
+        {
+            if (right == N_bool)
+                printf("2 Bools\n"); // mag.
+            else if (right == N_var)
+            {
+                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
+                if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
+                {
+                    CTInote("! Error: Types are not matching..\n");
+                    INFO_ERRORS(arg_info) += 1;
+                }
+                else
+                    printf("2 Bools\n"); // mag.
+            }
+            else
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
 
-	DBUG_RETURN( arg_node);
+                // Grammatica: mag een bool een 1 of 0 zijn?
+            }
+        }
+        else if (left == N_var)
+        {
+            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
+                SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+            else
+                printf("Corresponding vars.\n");
+            // Check if links in symboltables are the same.
+        }
+        else
+        {
+            CTInote("Unknown types.\n");
+            INFO_ERRORS(arg_info) += 1;
+        }
+    }
+    else if (BINOP_OP(arg_node) == BO_lt ||
+             BINOP_OP(arg_node) == BO_le ||
+             BINOP_OP(arg_node) == BO_gt ||
+             BINOP_OP(arg_node) == BO_ge)
+    {
+        if (left == N_num)
+        {
+            if (right == N_num)
+                printf("2 Integers\n"); // mag.
+            else if (right == N_var)
+            {
+                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
+                if (SYMBOLTABLEENTRY_TYPE(original) != T_int)
+                {
+                    CTInote("! Error: Types are not matching..\n");
+                    INFO_ERRORS(arg_info) += 1;
+                }
+                else
+                    printf("2 Integers\n"); // mag.
+            }
+            else
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+        }
+        else if (left == N_float)
+        {
+            if (right == N_float)
+                printf("2 Floats\n"); // mag.
+            else if (right == N_var)
+            {
+                node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
+                if (SYMBOLTABLEENTRY_TYPE(original) != T_float)
+                {
+                    CTInote("! Error: Types are not matching..\n");
+                    INFO_ERRORS(arg_info) += 1;
+                }
+                else
+                    printf("2 Floats\n"); // mag.
+            }
+            else
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+        }
+        else if (left == N_var)
+        {
+            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
+                SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
+            {
+                CTInote("! Error: Types are not matching..\n");
+                INFO_ERRORS(arg_info) += 1;
+            }
+            else
+                printf("Corresponding vars.\n");
+        }
+        else
+        {
+            CTInote("Unknown / not allowed types.\n");
+            INFO_ERRORS(arg_info) += 1;
+        }
+    }
+
+    //    BO_eq ==
+    //    BO_ne !=
+    //    BO_and && BO_or || hoeven niet?
+
+    DBUG_RETURN(arg_node);
 }
 
-
-node *TCparameters (node *arg_node, info *arg_info)
+node *TCparameters(node *arg_node, info *arg_info)
 {
-	DBUG_ENTER("TCparameters");
+    DBUG_ENTER("TCparameters");
 
-	node *entry = PARAMETERS_SYMBOLTABLEENTRY( arg_node);
+    node *entry = PARAMETERS_SYMBOLTABLEENTRY(arg_node);
 
-	DBUG_RETURN( arg_node);
+    DBUG_RETURN(arg_node);
 }
 
-
-/*
- * Traversal start function
- */
-
+/* Traversal start function */
 node *TCdoTypeChecking(node *syntaxtree)
 {
     DBUG_ENTER("TCdoTypeChecking");
@@ -137,18 +263,58 @@ node *TCdoTypeChecking(node *syntaxtree)
     info *arg_info;
     arg_info = MakeInfo();
 
-    TRAVpush(TR_tc); 							// push traversal "tc" as defined in ast.xml
-    syntaxtree = TRAVdo(syntaxtree, arg_info);  // initiate ast traversal
-    TRAVpop();									// pop current traversal
+    TRAVpush(TR_tc);                           // push traversal "tc" as defined in ast.xml
+    syntaxtree = TRAVdo(syntaxtree, arg_info); // initiate ast traversal
+    TRAVpop();                                 // pop current traversal
 
     CTInote("Traversing for TC done...\n");
 
     if (INFO_ERRORS(arg_info) != 0)
-    {
         CTIabort("Found %i error(s) during type checking. Aborting the compilation.\n", INFO_ERRORS(arg_info));
-    }
 
     arg_info = FreeInfo(arg_info);
 
     DBUG_RETURN(syntaxtree);
+}
+
+/* Prints the node type as string, for testing. */
+char *NodetypetoString(node *arg_node)
+{
+    char *typeString;
+    switch (NODE_TYPE(arg_node))
+    {
+    case N_num:
+        typeString = "int";
+        break;
+    case N_float:
+        typeString = "float";
+        break;
+    case N_bool:
+        typeString = "bool";
+        break;
+    case N_var:
+        typeString = "var";
+        break;
+    case N_cast:
+        typeString = "cast";
+        break;
+    case N_functioncallexpr:
+        typeString = "cast";
+        break;
+    case N_arrayexpr:
+        typeString = "cast";
+        break;
+
+    case N_binop:
+        typeString = "int";
+        break;
+    case N_monop:
+        typeString = "int";
+        break;
+    default:
+        typeString = "Not known yet";
+        break;
+    }
+
+    return typeString;
 }

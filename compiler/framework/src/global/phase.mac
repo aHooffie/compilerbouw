@@ -62,7 +62,13 @@ SUBPHASE( tc,
           "Type checker",
           TCdoTypeChecking, 
           ALWAYS,
-          pet)    
+          pet)
+
+SUBPHASE( ep, 
+          "Edit Paramarrays",
+          EPdoEditParamarrays, 
+          ALWAYS,
+          pet)        
       
 ENDPHASE( pet) 
 

@@ -74,6 +74,17 @@ traversals to process it.
                     <node name="Parameters" />
                 </travuser>
             </traversal>
+            <traversal id="EP" name="Edit Paramarrays" default="sons" include="edit_paramarrays.h">
+                <travuser>
+                    <node name="Function" />
+                    <node name="FunctionCallStmt" />
+                    <node name="FunctionCallExpr" />
+                    <node name="Parameters" />
+                    <node name="ArrayExpr" />
+                    <node name="Expressions" />
+                    <node name="Ids" />
+                </travuser>
+            </traversal>
         </general>
     </phases>
     <!--

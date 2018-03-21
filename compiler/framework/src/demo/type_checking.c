@@ -35,10 +35,12 @@
 struct INFO
 {
     int errors;
+    type current;
 };
 
 /* INFO macros */
 #define INFO_ERRORS(n) ((n)->errors)
+#define INFO_TYPE(n) ((n)->current)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -49,6 +51,7 @@ static info *MakeInfo(void)
 
     result = (info *)MEMmalloc(sizeof(info));
     INFO_ERRORS(result) = 0;
+    INFO_TYPE(result) = T_unknown;
 
     DBUG_RETURN(result);
 }
@@ -85,7 +88,6 @@ node *TCfunction(node *arg_node, info *arg_info)
 {
 }
 
-// !! NOG EVEN LETTEN OP VOID !!
 /* = Alleen rechter deel van een assign, moet nog in een stack oid komen. */
 node *TCbinop(node *arg_node, info *arg_info)
 {
@@ -274,9 +276,9 @@ node *TCdoTypeChecking(node *syntaxtree)
     info *arg_info;
     arg_info = MakeInfo();
 
-    TRAVpush(TR_tc);                           // push traversal "tc" as defined in ast.xml
-    syntaxtree = TRAVdo(syntaxtree, arg_info); // initiate ast traversal
-    TRAVpop();                                 // pop current traversal
+    TRAVpush(TR_tc);
+    syntaxtree = TRAVdo(syntaxtree, arg_info);
+    TRAVpop();
 
     CTInote("Traversing for TC done...\n");
 

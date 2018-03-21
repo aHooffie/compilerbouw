@@ -107,14 +107,19 @@ node *TCassign(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCassign");
 
-    ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+    /* Traverse left side of an assignment. */
+    if (ASSIGN_LET(arg_node) != NULL)
+        ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+
     type t = INFO_TYPE(arg_info);
 
+    /* Traverse right side and compare. */
     ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
 
     if (t != INFO_TYPE(arg_info))
         typeError(arg_info, "Assigning types failed. Not same types!");
 
+    /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
 
     DBUG_RETURN(arg_node);
@@ -126,7 +131,6 @@ node *TCcast(node *arg_node, info *arg_info)
     DBUG_ENTER("TCcast");
 
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
-
     INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
 
     DBUG_RETURN(arg_node);
@@ -139,13 +143,18 @@ node *TCmonop(node *arg_node, info *arg_info)
 
     MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
 
+    /* - Can be either a float or an int, ! can be all three basic types. */
     switch (MONOP_OP(arg_node))
     {
     case MO_neg:
-        if (INFO_TYPE(arg_info) != T_int || INFO_TYPE(arg_info) != T_float)
+        if (INFO_TYPE(arg_info) != T_int && INFO_TYPE(arg_info) != T_float)
             typeError(arg_info, "! Error: Wrong Monop types. ");
         break;
     case MO_not:
+        if (INFO_TYPE(arg_info) != T_int &&
+            INFO_TYPE(arg_info) != T_float &&
+            INFO_TYPE(arg_info) != T_bool)
+            typeError(arg_info, "! Error: Wrong Monop types. ");
         break;
     default:
         typeError(arg_info, "! Error: Conflicting type + monop found.");
@@ -155,7 +164,7 @@ node *TCmonop(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Binop - werkt nog niet helemaal goed. */
+/* Binop - werkt niet helemaal goed. */
 node *TCbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCbinop");
@@ -165,7 +174,8 @@ node *TCbinop(node *arg_node, info *arg_info)
 
     nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
     nodetype right = NODE_TYPE(BINOP_RIGHT(arg_node));
-    printf("Type: %s & Type: %s\n", NodetypetoString(BINOP_LEFT(arg_node)), NodetypetoString(BINOP_RIGHT(arg_node)));
+    // == fout! Moet travdo zijn in links, dat opslaan in arg_info, en dan travdo right en kijken of dat ook kan.
+    // printf("Type: %s & Type: %s\n", NodetypetoString(BINOP_LEFT(arg_node)), NodetypetoString(BINOP_RIGHT(arg_node)));
 
     switch (BINOP_OP(arg_node))
     {
@@ -459,7 +469,7 @@ node *TCdoTypeChecking(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
-/* Extra errors. */
+/* Function to call when a typecheck error arises. */
 void typeError(info *arg_info, char *message)
 {
     CTInote("%s", message);

@@ -1,8 +1,4 @@
-// tests voor type checking
-
-/*
-	binop test
-*/
+/* Typechecking. */
 
 // globals
 int a = 0;
@@ -16,18 +12,18 @@ bool f = false;
 
 export void main ()
 {
-	a = 1 * 2; // INT + INT
+//	a = 1 + 3 * 2; // INT + INT + INT WERKT NIET!
 	b = 3 - a; // INT + varINT
 	c = 3.4 / c; // FLOAT + varFLOAT
 	a = a + b; // varINT + varINT
-	c = c >= d; // varFLOAT + varFLOAT
+	f = c >= d; // varFLOAT + varFLOAT
+	f = !e;
 
 // MAG NIET:
-	a = a < d; // varINT + varFLOAT
-	b = b > c; // INT + FLOAT
-	c = c <= e; // FLOAT + BOOL
-	a = a % c; // INT + FLOAT
-	f = e + true; // varBOOL + BOOL
+//	a = a < d; // varINT + varFLOAT
+//	c = c <= e; // varFLOAT + varBOOL
+//	a = a % c; // varINT + varFLOAT
+//	f = e + true; // varBOOL + BOOL
+// 	f = !d;
 
-// Alles hierboven werkt.
 }

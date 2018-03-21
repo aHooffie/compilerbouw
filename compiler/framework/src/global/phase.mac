@@ -67,7 +67,7 @@ SUBPHASE( tc,
 SUBPHASE( ep, 
           "Edit Paramarrays",
           EPdoEditParamarrays, 
-          ALWAYS,
+          NEVER,
           pet)        
       
 ENDPHASE( pet) 

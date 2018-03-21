@@ -98,9 +98,17 @@ void *EPdoEditParamarrays(node *syntaxtree)
 {
     DBUG_ENTER("EPdoEditParamarrays");
 
+    info *arg_info;
+    arg_info = MakeInfo();
+
+    arg_info = FreeInfo(arg_info);
+
     TRAVpush(TR_ep);
     syntaxtree = TRAVdo(syntaxtree, NULL);
     TRAVpop();
+
+    if (INFO_ERRORS(arg_info) != 0)
+        CTIabort("Found %i error(s) during type checking. Aborting the compilation.", INFO_ERRORS(arg_info));
 
     CTInote("Traversing done...\n");
 

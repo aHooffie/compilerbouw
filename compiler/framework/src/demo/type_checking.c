@@ -114,11 +114,18 @@ node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node));
-    FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node));
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
 
-    //     // Check if dimensions are integers
-    //      // Check if return type(s) corresponds.
+    if (FUNCTION_TYPE(arg_node) != INFO_TYPE(arg_info) )
+    	 typeError(arg_info, arg_node, "Return types do not match!");
+
+
+    /* Reset. */
+    // ... hier? 
+    INFO_TYPE(arg_info) = T_unknown;
+
+    // Check if dimensions are integers; ARRAY
 
     DBUG_RETURN(arg_node);
 }

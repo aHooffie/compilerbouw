@@ -66,6 +66,7 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions */
+// MOET NOG
 node *TCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldef");
@@ -75,6 +76,7 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+// MOET NOG
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldec");
@@ -84,21 +86,107 @@ node *TCglobaldec(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+// MOET NOG
 node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
 
-    // node *entry = PARAMETERS_SYMBOLTABLEENTRY(arg_node);
+    // Check if params are allowed types.
+    // Check if params are corresponding with function.
 
     DBUG_RETURN(arg_node);
 }
 
+// MOET NOG
 node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
-    // Check if dimensions are integers
+    //     // Check if dimensions are integers
+    //      // Check if return type(s) corresponds.
 
+    DBUG_RETURN(arg_node);
+}
+
+/* Statements (for, if, while, dowhile, return, functioncallstmt) . */
+// MOET NOG
+node *TCfor(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfor");
+    DBUG_RETURN(arg_node);
+}
+
+node *TCifelse(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCifelse");
+
+    /* Check condition. */
+    IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        typeError(arg_info, arg_node, "If condition is not a basic type.");
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
+    /* Traverse through block of statements.*/
+    IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+
+    /* Traverse through else block of statements.*/
+    if (IFELSE_ELSE(arg_node) != NULL)
+        IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+node *TCwhile(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCwhile");
+
+    /* Check condition. */
+    WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        typeError(arg_info, arg_node, "While condition is not a basic type.");
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
+    /* Traverse through block of statements.*/
+    WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+// MOET NOG
+node *TCdowhile(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCdowhile");
+    DBUG_RETURN(arg_node);
+}
+
+node *TCreturn(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCwhile");
+
+    /* Check condition. */
+    if (RETURN_EXPR(arg_node) != NULL)
+        RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        typeError(arg_info, arg_node, "Return expression is not a basic type.");
+
+    DBUG_RETURN(arg_node);
+}
+
+// MOET NOG
+node *TCfunctioncallstmt(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunctioncallstmt");
     DBUG_RETURN(arg_node);
 }
 
@@ -117,7 +205,7 @@ node *TCassign(node *arg_node, info *arg_info)
     ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
 
     if (t != INFO_TYPE(arg_info))
-        typeError(arg_info, "Assigning types failed. Not same types!");
+        typeError(arg_info, arg_node, "Assigning types failed. Not same types!");
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
@@ -125,6 +213,12 @@ node *TCassign(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Functioncallexpr */
+node *TCfunctioncallexpr(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunctioncallexpr");
+    DBUG_RETURN(arg_node);
+}
 /* Cast. */
 node *TCcast(node *arg_node, info *arg_info)
 {
@@ -148,16 +242,16 @@ node *TCmonop(node *arg_node, info *arg_info)
     {
     case MO_neg:
         if (INFO_TYPE(arg_info) != T_int && INFO_TYPE(arg_info) != T_float)
-            typeError(arg_info, "! Error: Wrong Monop types. ");
+            typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     case MO_not:
         if (INFO_TYPE(arg_info) != T_int &&
             INFO_TYPE(arg_info) != T_float &&
             INFO_TYPE(arg_info) != T_bool)
-            typeError(arg_info, "! Error: Wrong Monop types. ");
+            typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     default:
-        typeError(arg_info, "! Error: Conflicting type + monop found.");
+        typeError(arg_info, arg_node, "Conflicting type + monop found.");
         break;
     }
 
@@ -182,7 +276,7 @@ node *TCbinop(node *arg_node, info *arg_info)
         /* Modulo; can only be done with integers. */
     case BO_mod:
         if (NODE_TYPE(BINOP_LEFT(arg_node)) != N_num || NODE_TYPE(BINOP_RIGHT(arg_node)) != N_num)
-            typeError(arg_info, "! Error: Modulo can only be performed on two integers.");
+            typeError(arg_info, arg_node, "Modulo can only be performed on two integers.");
         else
             INFO_TYPE(arg_info) = T_int;
         break;
@@ -201,12 +295,12 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_int)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_int;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
 
         case N_float:
@@ -216,20 +310,20 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_float)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_float;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) == T_bool ||
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))) == T_bool)
-                typeError(arg_info, "! Error: Bools cannot have arithmetic operations.");
+                typeError(arg_info, arg_node, "Bools cannot have arithmetic operations.");
             else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                      SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             else
             {
                 if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) == T_int)
@@ -240,7 +334,7 @@ node *TCbinop(node *arg_node, info *arg_info)
             break;
 
         default:
-            typeError(arg_info, "! Error: Conflicting type + binop found.");
+            typeError(arg_info, arg_node, "Conflicting type + binop found.");
             break;
         }
         break;
@@ -259,12 +353,12 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_int)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_float:
             if (right == N_float)
@@ -273,22 +367,22 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_float)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
         default:
-            typeError(arg_info, "Unknown / not allowed types.");
+            typeError(arg_info, arg_node, "Unknown / not allowed types.");
             break;
         }
         break;
@@ -305,12 +399,12 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_int)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_float:
             if (right == N_float)
@@ -319,17 +413,17 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_float)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
@@ -340,15 +434,15 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         default:
-            typeError(arg_info, "! Error: Types are not matching..");
+            typeError(arg_info, arg_node, "Types are not matching..");
             break;
         }
         break;
@@ -366,27 +460,27 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    typeError(arg_info, "! Error: Types are not matching..");
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, "! Error: Types are not matching..");
+                typeError(arg_info, arg_node, "Types are not matching..");
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
         default:
-            typeError(arg_info, "! Error: Types are not matching..");
+            typeError(arg_info, arg_node, "Types are not matching..");
             break;
         }
         break;
     default:
-        typeError(arg_info, "Unknown binop type.");
+        typeError(arg_info, arg_node, "Unknown binop type.");
         break;
     }
 
@@ -470,9 +564,9 @@ node *TCdoTypeChecking(node *syntaxtree)
 }
 
 /* Function to call when a typecheck error arises. */
-void typeError(info *arg_info, char *message)
+void typeError(info *arg_info, node *arg_node, char *message)
 {
-    CTInote("%s", message);
+    CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
     INFO_ERRORS(arg_info) += 1;
     INFO_TYPE(arg_info) = T_unknown;
 }

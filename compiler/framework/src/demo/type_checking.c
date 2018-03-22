@@ -66,23 +66,35 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions */
-// MOET NOG
-node *TCglobaldef(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCglobaldef");
-
-    // Check if dimensions are integers
-
-    DBUG_RETURN(arg_node);
-}
-
-// MOET NOG
+/* Declarations. */
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldec");
 
-    // Check if dimensions are integers
+    if (GLOBALDEC_TYPE(arg_node) != T_bool &&
+        GLOBALDEC_TYPE(arg_node) != T_int &&
+        GLOBALDEC_TYPE(arg_node) != T_float)
+        typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
+    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+node *TCglobaldef(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCglobaldef");
+
+    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+
+    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    {
+        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+        if (INFO_TYPE(arg_info) != GLOBALDEF_TYPE(arg_node))
+            typeError(arg_info, arg_node, "Global definition.");
+    }
     DBUG_RETURN(arg_node);
 }
 
@@ -102,17 +114,55 @@ node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node));
+    FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node));
+
     //     // Check if dimensions are integers
     //      // Check if return type(s) corresponds.
 
     DBUG_RETURN(arg_node);
 }
 
-/* Statements (for, if, while, dowhile, return, functioncallstmt) . */
 // MOET NOG
+node *TCfunctioncallstmt(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunctioncallstmt");
+    DBUG_RETURN(arg_node);
+}
+
+/* Functioncallexpr */
+node *TCfunctioncallexpr(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunctioncallexpr");
+    DBUG_RETURN(arg_node);
+}
+
+/* Statements (for, if, while, dowhile, return) . */
 node *TCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfor");
+
+    /* Start condition. */
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_int)
+        typeError(arg_info, arg_node, "For start expression is not of integer type.");
+
+    /* Stop condition. */
+    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_int)
+        typeError(arg_info, arg_node, "For stop expression is not of integer type.");
+
+    /* Optional step condition. */
+    if (FOR_STEP(arg_node) != NULL)
+    {
+        FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
+        if (INFO_TYPE(arg_info) != T_int)
+            typeError(arg_info, arg_node, "For step expression is not of integer type.");
+    }
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
     DBUG_RETURN(arg_node);
 }
 
@@ -122,9 +172,7 @@ node *TCifelse(node *arg_node, info *arg_info)
 
     /* Check condition. */
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
-    if (INFO_TYPE(arg_info) != T_bool &&
-        INFO_TYPE(arg_info) != T_int &&
-        INFO_TYPE(arg_info) != T_float)
+    if (basictypeCheck(arg_info) == FALSE)
         typeError(arg_info, arg_node, "If condition is not a basic type.");
 
     /* Reset. */
@@ -137,6 +185,9 @@ node *TCifelse(node *arg_node, info *arg_info)
     if (IFELSE_ELSE(arg_node) != NULL)
         IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
 
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
     DBUG_RETURN(arg_node);
 }
 
@@ -146,9 +197,7 @@ node *TCwhile(node *arg_node, info *arg_info)
 
     /* Check condition. */
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
-    if (INFO_TYPE(arg_info) != T_bool &&
-        INFO_TYPE(arg_info) != T_int &&
-        INFO_TYPE(arg_info) != T_float)
+    if (basictypeCheck(arg_info) == FALSE)
         typeError(arg_info, arg_node, "While condition is not a basic type.");
 
     /* Reset. */
@@ -160,10 +209,21 @@ node *TCwhile(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-// MOET NOG
 node *TCdowhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCdowhile");
+
+    /* Traverse through block of statements.*/
+    DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+
+    /* Check condition. */
+    DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+
+    if (basictypeCheck(arg_info) == FALSE)
+        typeError(arg_info, arg_node, "The dowhile condition is not a basic type.");
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
     DBUG_RETURN(arg_node);
 }
 
@@ -175,18 +235,9 @@ node *TCreturn(node *arg_node, info *arg_info)
     if (RETURN_EXPR(arg_node) != NULL)
         RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
 
-    if (INFO_TYPE(arg_info) != T_bool &&
-        INFO_TYPE(arg_info) != T_int &&
-        INFO_TYPE(arg_info) != T_float)
+    if (basictypeCheck(arg_info) == FALSE)
         typeError(arg_info, arg_node, "Return expression is not a basic type.");
 
-    DBUG_RETURN(arg_node);
-}
-
-// MOET NOG
-node *TCfunctioncallstmt(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCfunctioncallstmt");
     DBUG_RETURN(arg_node);
 }
 
@@ -213,12 +264,6 @@ node *TCassign(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Functioncallexpr */
-node *TCfunctioncallexpr(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCfunctioncallexpr");
-    DBUG_RETURN(arg_node);
-}
 /* Cast. */
 node *TCcast(node *arg_node, info *arg_info)
 {
@@ -245,9 +290,7 @@ node *TCmonop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     case MO_not:
-        if (INFO_TYPE(arg_info) != T_int &&
-            INFO_TYPE(arg_info) != T_float &&
-            INFO_TYPE(arg_info) != T_bool)
+        if (basictypeCheck(arg_info) == FALSE)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     default:
@@ -569,6 +612,16 @@ void typeError(info *arg_info, node *arg_node, char *message)
     CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
     INFO_ERRORS(arg_info) += 1;
     INFO_TYPE(arg_info) = T_unknown;
+}
+
+/* Function to call when a typecheck error arises. */
+bool basictypeCheck(info *arg_info)
+{
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        return FALSE;
+    return TRUE;
 }
 
 /* Prints the node type as string, for testing. */

@@ -66,40 +66,101 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions */
-node *TCglobaldef(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCglobaldef");
+// node *TCglobaldef(node *arg_node, info *arg_info)
+// {
+//     DBUG_ENTER("TCglobaldef");
 
-    // Check if dimensions are integers
+//     // Check if dimensions are integers
+
+//     DBUG_RETURN(arg_node);
+// }
+
+// node *TCglobaldec(node *arg_node, info *arg_info)
+// {
+//     DBUG_ENTER("TCglobaldec");
+
+//     // Check if dimensions are integers
+
+//     DBUG_RETURN(arg_node);
+// }
+
+// node *TCparameters(node *arg_node, info *arg_info)
+// {
+//     DBUG_ENTER("TCparameters");
+
+//     // node *entry = PARAMETERS_SYMBOLTABLEENTRY(arg_node);
+
+//     DBUG_RETURN(arg_node);
+// }
+
+// node *TCfunction(node *arg_node, info *arg_info)
+// {
+//     DBUG_ENTER("TCfunction");
+
+//     // Check if dimensions are integers
+
+//     DBUG_RETURN(arg_node);
+// }
+
+/* Statements (for, if, while, dowhile, return, functioncallstmt) . */
+node *TCfor(node *arg_node, info *arg_info)
+{
+}
+
+node *TCifelse(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCifelse");
+
+    /* Check condition. */
+    IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        typeError(arg_info, "! Error: If condition is not a basic type.");
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
+    /* Traverse through block of statements.*/
+    IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+
+    /* Traverse through else block of statements.*/
+    if (IFELSE_ELSE(arg_node) != NULL)
+        IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
-node *TCglobaldec(node *arg_node, info *arg_info)
+node *TCwhile(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCglobaldec");
+    DBUG_ENTER("TCwhile");
 
-    // Check if dimensions are integers
+    /* Check condition. */
+    WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+    if (INFO_TYPE(arg_info) != T_bool &&
+        INFO_TYPE(arg_info) != T_int &&
+        INFO_TYPE(arg_info) != T_float)
+        typeError(arg_info, "! Error: While condition is not a basic type.");
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
+    /* Traverse through block of statements.*/
+    WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
-node *TCparameters(node *arg_node, info *arg_info)
+node *TCdowhile(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCparameters");
-
-    // node *entry = PARAMETERS_SYMBOLTABLEENTRY(arg_node);
-
-    DBUG_RETURN(arg_node);
 }
 
-node *TCfunction(node *arg_node, info *arg_info)
+node *TCreturn(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCfunction");
+}
 
-    // Check if dimensions are integers
-
-    DBUG_RETURN(arg_node);
+node *TCfunctioncallstmt(node *arg_node, info *arg_info)
+{
 }
 
 /* Assign. */
@@ -124,6 +185,8 @@ node *TCassign(node *arg_node, info *arg_info)
 
     DBUG_RETURN(arg_node);
 }
+
+/* Functioncallexpr */
 
 /* Cast. */
 node *TCcast(node *arg_node, info *arg_info)

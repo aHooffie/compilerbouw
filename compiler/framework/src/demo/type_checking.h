@@ -8,14 +8,21 @@ extern void typeError(info *arg_info, char *message);
 
 extern node *TCglobaldef(node *arg_node, info *arg_info);
 extern node *TCglobaldec(node *arg_node, info *arg_info);
+
 extern node *TCfunction(node *arg_node, info *arg_info);
 extern node *TCparameters(node *arg_node, info *arg_info);
 
-extern node *TCassign(node *arg_node, info *arg_info);
+extern node *TCfor(node *arg_node, info *arg_info);
+extern node *TCifelse(node *arg_node, info *arg_info);
+extern node *TCwhile(node *arg_node, info *arg_info);
+extern node *TCdowhile(node *arg_node, info *arg_info);
+extern node *TCreturn(node *arg_node, info *arg_info);
+extern node *TCfunctioncallstmt(node *arg_node, info *arg_info);
 
+extern node *TCassign(node *arg_node, info *arg_info);
 extern node *TCbinop(node *arg_node, info *arg_info);
 extern node *TCmonop(node *arg_node, info *arg_info);
-
+extern node *TCcast(node *arg_node, info *arg_info);
 extern node *TCvarlet(node *arg_node, info *arg_info);
 extern node *TCvar(node *arg_node, info *arg_info);
 extern node *TCbool(node *arg_node, info *arg_info);

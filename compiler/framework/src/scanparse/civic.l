@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdio.h>
 
+// include for integer overflow checking
+#include <limits.h>
+
 #include "types.h"
 #include "node_basic.h"
 #include "str.h"
@@ -90,9 +93,19 @@
                              FILTER( ID);
                            }
 
-[0-9]+                     { yylval.cint=atoi(yytext);
-                             FILTER( NUM);
-                             // Strol + integer maken
+[0-9]+                     { long long int test = atoll(yytext);
+
+                            if (test < INT_MIN || test > INT_MAX)
+                            {
+                              // OVERFLOW
+                              // specificeren welke?
+                              CTIabort("Integer overflow! Make sure all ints are between -2147483648 and 2147483647");
+                            }
+
+                            yylval.cint=atoi(yytext);
+
+                            FILTER( NUM);
+
                            }
 
 [0-9]*[\.][0-9]*            { yylval.cflt=atof(yytext);

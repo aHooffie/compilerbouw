@@ -1,0 +1,9 @@
+int i = 418936
+
+extern void printInt(int i);
+
+export int main()
+{
+  printInt(i);
+  return 0;
+}

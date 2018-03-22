@@ -23,11 +23,16 @@ export void main ()
 		f = !e;
 		c = (float)a;
 	}
+	
 	if (a)
 		a = 1;
+	else 
+		b = 2;
+
+	return a;
 
 // MAG NIET:
-//	a = a < d; // varINT + varFLOAT
+	a = a < d; // varINT + varFLOAT
 //	c = c <= e; // varFLOAT + varBOOL
 //	a = a % c; // varINT + varFLOAT
 //	f = e + true; // varBOOL + BOOL
@@ -35,5 +40,7 @@ export void main ()
 //	d = (int) a;
 // if (g)
 //		a = 1;
+//	return g;
+
 
 }

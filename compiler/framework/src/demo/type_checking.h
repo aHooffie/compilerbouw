@@ -4,8 +4,7 @@
 #include "types.h"
 
 extern char *NodetypetoString(node *arg_node);
-extern void typeError(info *arg_info, char *message);
-
+extern void typeError(info *arg_info, node *arg_node, char *message);
 extern node *TCglobaldef(node *arg_node, info *arg_info);
 extern node *TCglobaldec(node *arg_node, info *arg_info);
 
@@ -20,6 +19,7 @@ extern node *TCreturn(node *arg_node, info *arg_info);
 extern node *TCfunctioncallstmt(node *arg_node, info *arg_info);
 
 extern node *TCassign(node *arg_node, info *arg_info);
+extern node *TCfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *TCbinop(node *arg_node, info *arg_info);
 extern node *TCmonop(node *arg_node, info *arg_info);
 extern node *TCcast(node *arg_node, info *arg_info);

@@ -76,6 +76,7 @@ traversals to process it.
                     <node name="DoWhile" />
                     <node name="Return" />
                     <node name="FunctionCallStmt" />
+                    <node name="FunctionCallExpr" />
                     <node name="Assign" />
                     <node name="BinOp" />
                     <node name="MonOp" />

@@ -105,8 +105,8 @@ node *ASprogram(node *arg_node, info *arg_info)
 
     if (INFO_STACK(arg_info) == NULL)
     {
-        CTInote("Something went wrong with creating a symboltable in the Program node. \n");
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "Something went wrong with creating a symboltable in the Program node. \n", NULL);
+
         return NULL;
     }
 
@@ -140,8 +140,8 @@ node *ASglobaldec(node *arg_node, info *arg_info)
     /* Found globaldec. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEC_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: Globaldeclaration %s has already been declared.\n", GLOBALDEC_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+
+        stError(arg_info, arg_node, "has already been declared.\n", GLOBALDEC_NAME(arg_node));
     }
     else
     {
@@ -170,8 +170,7 @@ node *ASglobaldef(node *arg_node, info *arg_info)
     /* Found globaldef. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), GLOBALDEF_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: Global definition %s has already been declared.\n", GLOBALDEF_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "has already been declared.\n", GLOBALDEF_NAME(arg_node));
     }
     else
     {
@@ -209,8 +208,8 @@ node *ASreturn(node *arg_node, info *arg_info)
 
     if (RETURN_SYMBOLTABLEENTRY(arg_node) == NULL)
     {
-        CTInote("! Error. Return is nog niet gedeclareerd.\n");
-        INFO_ERRORS(arg_info) += 1;
+
+        stError(arg_info, arg_node, "Return type is not declared", NULL);
     }
 
     /* Continue with traversing in child nodes. */
@@ -229,8 +228,7 @@ node *ASfunction(node *arg_node, info *arg_info)
     /* Found function. Check if there already is one with the same name in global ST. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), FUNCTION_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: Function %s has already been declared.\n", FUNCTION_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "has already been declared.\n", FUNCTION_NAME(arg_node));
     }
     else
     {
@@ -252,8 +250,7 @@ node *ASfunction(node *arg_node, info *arg_info)
 
     if (INFO_STACK(arg_info) == NULL)
     {
-        CTInote("Something went wrong with the symboltable in the function %s. \n", FUNCTION_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, ": something went wrong with the symboltable in this function.\n", FUNCTION_NAME(arg_node));
     }
 
     /* Update function administration. */
@@ -287,8 +284,7 @@ node *ASparameters(node *arg_node, info *arg_info)
     /* Found parameter. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), PARAMETERS_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: Parameter %s has already been declared.\n", PARAMETERS_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "has already been declared.\n", PARAMETERS_NAME(arg_node));
     }
     else
     {
@@ -326,8 +322,7 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     /* Found vardeclaration. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), VARDECLARATION_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: Vardeclaration %s has already been declared.\n", VARDECLARATION_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "has already been declared.\n", VARDECLARATION_NAME(arg_node));
     }
     else
     {
@@ -377,8 +372,7 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
 
     if (FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) == NULL)
     {
-        CTInote("Error: Functioncallstmt %s is nog niet gedeclareerd.\n", FUNCTIONCALLSTMT_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "is not declared.\n", FUNCTIONCALLSTMT_NAME(arg_node));
     }
 
     /* Continue with traversing in child nodes. */
@@ -411,8 +405,7 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 
     if (FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) == NULL)
     {
-        CTInote("Error: Functioncallexpr %s is nog niet gedeclareerd.\n", FUNCTIONCALLEXPR_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "is not declared.\n", FUNCTIONCALLEXPR_NAME(arg_node));
     }
 
     /* Continue with traversing in child nodes. */
@@ -446,8 +439,7 @@ node *ASvar(node *arg_node, info *arg_info)
 
     if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
     {
-        CTInote("! Error. Var %s is nog niet gedeclareerd.\n", VAR_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "is not declared.\n", VAR_NAME(arg_node));
     }
 
     /* Continue with traversing in child nodes. */
@@ -480,8 +472,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
 
     if (VARLET_SYMBOLTABLEENTRY(arg_node) == NULL)
     {
-        CTInote("! Error. Varlet %s is nog niet gedeclareerd.\n", VARLET_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "is not declared.\n", VARLET_NAME(arg_node));
     }
 
     /* Continue with traversing in child nodes. */
@@ -499,8 +490,7 @@ node *ASids(node *arg_node, info *arg_info)
 
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), IDS_NAME(arg_node)) == FALSE)
     {
-        CTInote("! Error: ID %s has already been declared.\n", IDS_NAME(arg_node));
-        INFO_ERRORS(arg_info) += 1;
+        stError(arg_info, arg_node, "has already been declared.\n", IDS_NAME(arg_node));
     }
     else
     {
@@ -647,8 +637,16 @@ node *ASdoAddSymbolTables(node *syntaxtree)
 }
 
 /* Function to call when a typecheck error arises. */
-void typeError(info *arg_info, node *arg_node, char *message)
+void stError(info *arg_info, node *arg_node, char *message, char *name)
 {
-    CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
+    if (name == NULL)
+    {
+        CTInote("Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
+    }
+    else
+    {
+        CTInote("Error on line %i, col %i. %s %s", NODE_LINE(arg_node), NODE_COL(arg_node), name, message);
+    }
+
     INFO_ERRORS(arg_info) += 1;
 }

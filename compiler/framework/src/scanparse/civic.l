@@ -97,8 +97,6 @@
 
                             if (test < INT_MIN || test > INT_MAX)
                             {
-                              // OVERFLOW
-                              // specificeren welke?
                               CTIabort("Integer overflow! Make sure all ints are between -2147483648 and 2147483647");
                             }
 

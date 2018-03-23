@@ -30,4 +30,6 @@ extern node *ASvardeclaration(node *arg_node, info *arg_info);
 extern node *ASids(node *arg_node, info *arg_info);
 extern node *ASdoAddSymbolTables(node *syntaxtree);
 
+extern void typeError(info *arg_info, node *arg_node, char *message);
+
 #endif

@@ -645,3 +645,10 @@ node *ASdoAddSymbolTables(node *syntaxtree)
 
     DBUG_RETURN(syntaxtree);
 }
+
+/* Function to call when a typecheck error arises. */
+void typeError(info *arg_info, node *arg_node, char *message)
+{
+    CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
+    INFO_ERRORS(arg_info) += 1;
+}

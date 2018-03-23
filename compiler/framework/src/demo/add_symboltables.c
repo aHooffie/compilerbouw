@@ -636,7 +636,7 @@ node *ASdoAddSymbolTables(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
-/* Function to call when a typecheck error arises. */
+/* Function to call when a symboltable error arises. */
 void stError(info *arg_info, node *arg_node, char *message, char *name)
 {
     if (name == NULL)

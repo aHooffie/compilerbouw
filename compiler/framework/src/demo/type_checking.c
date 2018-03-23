@@ -36,6 +36,7 @@ struct INFO
 {
     int errors;
     type current;
+    int returntypes[10];
 };
 
 /* INFO macros */
@@ -103,29 +104,31 @@ node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
 
-    // Check if params are allowed types.
-    // Check if params are corresponding with function.
+    type if (PARAMETER);
+
+    if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
+        PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
+
+    if (PARAMETERS_NEXT(arg_node) != NULL)
+        PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
-// MOET NOG
+/*  */
 node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    /* Check types of parameters match. */
     FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
+    // TODO
 
-    if (FUNCTION_TYPE(arg_node) != INFO_TYPE(arg_info) )
-    	 typeError(arg_info, arg_node, "Return types do not match!");
-
+    /* Check return types. */
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     /* Reset. */
-    // ... hier? 
     INFO_TYPE(arg_info) = T_unknown;
-
-    // Check if dimensions are integers; ARRAY
 
     DBUG_RETURN(arg_node);
 }
@@ -138,6 +141,7 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 }
 
 /* Functioncallexpr */
+// MOET NOG
 node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallexpr");
@@ -238,12 +242,14 @@ node *TCreturn(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCwhile");
 
-    /* Check condition. */
+    /* Check the return type. */
     if (RETURN_EXPR(arg_node) != NULL)
         RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+    else
+        INFO_TYPE(arg_info) = T_void;
 
-    if (basictypeCheck(arg_info) == FALSE)
-        typeError(arg_info, arg_node, "Return expression is not a basic type.");
+    if (INFO_TYPE(arg_info) != SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node)))
+        typeError(arg_info, arg_node, "Return expression does not match function type.");
 
     DBUG_RETURN(arg_node);
 }

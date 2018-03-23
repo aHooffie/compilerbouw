@@ -5,7 +5,7 @@ extern int q;
 // int a = 2.0; // MAG NIET!
 
 // globals
-int a = 2
+int a = 2;
 int b = 2;
 
 float c = 0.5;
@@ -27,16 +27,20 @@ export void main ()
 		c = (float)a;
 	}
 
-	if (a)
+	if (a) {
 		a = 1;
-	else 
+		return;
+	}
+	else {
 		b = 2;
+		return g;
+	}
 
 	do { 
 		a = a + b;
 	} while (a < b);
 
-	return a;
+	return g;
 
 // MAG NIET:
 //	a = a < d; // varINT + varFLOAT

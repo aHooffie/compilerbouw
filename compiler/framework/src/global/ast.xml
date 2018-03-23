@@ -60,6 +60,7 @@ traversals to process it.
                     <node name="GlobalDef" />
                     <node name="Function" />
                     <node name="Parameters" />
+                    <node name="Return" />
                     <node name="VarDeclaration" />
                     <node name="FunctionCallStmt" />
                     <node name="FunctionCallExpr" />
@@ -347,7 +348,20 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
-                <attribute name="SymbolTableEntry">
+                <attribute name="ParameterSymbolTableEntry">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="FunctionSymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
                         <targets>
@@ -757,6 +771,21 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
+            <attributes>
+                <attribute name="SymbolTableEntry">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
         </node>
         <!-- 
       Node For: 

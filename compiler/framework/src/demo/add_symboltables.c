@@ -196,6 +196,30 @@ node *ASglobaldef(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Put a link between return type and its function. */
+node *ASreturn(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("ASreturn");
+
+    /* Find the original function declaration in the scope above. */
+    node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+    node *original = travList(SYMBOLTABLE_NEXT(symboltable));
+
+    RETURN_SYMBOLTABLEENTRY(arg_node) = original;
+
+    if (RETURN_SYMBOLTABLEENTRY(arg_node) == NULL)
+    {
+        CTInote("! Error. Return is nog niet gedeclareerd.\n");
+        INFO_ERRORS(arg_info) += 1;
+    }
+
+    /* Continue with traversing in child nodes. */
+    if (RETURN_EXPR(arg_node) != NULL)
+        RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 /* Found nodes that should write or read to a function symbol table entry  */
 node *ASfunction(node *arg_node, info *arg_info)
 {
@@ -277,7 +301,12 @@ node *ASparameters(node *arg_node, info *arg_info)
         else
             SYMBOLTABLEENTRY_NEXT(last) = newEntry;
 
-        PARAMETERS_SYMBOLTABLEENTRY(arg_node) = newEntry;
+        /* Add links to the symbol table entry & to the function definition table entry. */
+        node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+        node *original = travList(SYMBOLTABLE_NEXT(symboltable));
+
+        PARAMETERS_PARAMETERSYMBOLTABLEENTRY(arg_node) = newEntry;
+        PARAMETERS_FUNCTIONSYMBOLTABLEENTRY(arg_node) = original;
     }
 
     /* Continue with traversing in child nodes. */

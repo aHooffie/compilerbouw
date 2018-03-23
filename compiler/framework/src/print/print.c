@@ -284,7 +284,6 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
         FUNCTIONBODY_LOCALFUNCTION(arg_node) =
             TRAVdo(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
 
-
     if (FUNCTIONBODY_STMTS(arg_node) != NULL)
         FUNCTIONBODY_STMTS(arg_node) = TRAVdo(FUNCTIONBODY_STMTS(arg_node), arg_info);
 
@@ -483,10 +482,20 @@ node *PRTdowhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTdowhile");
 
-    DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+    printf("do\n");
+    PRTindent(arg_info);
+    printf("{\n");
+    PRTindent(arg_info);
 
     if (DOWHILE_BLOCK(arg_node) != NULL)
         DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+
+    PRTindent(arg_info);
+    printf("}\n");
+    PRTindent(arg_info);
+    printf("while (");
+    DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+    printf(");\n");
 
     DBUG_RETURN(arg_node);
 }
@@ -533,14 +542,13 @@ node *PRTlocalfunction(node *arg_node, info *arg_info)
 
     PRTindent(arg_info);
 
-    LOCALFUNCTION_FUNCTION(arg_node) = 
+    LOCALFUNCTION_FUNCTION(arg_node) =
         TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
 
     if (LOCALFUNCTION_NEXT(arg_node) != NULL)
         LOCALFUNCTION_NEXT(arg_node) =
             TRAVdo(LOCALFUNCTION_NEXT(arg_node), arg_info);
-    
-    
+
     DBUG_RETURN(arg_node);
 }
 
@@ -772,7 +780,8 @@ node *PRTarrayexpr(node *arg_node, info *arg_info)
     // printf("[");
     ARRAYEXPR_EXPR(arg_node) = TRAVdo(ARRAYEXPR_EXPR(arg_node), arg_info);
 
-    if (ARRAYEXPR_NEXT(arg_node) != NULL) {
+    if (ARRAYEXPR_NEXT(arg_node) != NULL)
+    {
         printf(", [");
         ARRAYEXPR_NEXT(arg_node) = TRAVdo(ARRAYEXPR_NEXT(arg_node), arg_info);
         printf("]");

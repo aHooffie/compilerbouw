@@ -70,6 +70,9 @@ export void main (int m, int n) {
     while (u)
         v = test(3);
 
+    do {
+        a = b;
+    } while (a == b);
 
     /* 
         testen

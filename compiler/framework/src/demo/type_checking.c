@@ -22,7 +22,6 @@
 
 #include <stdio.h> // for standard error message?? eventueel niet meer nodig == printf
 #include "type_checking.h"
-#include "add_symboltables.h"
 
 #include "types.h"
 #include "tree_basic.h"
@@ -36,12 +35,13 @@ struct INFO
 {
     int errors;
     type current;
-    int returntypes[10];
+    int paramcounter;
 };
 
 /* INFO macros */
 #define INFO_ERRORS(n) ((n)->errors)
 #define INFO_TYPE(n) ((n)->current)
+#define INFO_COUNTER(n) ((n)->paramcounter)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -104,13 +104,22 @@ node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
 
-    type if (PARAMETER);
+    // HIER KOMEN WE ALLEEN IN FUNDEF (NIET FUNCITONCALLSTMT)
+
+    // type paramdef = SYMBOLTABLEENTRY_TYPE(PARAMETERS_PARAMETERSYMBOLTABLEENTRY(arg_node));
+    // if (paramdef != PARAMETERS_TYPE(arg_node))
+    // typeError(arg_info, arg_node, "Parameter should be of a different type according to the fundef.");
+
+    // Find type until
 
     if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
         PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
 
     if (PARAMETERS_NEXT(arg_node) != NULL)
+    {
         PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+        INFO_COUNTER(arg_info) += 1;
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -121,14 +130,12 @@ node *TCfunction(node *arg_node, info *arg_info)
     DBUG_ENTER("TCfunction");
 
     /* Check types of parameters match. */
-    FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
-    // TODO
+    if (FUNCTION_PARAMETERS(arg_node) != NULL)
+        FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
 
     /* Check return types. */
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
-
-    /* Reset. */
-    INFO_TYPE(arg_info) = T_unknown;
+    if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
+        FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -137,6 +144,10 @@ node *TCfunction(node *arg_node, info *arg_info)
 node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallstmt");
+
+    // if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
+    // FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 

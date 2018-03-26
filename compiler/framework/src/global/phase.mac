@@ -61,19 +61,13 @@ SUBPHASE( as,
 SUBPHASE( tc, 
           "Type checker",
           TCdoTypeChecking, 
-          NEVER,
+          ALWAYS,
           pet)
 
 SUBPHASE( ep, 
           "Edit Paramarrays",
           EPdoEditParamarrays, 
           NEVER,
-          pet)
-
-SUBPHASE( re, 
-          "Make regular exoressions",
-          REmakeRegularExpressions, 
-          ALWAYS,
           pet)        
       
 ENDPHASE( pet) 

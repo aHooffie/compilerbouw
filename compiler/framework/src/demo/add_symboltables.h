@@ -21,6 +21,8 @@ extern node *ASfunction(node *arg_node, info *arg_info);
 extern node *ASfunctioncallstmt(node *arg_node, info *arg_info);
 extern node *ASfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *ASparameters(node *arg_node, info *arg_info);
+extern node *ASexpressions(node *arg_node, info *arg_info);
+
 extern node *ASreturn(node *arg_node, info *arg_info);
 
 extern node *ASvar(node *arg_node, info *arg_info);
@@ -31,5 +33,6 @@ extern node *ASids(node *arg_node, info *arg_info);
 extern node *ASdoAddSymbolTables(node *syntaxtree);
 
 extern void stError(info *arg_info, node *arg_node, char *message, char *name);
+extern void printLine(info *arg_info, char *name);
 
 #endif

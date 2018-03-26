@@ -1,3 +1,5 @@
+/* This tests our print.c file. Turn TC & AS off in phase.mac if testing. */
+
 // GlobalDec
 extern int a;
 extern int [b, c] d;

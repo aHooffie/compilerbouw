@@ -1,0 +1,31 @@
+Dingen die we niet moeten vergeten:
+
+- Wanneer worden type unknown errors aangeroepen?
+- Scopes van globaldec arrays? mag int [a, b] c; int [b,d] e;??
+- scopes.cvc foutje eruit halen?
+- Code opschonen
+
+
+
+Lijstje van alle bestanden die we hebben aangepast in de afgelopen 9 weken (later controleren qua code & comments)
+
+- demo folder:
+add_symboltables.c, add_symboltables.h
+type_checking.c, type_checking.h
+
+- global folder:
+phase.mac
+mytypes.h
+
+- print folder:
+print.c, print.h
+
+- scanparse folder:
+civic.l, civic.y
+
+- los:
+Makefile.Targets
+
+- testOUD folder:
+alles
+

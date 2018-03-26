@@ -5,22 +5,14 @@
 
 /*
 
- All binary operators are only defined on operands of exactly the same type,
- i.e. there is no implicit type conversion in CiviC.
+TO DO: 
+    The arithmetic operators for addition and multiplication are also defined
+    on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
 
- Arithmetic operators are defined on integer numbers,
- where they again yield an integer number, and on floating point numbers,
- where they again yield a floating point number.
-
- As an exception, the modulo operator is only defined on integer numbers and yields an integer number.
- 
- The arithmetic operators for addition and multiplication are also defined
- on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
+    FUNCTIONCALLSTMT + FUNCTIONCALLEPXR. 
+    PARAM.
  */
 
-// Arrayexpr doen we niet meer
-
-#include <stdio.h> // for standard error message?? eventueel niet meer nodig == printf
 #include "type_checking.h"
 
 #include "types.h"
@@ -34,14 +26,16 @@
 struct INFO
 {
     int errors;
+    int paramcount;
     type current;
-    int paramcounter;
+    node *og;
 };
 
 /* INFO macros */
 #define INFO_ERRORS(n) ((n)->errors)
 #define INFO_TYPE(n) ((n)->current)
-#define INFO_COUNTER(n) ((n)->paramcounter)
+#define INFO_PARAMCOUNT(n) ((n)->paramcount)
+#define INFO_OG(n) ((n)->og)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -52,6 +46,9 @@ static info *MakeInfo(void)
 
     result = (info *)MEMmalloc(sizeof(info));
     INFO_ERRORS(result) = 0;
+    INFO_PARAMCOUNT(result) = 0;
+    INFO_OG(result) = NULL;
+
     INFO_TYPE(result) = T_unknown;
 
     DBUG_RETURN(result);
@@ -66,7 +63,8 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
-/* Traversal functions */
+/* Traversal functions below. */
+
 /* Declarations. */
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
@@ -77,6 +75,7 @@ node *TCglobaldec(node *arg_node, info *arg_info)
         GLOBALDEC_TYPE(arg_node) != T_float)
         typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
+    /* Traverse into array grammar. Not implemented. */
     if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
         GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
@@ -87,6 +86,7 @@ node *TCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldef");
 
+    /* Traverse into array grammar. Not implemented. */
     if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
         GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
@@ -94,37 +94,31 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     {
         GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
         if (INFO_TYPE(arg_info) != GLOBALDEF_TYPE(arg_node))
-            typeError(arg_info, arg_node, "Global definition.");
+            typeError(arg_info, arg_node, "Global definition is not of matching type.");
     }
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
     DBUG_RETURN(arg_node);
 }
 
-// MOET NOG
+/* Parameters in a fundef. */
 node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
 
-    // HIER KOMEN WE ALLEEN IN FUNDEF (NIET FUNCITONCALLSTMT)
-
-    // type paramdef = SYMBOLTABLEENTRY_TYPE(PARAMETERS_PARAMETERSYMBOLTABLEENTRY(arg_node));
-    // if (paramdef != PARAMETERS_TYPE(arg_node))
-    // typeError(arg_info, arg_node, "Parameter should be of a different type according to the fundef.");
-
-    // Find type until
-
+    /* Traverse into array grammar. Not implemented. */
     if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
         PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
 
     if (PARAMETERS_NEXT(arg_node) != NULL)
-    {
         PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
-        INFO_COUNTER(arg_info) += 1;
-    }
 
     DBUG_RETURN(arg_node);
 }
 
-/*  */
+/* Function node. */
 node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
@@ -140,22 +134,74 @@ node *TCfunction(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-// MOET NOG
+/* Functioncallstmt */
+// OPSCHONEN
 node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallstmt");
 
-    // if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
-    // FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+    INFO_PARAMCOUNT(arg_info) = 0;
+
+    if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
+    {
+        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
+        if (FUNCTION_TYPE(originalFunction) != T_void)
+            typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
+
+        if (NODE_TYPE(originalFunction) != N_function)
+            CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
+        else
+            INFO_OG(arg_info) = originalFunction;
+
+        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+    }
+    DBUG_RETURN(arg_node);
+}
+
+node *TCexpressions(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCexpressions");
+    INFO_PARAMCOUNT(arg_info) += 1;
+
+    node *param = FUNCTION_PARAMETERS(INFO_OG(arg_info));
+    for (int j = 1; j < INFO_PARAMCOUNT(arg_info); j++)
+        param = PARAMETERS_NEXT(param);
+
+    if (EXPRESSIONS_EXPR(arg_node) != NULL)
+        EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+
+    if (INFO_TYPE(arg_info) != PARAMETERS_TYPE(param))
+        typeError(arg_info, arg_node, "Parameter type is not matching function declaration.");
+
+    if (EXPRESSIONS_NEXT(arg_node) != NULL)
+        EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
 /* Functioncallexpr */
-// MOET NOG
+// TE VERBETEREN
 node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallexpr");
+
+    INFO_PARAMCOUNT(arg_info) = 0;
+
+    if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
+    {
+        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
+
+        // Dit werkt nog niet
+        if (FUNCTION_TYPE(originalFunction) == T_void)
+            typeError(arg_info, arg_node, "A function returning void cannot be assigned to a variable.");
+
+        if (NODE_TYPE(originalFunction) != N_function)
+            CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
+        else
+            INFO_OG(arg_info) = originalFunction;
+
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+    }
     DBUG_RETURN(arg_node);
 }
 
@@ -262,6 +308,9 @@ node *TCreturn(node *arg_node, info *arg_info)
     if (INFO_TYPE(arg_info) != SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node)))
         typeError(arg_info, arg_node, "Return expression does not match function type.");
 
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+
     DBUG_RETURN(arg_node);
 }
 
@@ -331,10 +380,43 @@ node *TCbinop(node *arg_node, info *arg_info)
     DBUG_ENTER("TCbinop");
 
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
-    BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
-
     nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
+    if (left != N_num && left != N_bool && left != N_float)
+    {
+        switch (INFO_TYPE(arg_info))
+        {
+        case T_int:
+            left = N_num;
+            break;
+        case T_float:
+            left = N_float;
+            break;
+        case T_bool:
+            left = N_bool;
+            break;
+        default:
+            typeError(arg_info, arg_node, "Unknown types in binop.");
+        }
+    }
+    BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
     nodetype right = NODE_TYPE(BINOP_RIGHT(arg_node));
+    if (right != N_num && right != N_bool && right != N_float)
+    {
+        switch (INFO_TYPE(arg_info))
+        {
+        case T_int:
+            right = N_num;
+            break;
+        case T_float:
+            right = N_float;
+            break;
+        case T_bool:
+            right = N_bool;
+            break;
+        default:
+            typeError(arg_info, arg_node, "Unknown types in binop.");
+        }
+    }
     // == fout! Moet travdo zijn in links, dat opslaan in arg_info, en dan travdo right en kijken of dat ook kan.
     // printf("Type: %s & Type: %s\n", NodetypetoString(BINOP_LEFT(arg_node)), NodetypetoString(BINOP_RIGHT(arg_node)));
 
@@ -605,6 +687,21 @@ node *TCbool(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCbool");
     INFO_TYPE(arg_info) = T_bool;
+    DBUG_RETURN(arg_node);
+}
+
+/* Part of array grammar. */
+node *TCids(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCids");
+
+    INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
+    if (INFO_TYPE(arg_info) != T_int)
+        typeError(arg_info, arg_node, "Type of an array index has to be an integer. ");
+
+    if (IDS_NEXT(arg_node) != NULL)
+        IDS_NEXT(arg_node) = TRAVdo(IDS_NEXT(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 

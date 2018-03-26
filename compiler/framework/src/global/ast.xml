@@ -101,6 +101,13 @@ traversals to process it.
                     <node name="Ids" />
                 </travuser>
             </traversal>
+            <traversal id="RE" name="Make regular Expressions" default="sons" include="make_regularexpr.h">
+                <travuser>
+                    <node name="GlobalDec" />
+                    <node name="GlobalDef" />
+                    <node name="VarDeclaration" />
+                </travuser>
+            </traversal>
         </general>
     </phases>
     <!--

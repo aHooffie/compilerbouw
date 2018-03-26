@@ -1,0 +1,14 @@
+int a = 3;
+int b = 0;
+int c = 2;
+
+export void main (int p) {
+	int a = a + 1;
+
+	int b = b + 3;
+
+	int c = c + a;
+
+	// dit mag niet!
+	int d = d + a;
+}

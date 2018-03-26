@@ -62,11 +62,11 @@ node *REvardeclaration(node *arg_node, info *arg_info)
 
 	node *entry = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
 
-	// while (entry != NULL)
- //    {        
- //    	CTInote("in while loop! Name: %s. Scope: %i.", SYMBOLTABLEENTRY_NAME(entry), SYMBOLTABLEENTRY_SCOPE(entry));
- //        entry = SYMBOLTABLEENTRY_NEXT(entry);
- //    }
+	while (entry != NULL)
+    {        
+    	CTInote("in while loop! Name: %s. Scope: %i.", SYMBOLTABLEENTRY_NAME(entry), SYMBOLTABLEENTRY_SCOPE(entry));
+        entry = SYMBOLTABLEENTRY_NEXT(entry);
+    }
 
 
     // // hoe kom ik bij die symboltable....

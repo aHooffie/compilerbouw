@@ -57,11 +57,8 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-<<<<<<< HEAD
-demo        = rename_identifiers.o opt_sub.o sum_ints.o add_symboltables.o type_checking.o edit_paramarrays.o make_regularexpr.o
-=======
-demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o
->>>>>>> d78b05d177059336d4d775def0a7d417b88e8ea2
+demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o make_regularexpr.o
+
 
 ###############################################################################
 #

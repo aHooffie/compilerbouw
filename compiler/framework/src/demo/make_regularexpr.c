@@ -105,10 +105,6 @@ node *REvardeclaration(node *arg_node, info *arg_info)
     // if (last != NULL)
     	// SYMBOLTABLEENTRY_NEXT(last);
 
-	// SYMBOLTABLEENTRY_SCOPE()
-
-	// VARDECLARATION_INIT();
-
 	// check if declared before in higher scope
 	// or check if dec name occurs in init name.. if yes; check higher scopes
 	// VARDECLARATION_NAME(arg_node) ....
@@ -121,19 +117,6 @@ node *REvardeclaration(node *arg_node, info *arg_info)
 /*
  * Helper functions
  */
-
-// // check if earlier declaration is found
-// node *travList(node *symboltableentry)
-// {
-// 	node *trav = symboltableentry;
-// 	if (trav == NULL)
-// 		return NULL;
-
-//     while (SYMBOLTABLEENTRY_NEXT(trav) != NULL)
-//         trav = SYMBOLTABLEENTRY_NEXT(trav);
-
-//     return trav;
-// }
 
 
 bool checkPrevDeclaration(node *symboltableentry, char *name)

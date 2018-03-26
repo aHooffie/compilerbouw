@@ -68,6 +68,12 @@ SUBPHASE( ep,
           "Edit Paramarrays",
           EPdoEditParamarrays, 
           NEVER,
+          pet)
+
+SUBPHASE( re, 
+          "Make regular exoressions",
+          REmakeRegularExpressions, 
+          ALWAYS,
           pet)        
       
 ENDPHASE( pet) 

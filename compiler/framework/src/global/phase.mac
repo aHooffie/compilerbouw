@@ -38,13 +38,7 @@ SUBPHASE( ri,
           "Rename identifiers",
           RIdoRenameIdentifiers, 
           NEVER,
-          pet)      
-
-SUBPHASE( si, 
-          "Sum Integers",
-          SIdoSumInts, 
-          ALWAYS,
-          pet)       
+          pet)           
    
 SUBPHASE( os, 
           "Optimise subtraction",
@@ -62,13 +56,7 @@ SUBPHASE( tc,
           "Type checker",
           TCdoTypeChecking, 
           ALWAYS,
-          pet)
-
-SUBPHASE( ep, 
-          "Edit Paramarrays",
-          EPdoEditParamarrays, 
-          NEVER,
-          pet)        
+          pet)      
       
 ENDPHASE( pet) 
 

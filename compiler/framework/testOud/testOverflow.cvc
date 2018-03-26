@@ -1,4 +1,6 @@
-int i = 418936
+/* This tests the overflow in civic.l. */
+
+int i = 1234567890012345678900;
 
 extern void printInt(int i);
 

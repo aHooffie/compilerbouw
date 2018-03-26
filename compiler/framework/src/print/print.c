@@ -77,7 +77,7 @@ node *PRTdoPrint(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
-/* Adds module node - changed after assignment 2! */
+/* Adds program node. */
 node *PRTprogram(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTprogram");
@@ -250,7 +250,7 @@ node *PRTparameters(node *arg_node, info *arg_info)
         DBUG_ASSERT(0, "unknown type detected!");
         break;
     case T_void:
-        DBUG_ASSERT(0, "vardeclaration type cannot be void!");
+        DBUG_ASSERT(0, "parameter type cannot be void!");
         break;
     }
 
@@ -290,6 +290,7 @@ node *PRTfunctionbody(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Prints the variable declarations within a function. */
 node *PRTvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTvardeclaration");
@@ -325,7 +326,14 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
     if (VARDECLARATION_INIT(arg_node) != NULL)
     {
         printf(" = ");
+        if (NODE_TYPE(VARDECLARATION_INIT(arg_node)) == N_arrayexpr)
+            printf("[");
+
         VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
+
+        if (NODE_TYPE(VARDECLARATION_INIT(arg_node)) == N_arrayexpr)
+            printf("]");
+
         printf(";\n");
     }
     else
@@ -370,7 +378,6 @@ node *PRTassign(node *arg_node, info *arg_info)
     }
 
     ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
-
     printf(";\n");
 
     DBUG_RETURN(arg_node);
@@ -466,7 +473,9 @@ node *PRTfor(node *arg_node, info *arg_info)
         printf(", ");
         FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
     }
+
     printf(") \n");
+
     if (FOR_BLOCK(arg_node) != NULL)
     {
         printf("{\n");
@@ -520,10 +529,8 @@ node *PRTexpressions(node *arg_node, info *arg_info)
     DBUG_ENTER("PRTexpressions");
 
     if (EXPRESSIONS_EXPR(arg_node) != NULL)
-    {
         EXPRESSIONS_EXPR(arg_node) =
             TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
-    }
 
     if (EXPRESSIONS_NEXT(arg_node) != NULL)
     {
@@ -782,9 +789,9 @@ node *PRTarrayexpr(node *arg_node, info *arg_info)
 
     if (ARRAYEXPR_NEXT(arg_node) != NULL)
     {
-        printf(", [");
+        printf(", ");
         ARRAYEXPR_NEXT(arg_node) = TRAVdo(ARRAYEXPR_NEXT(arg_node), arg_info);
-        printf("]");
+        // printf("]");
     }
     // printf("]");
 

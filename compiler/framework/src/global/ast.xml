@@ -42,11 +42,6 @@ traversals to process it.
                     <node name="VarLet" />
                 </travuser>
             </traversal>
-            <traversal id="SI" name="Sum ins" default="sons" include="sum_ints.h">
-                <travuser>
-                    <node name="Num" />
-                </travuser>
-            </traversal>
             <traversal id="OS" name="Optimise subtraction" default="sons" include="opt_sub.h">
                 <travuser>
                     <node name="BinOp" />
@@ -88,17 +83,6 @@ traversals to process it.
                     <node name="Bool" />
                     <node name="Float" />
                     <node name="Num" />
-                </travuser>
-            </traversal>
-            <traversal id="EP" name="Edit Paramarrays" default="sons" include="edit_paramarrays.h">
-                <travuser>
-                    <node name="Function" />
-                    <node name="FunctionCallStmt" />
-                    <node name="FunctionCallExpr" />
-                    <node name="Parameters" />
-                    <node name="ArrayExpr" />
-                    <node name="Expressions" />
-                    <node name="Ids" />
                 </travuser>
             </traversal>
         </general>

@@ -1,21 +1,19 @@
 /*
  * Module: Traversing and type checking
  * Prefix: TC
- */
+ * /
 
 /*
 
- All binary operators are only defined on operands of exactly the same type,
- i.e. there is no implicit type conversion in CiviC.
+TO DO: 
 
- Arithmetic operators are defined on integer numbers,
- where they again yield an integer number, and on floating point numbers,
- where they again yield a floating point number.
+    The arithmetic operators for addition and multiplication are also defined
+    on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
 
- As an exception, the modulo operator is only defined on integer numbers and yields an integer number.
- 
- The arithmetic operators for addition and multiplication are also defined
- on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
+    BINOP verbeteren.
+
+    FUNCTIONCALLSTMT + FUNCTIONCALLEPXR. 
+    PARAM.
  */
 
 // Arrayexpr doen we niet meer
@@ -35,13 +33,11 @@ struct INFO
 {
     int errors;
     type current;
-    int paramcounter;
 };
 
 /* INFO macros */
-#define INFO_ERRORS(n) ((n)->errors)
-#define INFO_TYPE(n) ((n)->current)
-#define INFO_COUNTER(n) ((n)->paramcounter)
+#define INFO_ERRORS(n)      ((n)->errors)
+#define INFO_TYPE(n)        ((n)->current)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -66,7 +62,7 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
-/* Traversal functions */
+/* Traversal functions below. */
 /* Declarations. */
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
@@ -77,6 +73,7 @@ node *TCglobaldec(node *arg_node, info *arg_info)
         GLOBALDEC_TYPE(arg_node) != T_float)
         typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
+    /* Traverse into array grammar. Not implemented. */
     if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
         GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
@@ -87,6 +84,7 @@ node *TCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldef");
 
+    /* Traverse into array grammar. Not implemented. */
     if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
         GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
@@ -94,8 +92,12 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     {
         GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
         if (INFO_TYPE(arg_info) != GLOBALDEF_TYPE(arg_node))
-            typeError(arg_info, arg_node, "Global definition.");
+            typeError(arg_info, arg_node, "Global definition is not of matching type.");
     }
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
+    
     DBUG_RETURN(arg_node);
 }
 
@@ -124,7 +126,7 @@ node *TCparameters(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/*  */
+/* Function node. */
 node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
@@ -261,6 +263,9 @@ node *TCreturn(node *arg_node, info *arg_info)
 
     if (INFO_TYPE(arg_info) != SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node)))
         typeError(arg_info, arg_node, "Return expression does not match function type.");
+    
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
 
     DBUG_RETURN(arg_node);
 }

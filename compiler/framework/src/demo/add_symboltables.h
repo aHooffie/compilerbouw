@@ -31,5 +31,7 @@ extern node *ASids(node *arg_node, info *arg_info);
 extern node *ASdoAddSymbolTables(node *syntaxtree);
 
 extern void stError(info *arg_info, node *arg_node, char *message, char *name);
+extern void printLine(info *arg_info, char *name);
+
 
 #endif

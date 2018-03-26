@@ -4,6 +4,7 @@ export void main (int m, int n) {
     int r = 3 + 2;
     int s = r + o;
     int s = o;
+    int [2, 2] t; 
     m = o; 
 }
 

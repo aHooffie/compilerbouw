@@ -26,6 +26,10 @@ nested for-loops using the same induction variable and occurrences of identicall
 outside the scope of the corresponding for-loop. Like explained above, context disambiguation
 and possibly a systematic renaming of for-loop induction variables is needed.
 
+!! FOR LOOP NOG TOEVOEGEN
+
+// aantal params nog tellen (vgl. type_checker)
+
 */
 
 #include "add_symboltables.h"
@@ -43,14 +47,17 @@ and possibly a systematic renaming of for-loop induction variables is needed.
 struct INFO
 {
     node *stack;
+    node *og;
     int size;
     int errors;
+    int paramcount;
 };
 
 /* struct macros */
-#define INFO_STACK(n)   ((n)->stack)
-#define INFO_SIZE(n)    ((n)->size)
-#define INFO_ERRORS(n)  ((n)->errors)
+#define INFO_STACK(n) ((n)->stack)
+#define INFO_SIZE(n) ((n)->size)
+#define INFO_ERRORS(n) ((n)->errors)
+#define INFO_PARAMCOUNT(n) ((n)->paramcount)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -63,6 +70,7 @@ static info *MakeInfo(void)
     INFO_STACK(result) = NULL;
     INFO_SIZE(result) = 0;
     INFO_ERRORS(result) = 0;
+    INFO_PARAMCOUNT(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -121,7 +129,8 @@ node *ASglobaldec(node *arg_node, info *arg_info)
     char *name = GLOBALDEC_NAME(arg_node);
 
     /* Found a globaldec. Check if there already is one with the same name. */
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.\n", name);
         printLine(arg_info, name);
     }
@@ -152,7 +161,8 @@ node *ASglobaldef(node *arg_node, info *arg_info)
     char *name = GLOBALDEF_NAME(arg_node);
 
     /* Found globaldef. Check if there already is one with the same name. */
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.", name);
         printLine(arg_info, name);
     }
@@ -207,7 +217,8 @@ node *ASfunction(node *arg_node, info *arg_info)
     char *name = FUNCTION_NAME(arg_node);
 
     /* Found function. Check if there already is one with the same name in global ST. */
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.", name);
         printLine(arg_info, name);
     }
@@ -215,6 +226,7 @@ node *ASfunction(node *arg_node, info *arg_info)
     {
         /* Else, insert the function into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, FUNCTION_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
+        SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -263,7 +275,8 @@ node *ASparameters(node *arg_node, info *arg_info)
     char *name = PARAMETERS_NAME(arg_node);
 
     /* Found parameter. Check if there already is one with the same name. */
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.", name);
         printLine(arg_info, name);
     }
@@ -296,6 +309,21 @@ node *ASparameters(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+node *ASexpressions(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("ASexpressions");
+
+    // Check function param count
+
+    // traverse through next, adding to stack info
+
+    // if stack info > param count, break
+
+    // if no next but less than param count, break
+
+    DBUG_RETURN(arg_node);
+}
+
 node *ASvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvardeclaration");
@@ -303,7 +331,8 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     char *name = VARDECLARATION_NAME(arg_node);
 
     /* Found vardeclaration. Check if there already is one with the same name. */
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.", name);
         printLine(arg_info, name);
     }
@@ -465,7 +494,8 @@ node *ASids(node *arg_node, info *arg_info)
 
     char *name = IDS_NAME(arg_node);
 
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE) {
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
         stError(arg_info, arg_node, "has already been declared.", name);
         printLine(arg_info, name);
     }
@@ -634,7 +664,8 @@ void printLine(info *arg_info, char *name)
         original = findOriginal(SYMBOLTABLE_NEXT(symboltable), name);
         if (original == NULL)
             symboltable = SYMBOLTABLE_PREV(symboltable);
-        else {
+        else
+        {
             CTInote("> Original declaration was on line %i.", NODE_LINE(original));
             break;
         }

@@ -15,10 +15,10 @@ bool e = true;
 bool f = false;
 void g;
 
-export void main ()
+export void main (int a, int b)
 {
 	while (a) {
-	//	a = 1 + 3 * 2; // INT + INT + INT WERKT NIET!
+		a = b - b * 3 + 2 - a; // INT + INT + INT + INT
 		b = 3 - a; // INT + varINT
 		c = 3.4 / c; // FLOAT + varFLOAT
 		a = a + b; // varINT + varINT
@@ -54,4 +54,15 @@ export void main ()
 //	return g;
 
 
+}
+
+export int test (int a) {
+//	g = main (a, b);
+	return 4;
+}
+
+export int foo (int b) {
+	a = 3 + main(a, b); // DIT WERKT NOG NIET
+	test(a);
+	return 4;
 }

@@ -53,6 +53,7 @@ traversals to process it.
                     <node name="GlobalDec" />
                     <node name="GlobalDef" />
                     <node name="Function" />
+                    <node name="Expressions" />
                     <node name="Parameters" />
                     <node name="Return" />
                     <node name="VarDeclaration" />
@@ -67,6 +68,9 @@ traversals to process it.
                 <travuser>
                     <node name="FunctionCallStmt" />
                     <node name="FunctionCallExpr" />
+                    <node name="Expressions" />
+                    <node name="Function" />
+                    <node name="Parameters" />
                     <node name="GlobalDec" />
                     <node name="GlobalDef" />
                     <node name="For" />
@@ -83,6 +87,7 @@ traversals to process it.
                     <node name="Bool" />
                     <node name="Float" />
                     <node name="Num" />
+                    <node name="Ids" />
                 </travuser>
             </traversal>
         </general>
@@ -1402,6 +1407,19 @@ traversals to process it.
                     <type name="Int">
                         <targets>
                             <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Original">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="Function" />
                                 <phases>
                                     <all />
                                 </phases>

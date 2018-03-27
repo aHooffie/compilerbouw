@@ -141,7 +141,7 @@ bool checkPrevDeclaration(node *symboltableentry, char *name)
  * Traversal start function
  */
 
-node *REmakeRegularExpressions(node *syntaxtree)
+node *REdoRegularExpressions(node *syntaxtree)
 {
     DBUG_ENTER("REmakeRegularExpressions");
 

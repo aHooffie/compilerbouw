@@ -58,15 +58,9 @@ SUBPHASE( tc,
           ALWAYS,
           pet)
 
-SUBPHASE( ep, 
-          "Edit Paramarrays",
-          EPdoEditParamarrays, 
-          NEVER,
-          pet)
-
 SUBPHASE( re, 
-          "Make regular exoressions",
-          REmakeRegularExpressions, 
+          "Regular expressions",
+          REdoRegularExpressions, 
           ALWAYS,
           pet)        
       

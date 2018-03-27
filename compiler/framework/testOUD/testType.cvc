@@ -56,13 +56,15 @@ export void main (int a, int b)
 
 }
 
-export int test (int a) {
+export int test (int a, int b, float c) {
 //	g = main (a, b);
 	return 4;
 }
 
 export int foo (int b) {
-	main(a, b);
-	a = 3 + main(a, b);
+//	a = test(a, b, c);
+//	main(); // MAG NIET! en klopt.
+	main(a, b, c); // MAG en klopt NIET
+	a = 3 + test(a, b, c); // MAG NIET!
 	return 4;
 }

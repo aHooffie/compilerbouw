@@ -7,11 +7,6 @@
 
 TO DO (ctrl v van milestone 5)
 
-!! Likewise argument numbers in function calls must match parameter numbers of called function. 
-Note that matching types is not done during context analysis but left for a separate type checking
-pass.
-- ??????
-
 !! Context analysis disambiguates equally named symbols according to the scoping rules of the
 language, both variables and functions. For documentation as well as debugging purposes this
 disambiguation should also be visualised when displaying the abstract syntax tree after context
@@ -27,8 +22,6 @@ outside the scope of the corresponding for-loop. Like explained above, context d
 and possibly a systematic renaming of for-loop induction variables is needed.
 
 !! FOR LOOP NOG TOEVOEGEN
-
-// aantal params nog tellen (vgl. type_checker)
 
 */
 
@@ -50,14 +43,17 @@ struct INFO
     node *og;
     int size;
     int errors;
-    int paramcount;
+    int FUNCTIONCOUNT;
+    int count;
 };
 
 /* struct macros */
 #define INFO_STACK(n) ((n)->stack)
+#define INFO_OG(n) ((n)->og)
 #define INFO_SIZE(n) ((n)->size)
 #define INFO_ERRORS(n) ((n)->errors)
-#define INFO_PARAMCOUNT(n) ((n)->paramcount)
+#define INFO_FUNCTIONCOUNT(n) ((n)->FUNCTIONCOUNT)
+#define INFO_COUNT(n) ((n)->count)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -70,7 +66,7 @@ static info *MakeInfo(void)
     INFO_STACK(result) = NULL;
     INFO_SIZE(result) = 0;
     INFO_ERRORS(result) = 0;
-    INFO_PARAMCOUNT(result) = 0;
+    INFO_FUNCTIONCOUNT(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -313,19 +309,39 @@ node *ASexpressions(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASexpressions");
 
-    // Check function param count
-
-    // traverse through next, adding to stack info
-
-    // if stack info > param count, break
-
-    // if no next but less than param count, break
+    /* Count parameters in fundef. */
+    if (INFO_COUNT(arg_info) == 0)
+    {
+        node *param = FUNCTION_PARAMETERS(INFO_OG(arg_info));
+        if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
+            INFO_FUNCTIONCOUNT(arg_info) += 1;
+        while (PARAMETERS_NEXT(param) != NULL)
+        {
+            INFO_FUNCTIONCOUNT(arg_info) += 1;
+            param = PARAMETERS_NEXT(param);
+        }
+    }
 
     if (EXPRESSIONS_EXPR(arg_node) != NULL)
+    {
+        INFO_COUNT(arg_info) += 1;
         EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+    }
 
     if (EXPRESSIONS_NEXT(arg_node) != NULL)
         EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
+
+    if (EXPRESSIONS_NEXT(arg_node) == NULL)
+    {
+        if (INFO_COUNT(arg_info) != INFO_FUNCTIONCOUNT(arg_info))
+        {
+            stError(arg_info, arg_node, "The amount of parameters didn't match the function definition.", NULL);
+            CTInote("> Expected %i, but found %i parameters.", INFO_FUNCTIONCOUNT(arg_info), INFO_COUNT(arg_info));
+        }
+    }
+
+    INFO_COUNT(arg_info) = 0;
+    INFO_FUNCTIONCOUNT(arg_info) = 0;
 
     DBUG_RETURN(arg_node);
 }
@@ -384,6 +400,7 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
         else
         {
             FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) = original;
+            INFO_OG(arg_info) = SYMBOLTABLEENTRY_ORIGINAL(original);
             break;
         }
     }
@@ -394,6 +411,11 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
     /* Continue with traversing in child nodes. */
     if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
         FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+    else
+    {
+        if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
+            stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLSTMT_NAME(arg_node));
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -415,6 +437,7 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
         else
         {
             FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) = original;
+            INFO_OG(arg_info) = SYMBOLTABLEENTRY_ORIGINAL(original);
             break;
         }
     }
@@ -425,6 +448,11 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     /* Continue with traversing in child nodes. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+    else
+    {
+        if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
+            stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLSTMT_NAME(arg_node));
+    }
 
     DBUG_RETURN(arg_node);
 }

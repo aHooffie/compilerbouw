@@ -8,9 +8,6 @@
 TO DO: 
     The arithmetic operators for addition and multiplication are also defined
     on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
-
-    FUNCTIONCALLSTMT + FUNCTIONCALLEPXR. 
-    PARAM.
  */
 
 #include "type_checking.h"
@@ -136,7 +133,6 @@ node *TCparameters(node *arg_node, info *arg_info)
 }
 
 /* Functioncallstmt */
-// OPSCHONEN
 node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallstmt");
@@ -165,8 +161,6 @@ node *TCexpressions(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCexpressions");
     INFO_PARAMCOUNT(arg_info) += 1;
-
-    CTInote("%i at %i", INFO_PARAMCOUNT(arg_info), NODE_LINE(arg_node));
 
     /* Find the parameter in function definition that needs to correspond. */
     node *param = FUNCTION_PARAMETERS(INFO_OG(arg_info));
@@ -199,8 +193,8 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
     {
         INFO_PARAMCOUNT(arg_info) = 0;
         node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
-        if (FUNCTION_TYPE(originalFunction) != T_void)
-            typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
+        if (FUNCTION_TYPE(originalFunction) == T_void)
+            typeError(arg_info, arg_node, "The return value of this function cannot be assigned to variable.");
 
         if (NODE_TYPE(originalFunction) != N_function)
             CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
@@ -425,13 +419,11 @@ node *TCbinop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Unknown types in binop.");
         }
     }
-    // == fout! Moet travdo zijn in links, dat opslaan in arg_info, en dan travdo right en kijken of dat ook kan.
-    // printf("Type: %s & Type: %s\n", NodetypetoString(BINOP_LEFT(arg_node)), NodetypetoString(BINOP_RIGHT(arg_node)));
 
     switch (BINOP_OP(arg_node))
     {
-        /* Modulo; can only be done with integers. */
     case BO_mod:
+        /* Modulo; can only be done with integers. */
         if (NODE_TYPE(BINOP_LEFT(arg_node)) != N_num || NODE_TYPE(BINOP_RIGHT(arg_node)) != N_num)
             typeError(arg_info, arg_node, "Modulo can only be performed on two integers.");
         else
@@ -546,7 +538,6 @@ node *TCbinop(node *arg_node, info *arg_info)
     case BO_eq:
     case BO_ne:
         /* != and == can be done with all types. */
-
         switch (left)
         {
         case N_num:

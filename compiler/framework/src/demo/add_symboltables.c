@@ -15,13 +15,11 @@ a suitable representation of the scope level into the variable name. Alternative
 simply print the scope information together with the variable name when visualising the abstract
 syntax tree.
 
-!! Last but not least, remove the declaration part from for-loop induction variables and create corre-
-sponding local variable declarations on the level of the (innermost) function denition. Beware of
-nested for-loops using the same induction variable and occurrences of identically named variables
+!! Remove the declaration part from for-loop induction variables.
+create corresponding local variable declarations on the level of the (innermost) function definition.
+Beware of nested for-loops using the same induction variable and occurrences of identically named variables
 outside the scope of the corresponding for-loop. Like explained above, context disambiguation
 and possibly a systematic renaming of for-loop induction variables is needed.
-
-!! FOR LOOP NOG TOEVOEGEN
 
 */
 

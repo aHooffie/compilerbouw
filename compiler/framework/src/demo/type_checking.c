@@ -182,23 +182,21 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
     DBUG_ENTER("TCfunctioncallexpr");
 
     INFO_PARAMCOUNT(arg_info) = 0;
+    node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
 
     /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
     {
         INFO_PARAMCOUNT(arg_info) = 0;
-        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
         if (FUNCTION_TYPE(originalFunction) == T_void)
             typeError(arg_info, arg_node, "The return value of this function cannot be assigned to variable.");
 
-        if (NODE_TYPE(originalFunction) != N_function)
-            CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
-        else
-        {
-            INFO_OG(arg_info) = originalFunction;
-            FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
-        }
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
     }
+
+    INFO_OG(arg_info) = originalFunction;
+    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+
     DBUG_RETURN(arg_node);
 }
 
@@ -371,7 +369,7 @@ node *TCmonop(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Binop - werkt niet helemaal goed. */
+/* Binop. */
 node *TCbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCbinop");
@@ -419,7 +417,7 @@ node *TCbinop(node *arg_node, info *arg_info)
     {
     case BO_mod:
         /* Modulo; can only be done with integers. */
-        if (NODE_TYPE(BINOP_LEFT(arg_node)) != N_num || NODE_TYPE(BINOP_RIGHT(arg_node)) != N_num)
+        if (left != N_num || right != N_num)
             typeError(arg_info, arg_node, "Modulo can only be performed on two integers.");
         else
             INFO_TYPE(arg_info) = T_int;
@@ -792,12 +790,11 @@ char *nodetypetoString(node *arg_node)
         typeString = "cast";
         break;
     case N_functioncallexpr:
-        typeString = "cast";
+        typeString = "functioncallexpr";
         break;
     case N_arrayexpr:
-        typeString = "cast";
+        typeString = "arrayexpr";
         break;
-
     case N_binop:
         typeString = "int";
         break;

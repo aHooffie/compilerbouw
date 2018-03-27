@@ -3,9 +3,9 @@
 
 #include "types.h"
 
-extern char *NodetypetoString(node *arg_node);
+extern char *nodetypetoString(node *arg_node);
 extern void typeError(info *arg_info, node *arg_node, char *message);
-extern bool basictypeCheck(info *arg_info);
+extern bool basictypeCheck(type t);
 
 extern node *TCglobaldef(node *arg_node, info *arg_info);
 extern node *TCglobaldec(node *arg_node, info *arg_info);

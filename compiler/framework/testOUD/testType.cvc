@@ -62,7 +62,7 @@ export int test (int a) {
 }
 
 export int foo (int b) {
-//	a = 3 + main(a, b); // DIT WERKT NOG NIET
-//	test(a); // DIT CRASHT OOK
+	main(a, b);
+	a = 3 + main(a, b);
 	return 4;
 }

@@ -70,9 +70,7 @@ node *TCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldec");
 
-    if (GLOBALDEC_TYPE(arg_node) != T_bool &&
-        GLOBALDEC_TYPE(arg_node) != T_int &&
-        GLOBALDEC_TYPE(arg_node) != T_float)
+    if (basictypeCheck(GLOBALDEC_TYPE(arg_node) == FALSE))
         typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
     /* Traverse into array grammar. Not implemented. */
@@ -90,6 +88,7 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
         GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
+    /* Check assigned type of global definition. */
     if (GLOBALDEF_ASSIGN(arg_node) != NULL)
     {
         GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
@@ -103,10 +102,28 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Function node. */
+node *TCfunction(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunction");
+
+    if (FUNCTION_PARAMETERS(arg_node) != NULL)
+        FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
+
+    /* Check return types. */
+    if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
+        FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 /* Parameters in a fundef. */
 node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
+
+    if (basictypeCheck(PARAMETERS_TYPE(arg_node) == FALSE))
+        typeError(arg_info, arg_node, "The parameter is not of a basic type.");
 
     /* Traverse into array grammar. Not implemented. */
     if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
@@ -118,32 +135,16 @@ node *TCparameters(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Function node. */
-node *TCfunction(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCfunction");
-
-    /* Check types of parameters match. */
-    if (FUNCTION_PARAMETERS(arg_node) != NULL)
-        FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
-
-    /* Check return types. */
-    if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
-        FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
-
-    DBUG_RETURN(arg_node);
-}
-
 /* Functioncallstmt */
 // OPSCHONEN
 node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallstmt");
 
-    INFO_PARAMCOUNT(arg_info) = 0;
-
+    /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
     {
+        INFO_PARAMCOUNT(arg_info) = 0;
         node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
         if (FUNCTION_TYPE(originalFunction) != T_void)
             typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
@@ -151,10 +152,12 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
         if (NODE_TYPE(originalFunction) != N_function)
             CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
         else
+        {
             INFO_OG(arg_info) = originalFunction;
-
-        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+            FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+        }
     }
+
     DBUG_RETURN(arg_node);
 }
 
@@ -163,10 +166,14 @@ node *TCexpressions(node *arg_node, info *arg_info)
     DBUG_ENTER("TCexpressions");
     INFO_PARAMCOUNT(arg_info) += 1;
 
+    CTInote("%i at %i", INFO_PARAMCOUNT(arg_info), NODE_LINE(arg_node));
+
+    /* Find the parameter in function definition that needs to correspond. */
     node *param = FUNCTION_PARAMETERS(INFO_OG(arg_info));
     for (int j = 1; j < INFO_PARAMCOUNT(arg_info); j++)
         param = PARAMETERS_NEXT(param);
 
+    /* Find own type, put it in arg_info. */
     if (EXPRESSIONS_EXPR(arg_node) != NULL)
         EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
 
@@ -187,20 +194,21 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 
     INFO_PARAMCOUNT(arg_info) = 0;
 
+    /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
     {
-        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
-
-        // Dit werkt nog niet
-        if (FUNCTION_TYPE(originalFunction) == T_void)
-            typeError(arg_info, arg_node, "A function returning void cannot be assigned to a variable.");
+        INFO_PARAMCOUNT(arg_info) = 0;
+        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
+        if (FUNCTION_TYPE(originalFunction) != T_void)
+            typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
 
         if (NODE_TYPE(originalFunction) != N_function)
             CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
         else
+        {
             INFO_OG(arg_info) = originalFunction;
-
-        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+            FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+        }
     }
     DBUG_RETURN(arg_node);
 }
@@ -240,7 +248,7 @@ node *TCifelse(node *arg_node, info *arg_info)
 
     /* Check condition. */
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
-    if (basictypeCheck(arg_info) == FALSE)
+    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
         typeError(arg_info, arg_node, "If condition is not a basic type.");
 
     /* Reset. */
@@ -265,7 +273,7 @@ node *TCwhile(node *arg_node, info *arg_info)
 
     /* Check condition. */
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
-    if (basictypeCheck(arg_info) == FALSE)
+    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
         typeError(arg_info, arg_node, "While condition is not a basic type.");
 
     /* Reset. */
@@ -287,7 +295,7 @@ node *TCdowhile(node *arg_node, info *arg_info)
     /* Check condition. */
     DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
 
-    if (basictypeCheck(arg_info) == FALSE)
+    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
         typeError(arg_info, arg_node, "The dowhile condition is not a basic type.");
 
     /* Reset. */
@@ -363,7 +371,7 @@ node *TCmonop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     case MO_not:
-        if (basictypeCheck(arg_info) == FALSE)
+        if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     default:
@@ -690,7 +698,7 @@ node *TCbool(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Part of array grammar. */
+/* Part of array grammar. Not implemented. */
 node *TCids(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCids");
@@ -727,7 +735,7 @@ node *TCdoTypeChecking(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
-/* Function to call when a typecheck error arises. */
+/* Called when a typecheck error arises. */
 void typeError(info *arg_info, node *arg_node, char *message)
 {
     CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
@@ -735,18 +743,18 @@ void typeError(info *arg_info, node *arg_node, char *message)
     INFO_TYPE(arg_info) = T_unknown;
 }
 
-/* Function to call when a typecheck error arises. */
-bool basictypeCheck(info *arg_info)
+/* Checks if a type is an int, bool or float. */
+bool basictypeCheck(type t)
 {
-    if (INFO_TYPE(arg_info) != T_bool &&
-        INFO_TYPE(arg_info) != T_int &&
-        INFO_TYPE(arg_info) != T_float)
+    if (t != T_bool &&
+        t != T_int &&
+        t != T_float)
         return FALSE;
     return TRUE;
 }
 
 /* Prints the node type as string, for testing. */
-char *NodetypetoString(node *arg_node)
+char *nodetypetoString(node *arg_node)
 {
     char *typeString;
     switch (NODE_TYPE(arg_node))

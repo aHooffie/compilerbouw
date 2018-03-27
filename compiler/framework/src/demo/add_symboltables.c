@@ -321,6 +321,12 @@ node *ASexpressions(node *arg_node, info *arg_info)
 
     // if no next but less than param count, break
 
+    if (EXPRESSIONS_EXPR(arg_node) != NULL)
+        EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+
+    if (EXPRESSIONS_NEXT(arg_node) != NULL)
+        EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 

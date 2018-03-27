@@ -20,8 +20,8 @@ export void main (int a, int b)
 	while (a) {
 		a = b - b * 3 + 2 - a; // INT + INT + INT + INT
 		b = 3 - a; // INT + varINT
-		c = 3.4 / c; // FLOAT + varFLOAT
-		a = a + b; // varINT + varINT
+		c = 2.0 + 3.4 / c; // FLOAT + varFLOAT
+		a = a + b * 3 * a; // varINT + varINT
 		f = c >= d; // varFLOAT + varFLOAT
 		f = !e;
 		c = (float)a;
@@ -62,9 +62,9 @@ export int test (int a, int b, float c) {
 }
 
 export int foo (int b) {
-//	a = test(a, b, c);
+//	a = 3.0 + test(a, b, c);/ / MAG NIET! en klopt.
 //	main(); // MAG NIET! en klopt.
-	main(a, b, c); // MAG en klopt NIET
-	a = 3 + test(a, b, c); // MAG NIET!
+//	main(a, b); // MAG NIET en klopt
+	a = test(a, b, c);
 	return 4;
 }

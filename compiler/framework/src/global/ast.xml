@@ -97,6 +97,16 @@ traversals to process it.
                     <node name="VarDeclaration" />
                 </travuser>
             </traversal>
+            <traversal id="CB" name="Compile Booleans" default="sons" include="compile_booleans.h">
+                <travuser>
+                    <node name="BinOp" />
+                </travuser>
+            </traversal>
+            <traversal id="CC" name="Cast Conversion" default="sons" include="cast_conversion.h">
+                <travuser>
+                    <node name="Cast" />
+                </travuser>
+            </traversal>
         </general>
     </phases>
     <!--

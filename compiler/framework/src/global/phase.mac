@@ -47,7 +47,7 @@ SUBPHASE( os,
           pet) 
 
 SUBPHASE( as, 
-          "Add Symboltables",
+          "Add symboltables",
           ASdoAddSymbolTables, 
           ALWAYS,
           pet)
@@ -62,7 +62,19 @@ SUBPHASE( re,
           "Regular expressions",
           REdoRegularExpressions, 
           ALWAYS,
-          pet)        
+          pet) 
+
+SUBPHASE( cb, 
+          "Compile booleans",
+          CBdoCompileBooleans, 
+          ALWAYS,
+          pet)     
+          
+SUBPHASE( cc, 
+          "Cast conversion",
+          CCdoCastConversion, 
+          ALWAYS,
+          pet)                   
       
 ENDPHASE( pet) 
 

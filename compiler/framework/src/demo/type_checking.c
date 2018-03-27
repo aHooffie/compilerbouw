@@ -3,14 +3,8 @@
  * Prefix: TC
  */
 
-/*
-
-TO DO: 
-    The arithmetic operators for addition and multiplication are also defined
-    on Boolean operands where they implement strict logic disjunction and conjunction, respectively.
- */
-
 #include "type_checking.h"
+#include "add_symboltables.h"
 
 #include "types.h"
 #include "tree_basic.h"
@@ -177,11 +171,12 @@ node *TCexpressions(node *arg_node, info *arg_info)
     if (EXPRESSIONS_NEXT(arg_node) != NULL)
         EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
 
+    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+
     DBUG_RETURN(arg_node);
 }
 
 /* Functioncallexpr */
-// TE VERBETEREN
 node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallexpr");
@@ -449,7 +444,9 @@ node *TCbinop(node *arg_node, info *arg_info)
                     INFO_TYPE(arg_info) = T_int;
             }
             else
-                typeError(arg_info, arg_node, "Types are not matching..");
+            {
+                typeError(arg_info, arg_node, "!!! Types are not matching..");
+            }
             break;
 
         case N_float:
@@ -467,9 +464,15 @@ node *TCbinop(node *arg_node, info *arg_info)
                 typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
-            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) == T_bool ||
-                SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))) == T_bool)
-                typeError(arg_info, arg_node, "Bools cannot have arithmetic operations.");
+            if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) == T_bool &&
+                (right == T_bool ||
+                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))) == T_bool))
+            {
+                if (BINOP_OP(arg_node) == BO_add || BINOP_OP(arg_node) == BO_mul)
+                    INFO_TYPE(arg_info) = T_bool;
+                else
+                    typeError(arg_info, arg_node, "arithmetic operations - and / are not allowed on booleans.");
+            }
             else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                      SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
                 typeError(arg_info, arg_node, "Types are not matching..");
@@ -480,6 +483,29 @@ node *TCbinop(node *arg_node, info *arg_info)
                 else
                     INFO_TYPE(arg_info) = T_float;
             }
+            break;
+        case N_bool:
+            if (right == N_bool)
+            {
+                if (BINOP_OP(arg_node) == BO_add || BINOP_OP(arg_node) == BO_mul)
+                    INFO_TYPE(arg_info) = T_bool;
+                else
+                    typeError(arg_info, arg_node, "arithmetic operations - and / are not allowed on booleans.");
+            }
+            else if (right == N_var)
+            {
+                if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))) == T_bool)
+                {
+                    if (BINOP_OP(arg_node) == BO_add || BINOP_OP(arg_node) == BO_mul)
+                        INFO_TYPE(arg_info) = T_bool;
+                    else
+                        typeError(arg_info, arg_node, "arithmetic operations - and / are not allowed on booleans.");
+                }
+                else
+                    typeError(arg_info, arg_node, "Types are not matching.. ");
+            }
+            else
+                typeError(arg_info, arg_node, "arithmetic operations - and / are not allowed on booleans.");
             break;
 
         default:

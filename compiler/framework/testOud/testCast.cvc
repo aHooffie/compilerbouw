@@ -2,5 +2,6 @@ export void main (int p) {
     int a = 2;
     float b = (float) a;
     bool c = (bool) a;
+    a = (int) c;
     return;
 }

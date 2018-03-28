@@ -17,12 +17,91 @@
 
 node *CCcast(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("CCcast");
+    CTInote("FOUND A CAST!");
+    CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
+    INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
 
-    CTInote("Found a Cast");
-    // CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), NULL);
+    node *new, *condition, *then, *otherwise, *temp;
+    type expr = INFO_TYPE(arg_info);
+    type cast = CAST_TYPE(arg_node);
 
-    DBUG_RETURN(arg_node);
+    temp = CAST_EXPR(arg_node);
+    // If bool = False, then 0, else 1;
+    // if 5 == 0 then false else true
+
+    switch (cast)
+    {
+    case T_bool:
+        CTInote("Casting to bool!");
+        if (expr == T_float)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
+        else if (expr == T_int)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
+        else if (expr == T_bool)
+            condition = NULL; // TODO
+        else
+        {
+            condition = NULL;
+            CTIabort("HELP");
+        }
+
+        then = TBmakeBool(FALSE);
+        otherwise = TBmakeBool(TRUE);
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    case T_int:
+        CTInote("Casting to int!");
+        if (expr == T_float)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
+        else if (expr == T_bool)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
+        else if (expr == T_int)
+            condition = NULL; // TODO
+        else
+        {
+            condition = NULL;
+            CTIabort("HELP");
+        }
+        then = TBmakeNum(0);
+        otherwise = TBmakeNum(1);
+
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    case T_float:
+        CTInote("Casting to float!");
+        if (expr == T_int)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
+        else if (expr == T_bool)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
+        else if (expr == T_float)
+            condition = NULL; // TODO
+        else
+        {
+            condition = NULL;
+            CTIabort("HELP");
+        }
+
+        then = TBmakeFloat(0.0);
+        otherwise = TBmakeFloat(1.0);
+
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    default:
+        new = NULL;
+        CTIabort("Cannot cast to this type, line: %i", NODE_LINE(arg_node));
+        break;
+    }
+
+    if (new != NULL)
+    {
+        CAST_EXPR(arg_node) = NULL;
+        node *n = FREEdoFreeNode(arg_node);
+        if (n != NULL)
+            CTInote("Whoops.");
+        DBUG_RETURN(new);
+    }
+    else
+        DBUG_RETURN(arg_node);
 }
 
 node *CCdoCastConversion(node *syntaxtree)

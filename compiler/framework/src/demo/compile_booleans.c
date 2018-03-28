@@ -42,7 +42,8 @@ node *CBbinop(node *arg_node, info *arg_info)
 
             /* Create new node. */
             node *otherwise = TBmakeBool(FALSE);
-            new = TBmakeTernop(BO_and, tempL, tempR, otherwise);
+            new = TBmakeTernop(tempL, tempR, otherwise);
+            TERNOP_OP(new) = BO_and;
             if (new == NULL)
                 CTInote("help");
         }
@@ -52,7 +53,9 @@ node *CBbinop(node *arg_node, info *arg_info)
 
             /* Create new node. */
             node *then = TBmakeBool(TRUE);
-            new = TBmakeTernop(BO_or, tempL, then, tempR);
+            new = TBmakeTernop(tempL, then, tempR);
+            TERNOP_OP(new) = BO_or;
+
             if (new == NULL)
                 CTInote("help");
         }

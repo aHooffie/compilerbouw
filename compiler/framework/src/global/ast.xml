@@ -115,6 +115,7 @@ traversals to process it.
     <nodesets>
         <nodeset name="Expr">
             <target>
+                <node name="TernOp" />
                 <node name="BinOp" />
                 <node name="MonOp" />
                 <node name="Var" />
@@ -1346,6 +1347,59 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
+        </node>
+        <node name="TernOp">
+            <description>represents ternary operator</description>
+            <sons>
+                <son name="Condition">
+                    <description>represents left operand expression</description>
+                    <targets>
+                        <target mandatory="yes">
+                            <set name="Expr" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Then">
+                    <description>represents right operand expression</description>
+                    <targets>
+                        <target mandatory="yes">
+                            <set name="Expr" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Else">
+                    <description>represents right operand expression</description>
+                    <targets>
+                        <target mandatory="yes">
+                            <set name="Expr" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+            <attributes>
+                <description>represents operator type</description>
+                <attribute name="Op">
+                    <type name="BinOp">
+                        <targets>
+                            <target mandatory="yes">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
         </node>
         <!-- 
         Node SymbolTable

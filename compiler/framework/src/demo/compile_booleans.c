@@ -29,16 +29,44 @@ node *CBbinop(node *arg_node, info *arg_info)
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), NULL);
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), NULL);
 
-    // if (BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or)
-    //     CTInote("Found binop.");
+    node *new;
 
-    // // Create new node?
-    // node *new = TBmakeCompBoolean(pred, then, else);
+    if (BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or)
+    {
+        node *tempR = BINOP_RIGHT(arg_node);
+        node *tempL = BINOP_LEFT(arg_node);
 
-    // // Free this binop node?
-    // node *next = FREEdoFreeNode(arg_node);
-    // if (next != NULL)
-    //     CTInote("Whoops.");
+        if (BINOP_OP(arg_node) == BO_and)
+        {
+            CTInote("Found AND binop.");
+
+            /* Create new node. */
+            node *otherwise = TBmakeBool(FALSE);
+            new = TBmakeTernop(BO_and, tempL, tempR, otherwise);
+            if (new == NULL)
+                CTInote("help");
+        }
+        else
+        {
+            CTInote("Found OR Binop. ");
+
+            /* Create new node. */
+            node *then = TBmakeBool(TRUE);
+            new = TBmakeTernop(BO_or, tempL, then, tempR);
+            if (new == NULL)
+                CTInote("help");
+        }
+
+        /* Free the original binop node? */
+        BINOP_RIGHT(arg_node) = NULL;
+        BINOP_LEFT(arg_node) = NULL;
+
+        node *next = FREEdoFreeNode(arg_node);
+        if (next != NULL)
+            CTInote("Whoops.");
+
+        DBUG_RETURN(new);
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -51,6 +79,8 @@ node *CBdoCompileBooleans(node *syntaxtree)
     TRAVpush(TR_cb);
     syntaxtree = TRAVdo(syntaxtree, NULL);
     TRAVpop();
+
+    CTInote("Traversing done...");
 
     DBUG_RETURN(syntaxtree);
 }

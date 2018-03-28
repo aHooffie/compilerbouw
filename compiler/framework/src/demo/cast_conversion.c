@@ -20,7 +20,7 @@ node *CCcast(node *arg_node, info *arg_info)
     DBUG_ENTER("CCcast");
 
     CTInote("Found a Cast");
-    CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), NULL);
+    // CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), NULL);
 
     DBUG_RETURN(arg_node);
 }

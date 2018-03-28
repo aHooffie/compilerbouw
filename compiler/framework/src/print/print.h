@@ -47,6 +47,7 @@ extern node *PRTmonop(node *arg_node, info *arg_info);
 extern node *PRTfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *PRTcast(node *arg_node, info *arg_info);
 extern node *PRTarrayexpr(node *arg_node, info *arg_info);
+extern node *PRTternop(node *arg_node, info *arg_info);
 
 /* MISCELLANEOUS !! */
 extern node *PRTsymboltableentry(node *arg_node, info *arg_info);

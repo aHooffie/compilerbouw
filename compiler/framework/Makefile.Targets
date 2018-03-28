@@ -57,7 +57,8 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o make_regularexpr.o
+demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o \
+              make_regularexpr.o compile_booleans.o cast_conversion.o
 
 
 ###############################################################################

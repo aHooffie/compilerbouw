@@ -1,0 +1,18 @@
+extern int a;
+int b = 4 + 3;
+
+export void main (int p) {
+    bool c = true;
+    bool d = false;
+    bool e;
+    
+    if (c && d)
+        c = d;
+    
+    if ((c) || (d))
+        d = c;
+
+    e = c && d;
+    
+    return;
+}

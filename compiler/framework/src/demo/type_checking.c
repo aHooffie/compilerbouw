@@ -12,6 +12,7 @@
 #include "dbug.h"
 #include "memory.h"
 #include "ctinfo.h"
+#include "free.h"
 
 /* INFO structure */
 struct INFO
@@ -337,10 +338,90 @@ node *TCcast(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCcast");
 
+    /* Type check.*/
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
     INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
 
-    DBUG_RETURN(arg_node);
+    node *new, *condition, *then, *otherwise, *temp;
+    type expr = INFO_TYPE(arg_info);
+    type cast = CAST_TYPE(arg_node);
+    temp = CAST_EXPR(arg_node);
+
+    /* Change Cast into Ternary operator. */
+    switch (cast)
+    {
+    case T_bool:
+        if (expr == T_float)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
+        else if (expr == T_int)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
+        else if (expr == T_bool)
+        {
+            CAST_EXPR(arg_node) = NULL;
+            FREEdoFreeNode(arg_node);
+            DBUG_RETURN(temp);
+        }
+        else
+            DBUG_RETURN(arg_node);
+
+        then = TBmakeBool(FALSE);
+        otherwise = TBmakeBool(TRUE);
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    case T_int:
+        if (expr == T_float)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
+        else if (expr == T_bool)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
+        else if (expr == T_int)
+        {
+            CAST_EXPR(arg_node) = NULL;
+            FREEdoFreeNode(arg_node);
+            DBUG_RETURN(temp);
+        }
+        else
+            DBUG_RETURN(arg_node);
+
+        then = TBmakeNum(0);
+        otherwise = TBmakeNum(1);
+
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    case T_float:
+        if (expr == T_int)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
+        else if (expr == T_bool)
+            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
+        else if (expr == T_float)
+        {
+            CAST_EXPR(arg_node) = NULL;
+            FREEdoFreeNode(arg_node);
+            DBUG_RETURN(temp);
+        }
+        else
+            DBUG_RETURN(arg_node);
+
+        then = TBmakeFloat(0.0);
+        otherwise = TBmakeFloat(1.0);
+
+        new = TBmakeTernop(condition, then, otherwise);
+        break;
+    default:
+        new = NULL;
+        CTIabort("Cannot cast to this type, line: %i", NODE_LINE(arg_node));
+        break;
+    }
+
+    if (new != NULL)
+    {
+        CAST_EXPR(arg_node) = NULL;
+        node *n = FREEdoFreeNode(arg_node);
+        if (n != NULL)
+            CTInote("Whoops.");
+        DBUG_RETURN(new);
+    }
+    else
+        DBUG_RETURN(arg_node);
 }
 
 /* Monop. */

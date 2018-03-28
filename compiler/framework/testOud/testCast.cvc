@@ -1,7 +1,7 @@
 export void main (int p) {
-    int a = 2;
-    float b = (float) a;
-    bool c = (bool) a;
-    a = (int) c;
+    float a = 1.0; // True
+    bool b = (bool) a;
+    int c = (int) b; // True
+    a = (float) c; // 1
     return;
 }

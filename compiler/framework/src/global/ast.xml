@@ -102,11 +102,6 @@ traversals to process it.
                     <node name="BinOp" />
                 </travuser>
             </traversal>
-            <traversal id="CC" name="Cast Conversion" default="sons" include="cast_conversion.h">
-                <travuser>
-                    <node name="Cast" />
-                </travuser>
-            </traversal>
         </general>
     </phases>
     <!--

@@ -68,13 +68,7 @@ SUBPHASE( cb,
           "Compile booleans",
           CBdoCompileBooleans, 
           ALWAYS,
-          pet)     
-          
-SUBPHASE( cc, 
-          "Cast conversion",
-          CCdoCastConversion, 
-          ALWAYS,
-          pet)                   
+          pet)               
       
 ENDPHASE( pet) 
 

@@ -25,12 +25,7 @@
 #include "ctinfo.h"
 
 
-
-// een variable declaration with initialisation:
-// int a = a + 1;
-// bedoeling: dit mag in civic als a al eerder declared is; dan neemt ie die waarde over:
-
-// More precisely, the initialisation expression of a variable declaration
+// The initialisation expression of a variable declaration
 // is not in the scope of the declared variable. Technically, a compiler would
 // always first traverse the initialisation expression in the existing scope
 // before creating a new variable a and updating the current scope accordingly.
@@ -135,7 +130,7 @@ node *REglobaldef(node *arg_node, info *arg_info)
         INFO_STMTS(arg_info) = newStmt;
         CTInote("ADDED TO STMTS + UPDATED INFO STMTS");
     }
-    
+
     // Remove' globaldef expression 
     GLOBALDEF_ASSIGN(arg_node) = NULL;
 

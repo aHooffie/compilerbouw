@@ -548,7 +548,7 @@ traversals to process it.
             </flags>
         </node>
         <!-- 
-        VarDeclaration
+        VarDeclaration:
          -->
         <node name="VarDeclaration">
             <sons>

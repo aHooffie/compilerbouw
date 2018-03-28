@@ -13,6 +13,14 @@
  *****************************************************************************/
 
 
+/*
+VRAGEN:
+
+- FREE'EN GAAT NOG NIET GOED
+
+*/
+
+
 #include "make_regularexpr.h"
 #include "types.h"
 #include "tree_basic.h"
@@ -65,6 +73,13 @@ static info *FreeInfo(info *info)
 {
     DBUG_ENTER("FreeInfo");
 
+    while(STMTS_NEXT(INFO_STMTS(info)) != NULL)
+    {
+        node *temp = STMTS_NEXT(INFO_STMTS(info));
+        MEMfree(STMTS_NEXT(INFO_STMTS(info)));
+        STMTS_NEXT(INFO_STMTS(info)) = temp;
+    }
+
     info = MEMfree(info);
 
     DBUG_RETURN(info);
@@ -81,28 +96,27 @@ node *REglobaldec(node *arg_node, info *arg_info)
 
     CTInote("Found globaldecl!");
 
-    // if (INFO_STMTS(arg_info) == NULL)
-    // {
-        // create stmts and add stmt
+    // name
 
-        // node *stmt = arg_node;
-        // INFO_STMTS(arg_info) = TBmakeStmts(stmt, NULL);
-
-    // }
-    // else
-    // {   
-    //     // add stmt to existing stmts (next)
-    //     node *newStmt = arg_node;
-    //     STMTS_NEXT(INFO_STMTS(arg_info)) = TBmakeStmts(newStmt, NULL);
-    //     INFO_STMTS(arg_info) = STMTS_NEXT(INFO_STMTS(arg_info));
-
-    // }
-
-    /* continue traversing child nodes */
-    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+    if (INFO_STMTS(arg_info) == NULL)
     {
-        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+        // INFO_HEAD(arg_info) = newStmt;
+        // INFO_STMTS(arg_info) = newStmt;
+        CTInote("globDEC: MADE NEW ASSIGN");
     }
+    else
+    {
+        // STMTS_NEXT(INFO_STMTS(arg_info)) = newStmt;
+        // INFO_STMTS(arg_info) = newStmt;
+        CTInote("globDEC: ADDED TO STMTS + UPDATED INFO STMTS");
+    }
+
+
+    // /* continue traversing child nodes */
+    // if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+    // {
+    //     GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    // }
 
     DBUG_RETURN(arg_node);
 }
@@ -122,13 +136,13 @@ node *REglobaldef(node *arg_node, info *arg_info)
     {
         INFO_HEAD(arg_info) = newStmt;
         INFO_STMTS(arg_info) = newStmt;
-        CTInote("MADE NEW ASSIGN");
+        CTInote("globDEF: MADE NEW ASSIGN");
     }
     else
     {
         STMTS_NEXT(INFO_STMTS(arg_info)) = newStmt;
         INFO_STMTS(arg_info) = newStmt;
-        CTInote("ADDED TO STMTS + UPDATED INFO STMTS");
+        CTInote("globDEF: ADDED TO STMTS + UPDATED INFO STMTS");
     }
 
     // Remove' globaldef expression 
@@ -153,9 +167,26 @@ node *REvardeclaration(node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("REvardeclaration");
 
+
     CTInote("Found vardecl!");
 
-	// node *entry = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
+    // name attribute
+    // init (eventuele expr)
+
+    if (VARDECLARATION_INIT(arg_node) != NULL)
+    {
+        // has an expression
+
+        // left hand side assign
+        char *name = VARDECLARATION_NAME(arg_node);
+        node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), VARDECLARATION_INIT(arg_node));
+        
+        // prefix the original sequence of statements
+
+
+        //node *newStmt = TBmakeStmts(newAssign, NULL);
+
+    }
 
 	DBUG_RETURN(arg_node);
 }
@@ -191,8 +222,7 @@ node *REdoRegularExpressions(node *syntaxtree)
 
     }
 
-
-    // freed niet alles!
+    // freed niet alles?
     arg_info = FreeInfo(arg_info);
 
     DBUG_RETURN(syntaxtree);

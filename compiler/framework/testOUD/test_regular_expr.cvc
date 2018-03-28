@@ -6,4 +6,5 @@ int c = 5;
 
 export void main (int p) {
 	int d = a + 1;
+	int c = 3 / 5;
 }

@@ -36,15 +36,73 @@
 // before creating a new variable a and updating the current scope accordingly.
 
 
+/*
+ * INFO structure
+ */
+
+struct INFO
+{
+    node *stmts;
+};
+
+/* struct macros */
+#define INFO_STMTS(n) ((n)->stmts)
+
+
+/* INFO functions */
+static info *MakeInfo(void)
+{
+    info *result;
+
+    DBUG_ENTER("MakeInfo");
+
+    result = (info *)MEMmalloc(sizeof(info));
+    INFO_STMTS(result) = NULL;
+
+    DBUG_RETURN(result);
+}
+
+static info *FreeInfo(info *info)
+{
+    DBUG_ENTER("FreeInfo");
+
+    info = MEMfree(info);
+
+    DBUG_RETURN(info);
+}
+
 
 /*
  * Traversal functions
  */
 
-
 node *REglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("REglobaldec");
+
+    CTInote("Found globaldecl!");
+
+    if (INFO_STMTS(arg_info) == NULL)
+    {
+        // create stmts and add stmt
+        node *stmt = arg_node;
+        INFO_STMTS(arg_info) = TBmakeStmts(stmt, NULL);
+
+    }
+    else
+    {   
+        // add stmt to existing stmts (next)
+        node *newStmt = arg_node;
+        STMTS_NEXT(INFO_STMTS(arg_info)) = TBmakeStmts(newStmt, NULL);
+        INFO_STMTS(arg_info) = STMTS_NEXT(INFO_STMTS(arg_info));
+
+    }
+
+    /* continue traversing child nodes */
+    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+    {
+        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -53,6 +111,18 @@ node *REglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("REglobaldef");
 
+    CTInote("Found globaldef!");
+
+    /* continue traversing child nodes */
+    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+    {
+        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    }
+    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    {
+        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+    }
+
     DBUG_RETURN(arg_node);
 }
 
@@ -60,82 +130,11 @@ node *REvardeclaration(node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("REvardeclaration");
 
-	node *entry = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
+    CTInote("Found vardecl!");
 
-    // node *table = SYMBOLTABLE_PREV(arg_node);
-
-	while (entry != NULL)
-    {        
-    	CTInote("in while loop! Name: %s. Scope: %i.", SYMBOLTABLEENTRY_NAME(entry), SYMBOLTABLEENTRY_SCOPE(entry));
-        entry = SYMBOLTABLEENTRY_NEXT(entry);
-    }
-
-
-    // // hoe kom ik bij die symboltable....
-    // while (SYMBOLTABLE_PREV(arg_node) != NULL)
-    // {
-    // 	// move to one scope up
-    // 	CTInote("DONT CRASH");
-
-    	// if (checkPrevDeclaration(SYMBOLTABLEENTRY_NEXT(arg_node), VARDECLARATION_NAME(arg_node)) == TRUE)
-    	// {
-    	// 	CTInote("%s has been declared in higher scope!", VARDECLARATION_NAME(arg_node));
-    	// }
-    // }
-
-	// node *current;
-
-	// while (SYMBOLTABLE_PREV(entry) != NULL)
-	// {
-	// 	// current = SYMBOLTABLE_PREV(arg_node);
-	// 	// check elements in symboltable
-
-	// 	CTInote("In prev ST");
-	// }
-
-
- //    node *last = SYMBOLTABLE_PREV(arg_node);
-
-	// if (last == NULL)
-	// 	return NULL;
-
- //    while (SYMBOLTABLEENTRY_NEXT(trav) != NULL)
- //        trav = SYMBOLTABLEENTRY_NEXT(trav);
-
- //    return trav;
-
-    // if (last != NULL)
-    	// SYMBOLTABLEENTRY_NEXT(last);
-
-	// check if declared before in higher scope
-	// or check if dec name occurs in init name.. if yes; check higher scopes
-	// VARDECLARATION_NAME(arg_node) ....
-		// if yes; store and use this variable if it is used in expression
-
+	// node *entry = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
 
 	DBUG_RETURN(arg_node);
-}
-
-/*
- * Helper functions
- */
-
-
-bool checkPrevDeclaration(node *symboltableentry, char *name)
-{
-    node *trav = symboltableentry;
-
-    while (trav != NULL)
-    {
-        if (STReq(SYMBOLTABLEENTRY_NAME(trav), name) == TRUE)
-        	// found another initialisation
-            return TRUE;
-        else
-            trav = SYMBOLTABLEENTRY_NEXT(trav);
-    }
-
-    // did not find another initialisation
-    return FALSE;
 }
 
 
@@ -147,19 +146,26 @@ node *REdoRegularExpressions(node *syntaxtree)
 {
     DBUG_ENTER("REmakeRegularExpressions");
 
-    // info *arg_info;
-    // arg_info = MakeInfo();
+    info *arg_info;
+    arg_info = MakeInfo();
 
     TRAVpush(TR_re);
-    syntaxtree = TRAVdo(syntaxtree, NULL);
+    syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
 
     CTInote("Traversing done...\n");
 
-    // if (INFO_ERRORS(arg_info) != 0)
-    //     CTIabort("Found %i errors during the context analysis. Aborting the compilation.\n", INFO_ERRORS(arg_info));
+    if (INFO_STMTS(arg_info) != NULL)
+    {
+        // nog aanpassen?
+        node *init_func = TBmakeFunction(T_void, "__init", NULL, NULL);
 
-    // arg_info = FreeInfo(arg_info);
+        CTInote("STMTS NOT NULL! %s function exists.", FUNCTION_NAME(init_func));
+
+        // add to tree?
+    }
+
+    arg_info = FreeInfo(arg_info);
 
     DBUG_RETURN(syntaxtree);
 }

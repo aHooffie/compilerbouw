@@ -42,10 +42,13 @@
 
 struct INFO
 {
+    node *head;
     node *stmts;
 };
 
+
 /* struct macros */
+#define INFO_HEAD(n) ((n)->head)
 #define INFO_STMTS(n) ((n)->stmts)
 
 
@@ -57,6 +60,7 @@ static info *MakeInfo(void)
     DBUG_ENTER("MakeInfo");
 
     result = (info *)MEMmalloc(sizeof(info));
+    INFO_HEAD(result) = NULL;
     INFO_STMTS(result) = NULL;
 
     DBUG_RETURN(result);
@@ -82,21 +86,22 @@ node *REglobaldec(node *arg_node, info *arg_info)
 
     CTInote("Found globaldecl!");
 
-    if (INFO_STMTS(arg_info) == NULL)
-    {
+    // if (INFO_STMTS(arg_info) == NULL)
+    // {
         // create stmts and add stmt
-        node *stmt = arg_node;
-        INFO_STMTS(arg_info) = TBmakeStmts(stmt, NULL);
 
-    }
-    else
-    {   
-        // add stmt to existing stmts (next)
-        node *newStmt = arg_node;
-        STMTS_NEXT(INFO_STMTS(arg_info)) = TBmakeStmts(newStmt, NULL);
-        INFO_STMTS(arg_info) = STMTS_NEXT(INFO_STMTS(arg_info));
+        // node *stmt = arg_node;
+        // INFO_STMTS(arg_info) = TBmakeStmts(stmt, NULL);
 
-    }
+    // }
+    // else
+    // {   
+    //     // add stmt to existing stmts (next)
+    //     node *newStmt = arg_node;
+    //     STMTS_NEXT(INFO_STMTS(arg_info)) = TBmakeStmts(newStmt, NULL);
+    //     INFO_STMTS(arg_info) = STMTS_NEXT(INFO_STMTS(arg_info));
+
+    // }
 
     /* continue traversing child nodes */
     if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
@@ -113,15 +118,38 @@ node *REglobaldef(node *arg_node, info *arg_info)
 
     CTInote("Found globaldef!");
 
-    /* continue traversing child nodes */
-    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+    // left hand side assign
+    char *name = GLOBALDEF_NAME(arg_node);
+    node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), GLOBALDEF_ASSIGN(arg_node));
+    node *newStmt = TBmakeStmts(newAssign, NULL);
+
+    if (INFO_STMTS(arg_info) == NULL)
     {
-        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+        INFO_HEAD(arg_info) = newStmt;
+        INFO_STMTS(arg_info) = newStmt;
+        CTInote("MADE NEW ASSIGN");
     }
-    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    else
     {
-        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+        STMTS_NEXT(INFO_STMTS(arg_info)) = newStmt;
+        INFO_STMTS(arg_info) = newStmt;
+        CTInote("ADDED TO STMTS + UPDATED INFO STMTS");
     }
+    
+    // Remove' globaldef expression 
+    GLOBALDEF_ASSIGN(arg_node) = NULL;
+
+
+
+    // /* continue traversing child nodes */
+    // if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+    // {
+    //     GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    // }
+    // if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    // {
+    //     GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+    // }
 
     DBUG_RETURN(arg_node);
 }
@@ -157,14 +185,19 @@ node *REdoRegularExpressions(node *syntaxtree)
 
     if (INFO_STMTS(arg_info) != NULL)
     {
-        // nog aanpassen?
-        node *init_func = TBmakeFunction(T_void, "__init", NULL, NULL);
+        node *allStmts = TBmakeFunctionbody(NULL, NULL, INFO_HEAD(arg_info));
+
+        node *init_func = TBmakeFunction(T_void, "__init", allStmts, NULL);
+
+        // add to tree
+        PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(init_func, PROGRAM_DECLARATIONS(syntaxtree));
 
         CTInote("STMTS NOT NULL! %s function exists.", FUNCTION_NAME(init_func));
 
-        // add to tree?
     }
 
+
+    // freed niet alles!
     arg_info = FreeInfo(arg_info);
 
     DBUG_RETURN(syntaxtree);

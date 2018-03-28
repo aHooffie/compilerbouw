@@ -2,7 +2,6 @@ Dingen die we niet moeten vergeten:
 
 - Wanneer worden type unknown errors aangeroepen?
 - Scopes van globaldec arrays? mag int [a, b] c; int [b,d] e;??
-- scopes.cvc foutje eruit halen?
 - Code opschonen
 
 

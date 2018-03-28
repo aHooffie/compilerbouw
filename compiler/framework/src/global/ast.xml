@@ -1390,7 +1390,7 @@ traversals to process it.
                 <attribute name="Op">
                     <type name="BinOp">
                         <targets>
-                            <target mandatory="yes">
+                            <target mandatory="no">
                                 <any />
                                 <phases>
                                     <all />

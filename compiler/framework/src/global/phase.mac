@@ -58,9 +58,15 @@ SUBPHASE( tc,
           ALWAYS,
           pet)
 
-SUBPHASE( re, 
-          "Regular expressions",
-          REdoRegularExpressions, 
+SUBPHASE( reg, 
+          "Regular expressions global",
+          REGdoRegularExpr, 
+          ALWAYS,
+          pet) 
+
+SUBPHASE( rel, 
+          "Regular expressions local",
+          RELdoRegularExpr, 
           ALWAYS,
           pet) 
 

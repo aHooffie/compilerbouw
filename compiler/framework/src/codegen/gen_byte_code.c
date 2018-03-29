@@ -138,9 +138,9 @@ node *GBCdoGenByteCode(node *syntaxtree)
     info *arg_info;
     arg_info = MakeInfo();
 
-    TRAVpush(TR_gbc);
-    syntaxtree = TRAVdo(syntaxtree, arg_info);
-    TRAVpop();
+    // TRAVpush(TR_gbc);
+    // syntaxtree = TRAVdo(syntaxtree, arg_info);
+    // TRAVpop();
 
     arg_info = FreeInfo(arg_info);
 

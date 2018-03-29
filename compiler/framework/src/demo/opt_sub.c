@@ -25,18 +25,11 @@
 
 
 
-/*
- * Traversal functions
- */
-
+/* Traversal functions */
 node *OSbinop (node *arg_node, info *arg_info)
 {
   DBUG_ENTER("OSbinop");
 
-  /*
-   * Extremely important:
-   *  we must continue to traverse the abstract syntax tree !!
-   */
   BINOP_LEFT( arg_node) = TRAVdo( BINOP_LEFT( arg_node), arg_info);
   BINOP_RIGHT( arg_node) = TRAVdo( BINOP_RIGHT( arg_node), arg_info);
 
@@ -59,10 +52,7 @@ node *OSbinop (node *arg_node, info *arg_info)
 }
 
 
-/*
- * Traversal start function
- */
-
+/* Traversal start function */
 node *OSdoOptSub( node *syntaxtree)
 {
   DBUG_ENTER("OSdoOptSub");

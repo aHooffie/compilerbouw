@@ -1496,6 +1496,63 @@ traversals to process it.
             </attributes>
         </node>
         <!-- 
+        Node Instructions:
+         -->
+        <node name="Instructions">
+            <description>represents (sequence of) instructions</description>
+            <sons>
+                <son name="Next">
+                    <description>represents remaining instructions in sequence</description>
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Instructions" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+            <attributes>
+                <attribute name="Instruction">
+                    <description>represents instruction in character string representation</description>
+                    <type name="Type">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Offset">
+                    <description>represents the offset in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="no">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Argument">
+                    <description>represents an optional second argument in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="no">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
+        </node>
+        <!-- 
       Node Error: 
     -->
         <node name="Error">

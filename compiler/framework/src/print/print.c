@@ -843,6 +843,12 @@ node *PRTsymboltable(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+node *PRTinstructions(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("PRTinstructions");
+    DBUG_RETURN(arg_node);
+}
+
 /* @fn PRTerror
  * @brief Prints the node and its sons/attributes
  * @param arg_node letrec node to process

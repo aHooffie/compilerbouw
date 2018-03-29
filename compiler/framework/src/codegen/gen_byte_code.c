@@ -4,6 +4,11 @@
 #include "tree_basic.h"
 #include "traverse.h"
 #include "dbug.h"
+#include "str.h"
+#include "globals.h"
+
+#include "memory.h"
+#include "ctinfo.h"
 
 /* 
 
@@ -20,6 +25,7 @@
 /* INFO structure */
 struct INFO
 {
+    node *instructions;
 };
 
 /* INFO structure macros */

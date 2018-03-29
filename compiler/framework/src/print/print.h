@@ -50,6 +50,7 @@ extern node *PRTarrayexpr(node *arg_node, info *arg_info);
 extern node *PRTternop(node *arg_node, info *arg_info);
 
 /* MISCELLANEOUS !! */
+extern node *PRTinstructions(node *arg_node, info *arg_info);
 extern node *PRTsymboltableentry(node *arg_node, info *arg_info);
 extern node *PRTsymboltable(node *arg_node, info *arg_info);
 extern node *PRTerror(node *arg_node, info *arg_info);

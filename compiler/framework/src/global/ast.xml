@@ -5,7 +5,7 @@ traversals to process it.
 -->
 <?xml-stylesheet href="ast.html.xsl" type="text/xsl" name="HTML" media="screen"?>
 <definition version="0.9">
-    <!-- HALLO HALLO =========================================================================
+    <!-- =========================================================================
 -->
     <attributetypes>
         <type name="String" ctype="char*" init="NULL" copy="function" />

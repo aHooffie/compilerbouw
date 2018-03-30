@@ -8,6 +8,43 @@ node *GBCternop(node *arg_node, info *arg_info)
 node *GBCbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCbinop");
+
+    // find out what binop
+    switch(BINOP_OP(arg_node))
+    {
+        case BO_add:
+            // code
+
+        case BO_sub:
+
+        case BO_mul:
+
+        case BO_div:
+
+        case BO_mod:
+
+        case BO_lt:
+
+        case BO_le:
+
+        case BO_gt:
+
+        case BO_ge:
+
+        case BO_eq:
+
+        case BO_ne:
+
+        case BO_and:
+
+        case BO_or:
+
+        case BO_unknown:
+
+        default:
+            // code
+    }
+
     DBUG_RETURN(arg_node);
 }
 

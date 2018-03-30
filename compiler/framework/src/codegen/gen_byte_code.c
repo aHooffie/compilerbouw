@@ -69,18 +69,165 @@ static info *FreeInfo(info *info)
 node *GBCternop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCternop");
+
+    node *n;
+
+    // traverse expression
+    TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
+    TERNOP_THEN(arg_node) = TRAVdo(TERNOP_THEN(arg_node), arg_info);
+    TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);
+
+    switch(TERNOP_OP(arg_node))
+    {
+
+        // !!!!! KLOPT DIT? NALOPEN
+        case BO_add:
+            n = TBmakeInstructions(I_badd, NULL);
+        case BO_mul:
+            n = TBmakeInstructions(I_bmul, NULL);
+    }
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+
     DBUG_RETURN(arg_node);
 }
 
 node *GBCbinop(node *arg_node, info *arg_info)
 {
+
+    // !! TO DO: LAATSTE TWEE CASES
+    
     DBUG_ENTER("GBCbinop");
+
+    node *n;
+
+    // traverse expression
+    BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+    BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+
+    nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
+
+    // find out what binop
+    switch(BINOP_OP(arg_node))
+    {
+        case BO_add:
+            if (left == N_num)
+                n = TBmakeInstructions(I_iadd, NULL);
+            else
+                n = TBmakeInstructions(I_fadd, NULL);
+            break;
+
+        case BO_sub:
+            if (left == N_num)
+                n = TBmakeInstructions(I_isub, NULL);
+            else
+                n = TBmakeInstructions(I_fsub, NULL);
+            break;
+
+        case BO_mul:
+            if (left == N_num)
+                n = TBmakeInstructions(I_imul, NULL);
+            else
+                n = TBmakeInstructions(I_fmul, NULL);
+            break;
+
+        case BO_div:
+            if (left == N_num)
+                n = TBmakeInstructions(I_idiv, NULL);
+            else
+                n = TBmakeInstructions(I_fdiv, NULL);
+            break;
+
+        case BO_mod:
+            n = TBmakeInstructions(I_irem, NULL);
+            break;
+
+        case BO_lt:
+            if (left == N_num)
+                n = TBmakeInstructions(I_ilt, NULL);
+            else
+                n = TBmakeInstructions(I_flt, NULL);
+            break;
+
+        case BO_le:
+            if (left == N_num)
+                n = TBmakeInstructions(I_ile, NULL);
+            else
+                n = TBmakeInstructions(I_fle, NULL);
+            break;
+
+        case BO_gt:
+            if (left == N_num)
+                n = TBmakeInstructions(I_igt, NULL);
+            else
+                n = TBmakeInstructions(I_fgt, NULL);
+            break;
+
+        case BO_ge:
+            if (left == N_num)
+                n = TBmakeInstructions(I_ige, NULL);
+            else
+                n = TBmakeInstructions(I_fge, NULL);
+            break;
+
+        case BO_eq:
+            if (left == N_num)
+                n = TBmakeInstructions(I_ieq, NULL);
+            else if (left == N_FLOAT)
+                n = TBmakeInstructions(I_feq, NULL);
+            else
+                n = TBmakeInstructions(I_beq, NULL);
+            break;
+
+        case BO_ne:
+            if (left == N_num)
+                n = TBmakeInstructions(I_ine, NULL);
+            else if (left == N_FLOAT)
+                n = TBmakeInstructions(I_fne, NULL);
+            else
+                n = TBmakeInstructions(I_bne, NULL);
+            break;
+
+        case BO_and:
+            break;
+
+        case BO_or:
+            break;
+
+    }
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+
     DBUG_RETURN(arg_node);
 }
 
 node *GBCmonop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCmonop");
+
+    node *n;
+
+    // traverse expression
+    MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
+    nodetype type = NODE_TYPE(MONOP_EXPR(arg_node));
+
+    switch (MONOP_OP(arg_node))
+    {
+        case MO_neg:
+            if (type == N_num)
+                n = TBmakeInstructions(I_ineg, NULL);
+            else
+                n = TBmakeInstructions(I_fneg, NULL);
+
+        case MO_not:
+            n = TBmakeInstructions(I_bnot, NULL);
+    }
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+
     DBUG_RETURN(arg_node);
 }
 

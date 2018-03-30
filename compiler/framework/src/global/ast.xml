@@ -1348,6 +1348,9 @@ traversals to process it.
                 </son>
             </sons>
         </node>
+        <!-- 
+        Node TernOp:
+     -->
         <node name="TernOp">
             <description>represents ternary operator</description>
             <sons>

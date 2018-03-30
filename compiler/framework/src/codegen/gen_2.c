@@ -1,14 +1,22 @@
+
 /* Statements */
 node *GBCifelse(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCifelse");
 
-    // FIND OUT WHICH BINOP IS NEEDED
-
     /* Traverse into if condition. */
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
 
     // CREATE BRANCH -- CALCULATE OFFSET
+    // INFO_BC(arg_info) += 1;
+
+
+    /* Create the string for a branch (1_while, 2_end etc. ) */
+    //     char str[12];
+    //     sprintf(str, "%d", branchcount);
+    //     char *s = strcat(branchcount + "_" + )
+    // INSTRUCTION_ARG(n) = s;
+    // }
 
     /* Traverse into block of statements. */
     IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
@@ -25,6 +33,17 @@ node *GBCifelse(node *arg_node, info *arg_info)
 node *GBCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfor");
+
+    // for = rewrite to while loop
+
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+
+    if (FOR_STEP(arg_node) != NULL)
+        FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
+        // use iinc_1 if no step, else load ^ in iinc
+
     // Write as while loop
     DBUG_RETURN(arg_node);
 }
@@ -32,6 +51,17 @@ node *GBCfor(node *arg_node, info *arg_info)
 node *GBCwhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCwhile");
+    // Instruction for while label here! 
+
+    /* Traverse into condition*/
+    WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+
+    // Instruction for branch + next label here!
+
+    /* Traverse into block of statements. */
+    WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+
+    // Instruction for jump to while label here!
 
     DBUG_RETURN(arg_node);
 }
@@ -39,9 +69,18 @@ node *GBCwhile(node *arg_node, info *arg_info)
 node *GBCdowhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCdowhile");
+    
+    /* Traverse into statements. */
+    if (DOWHILE_BLOCK(arg_node) != NULL)
+        DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+
+    /* Traverse into condition. */
+    DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+    
     DBUG_RETURN(arg_node);
 }
 
+/* Return node - done. */
 node *GBCreturn(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCreturn");
@@ -67,6 +106,7 @@ node *GBCreturn(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Assign node - done. */
 node *GBCassign(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCassign");
@@ -80,6 +120,15 @@ node *GBCassign(node *arg_node, info *arg_info)
 
     DBUG_RETURN(arg_node);
 }
+
+
+// add to info struct:
+// int branchcount;
+// #define INFO_BC(n) ((n)->branchcount)
+// INFO_BC(result) = 0;
+
+// in mytypes.h:
+// add type 'I_ownbranch
 
 // in .h file:
 // extern void printInstructions(info *arg_info);
@@ -381,6 +430,8 @@ char *instrToString(instr type)
     case I_bpop:
         s = "bpop";
         break;
+    case I_ownbranch:
+        s = "";
     case I_unknown:
         CTIabort("Unknown instruction type.");
         break;
@@ -398,10 +449,12 @@ void printInstructions(info *arg_info)
 {
     node *n = INFO_FI(arg_info);
 
+    // TO DO: INDENTATIE + LABELS
+
     /* Print all instructions to stdout (?) */
     while (INSTRUCTIONS_NEXT(n) != NULL)
     {
-        sprintf(stdout, "%s", INSTRUCTIONS_INSTR(n));
+        sprintf(stdout, "%s", instrToString(INSTRUCTIONS_INSTR(n)));
 
         if (INSTRUCTIONS_OFFSET(n) != NULL)
             sprintf(stdout, " %i", INSTRUCTIONS_OFFSET(n));

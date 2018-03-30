@@ -25,12 +25,12 @@
 /* INFO structure */
 struct INFO
 {
-    node *firstinstruction;
-    node *lastinstruction;
-    node *constants[256];
-    node *variables[256];
-    int variablecount;
-    int constantcount;
+    node *firstinstruction; // pointer to the first of the list (for the final printing, to be able to traverse)
+    node *lastinstruction; // pointer to the last of the list (to add a new node to (see function AddNode))
+    node *constants[256]; // array of integers and floats (NODES!!! not values!! ) to store / load from
+    node *variables[256]; // array of variables (NODES!!! not strings !! ) to store / load from
+    int constantcount; // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int variablecount; // counter to check what indices are filled in the variable array
 };
 
 /* INFO structure macros */
@@ -63,43 +63,6 @@ static info *FreeInfo(info *info)
     info = MEMfree(info);
 
     DBUG_RETURN(info);
-}
-
-/* Statements */
-node *GBCifelse(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCifelse");
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCfor(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCfor");
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCwhile(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCwhile");
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCdowhile(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCdowhile");
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCreturn(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCreturn");
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCassign(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCassign");
-    DBUG_RETURN(arg_node);
 }
 
 /* Expressions */
@@ -140,6 +103,7 @@ node *GBCnum(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCnum");
     node *n;
 
+    /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (NUM_VALUE(arg_node) == 0)
         n = TBmakeInstructions(I_iloadc_0, NULL);
     else if (NUM_VALUE(arg_node) == 1)
@@ -147,10 +111,13 @@ node *GBCnum(node *arg_node, info *arg_info)
     else {
         INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
         n = TBmakeInstructions(I_iloadc, NULL);
+
+        /* Add the indices to the right place in the array to the instruction. */
         INSTRUCTIONS_INSTR(n) = INFO_CC(arg_info);
         INFO_CC(arg_info) += 1;
     }
 
+    /* Add the node to the list of instructions. */
     addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
@@ -160,6 +127,7 @@ node *GBCfloat(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCfloat");
     node *n;
 
+    /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (FLOAT_VALUE(arg_node) == 0.0)
         n = TBmakeInstructions(I_fload_0, NULL);
     else if (FLOAT_VALUE(arg_node) == 1.0)
@@ -168,10 +136,13 @@ node *GBCfloat(node *arg_node, info *arg_info)
     {
         INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
         n = TBmakeInstructions(I_floadc, NULL);
+
+        /* Add the indices to the right place in the array to the instruction. */
         INSTRUCTIONS_INSTR(n) = INFO_CC(arg_info);
         INFO_CC(arg_info) += 1;
     }
 
+    /* Add the node to the list of instructions. */
     addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
@@ -186,10 +157,12 @@ node *GBCbool(node *arg_node, info *arg_info)
     else
         n = TBmakeInstructions(I_bloadc_f, NULL);
 
+    /* Add the node to the list of instructions. */
     addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 
+/* If the list is empty, add the new node as both head and tail. Otherwise, add it to the end and update the previous last node. */
 void addNode(node *arg_node, info *arg_info)
 {
     if (INFO_LI(arg_info) == NULL)

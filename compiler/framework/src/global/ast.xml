@@ -17,6 +17,7 @@ traversals to process it.
         <type name="Type" ctype="type" init="T_unknown" copy="literal" />
         <type name="Link" ctype="node*" init="NULL" copy="lookup" />
         <type name="CompilerPhase" ctype="compiler_phase_t" init="PH_initial" copy="literal" />
+        <type name="Instr" ctype="instr" init="I_unknown" copy="literal" />
     </attributetypes>
     <!--
 =========================================================================
@@ -1518,9 +1519,9 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-                <attribute name="Instruction">
-                    <description>represents instruction in character string representation</description>
-                    <type name="Type">
+                <attribute name="Instr">
+                    <description>represents instruction in enum representation</description>
+                    <type name="Instr">
                         <targets>
                             <target mandatory="yes">
                                 <phases>
@@ -1531,8 +1532,8 @@ traversals to process it.
                     </type>
                 </attribute>
                 <attribute name="Offset">
-                    <description>represents the offset in character string representation</description>
-                    <type name="String">
+                    <description>represents the offset as a character string representation</description>
+                    <type name="Int">
                         <targets>
                             <target mandatory="no">
                                 <phases>

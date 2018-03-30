@@ -53,32 +53,66 @@ static info *MakeInfo(void)
     DBUG_RETURN(result);
 }
 
+
+/*
+ * Traversal functions
+ */
+
+node *RELfunctionbody(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("RELfunctionbody");
+
+    // traverse through vardecls
+    if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
+        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
+
+    if (INFO_HEAD(arg_info) != NULL)
+    {
+        if (FUNCTIONBODY_STMTS(arg_node) == NULL)
+        {
+            FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
+
+        }
+        else
+        {
+            // add before old stmts
+            STMTS_NEXT(INFO_STMTS(arg_info)) = FUNCTIONBODY_STMTS(arg_node);
+            FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
+        }
+
+        // reset head node
+        INFO_HEAD(arg_info) = NULL;
+    }
+
+    if (FUNCTIONBODY_LOCALFUNCTION(arg_node) != NULL)
+        FUNCTIONBODY_LOCALFUNCTION(arg_node) = TRAVdo(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 node *RELvardeclaration(node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("RELvardeclaration");
 
-    CTInote("Found vardecl!");
+    if (VARDECLARATION_NEXT(arg_node) != NULL)
+        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
 
     if (VARDECLARATION_INIT(arg_node) != NULL)
     {
-        // has an expression!
-
-        // left hand side assign
-        char *name = VARDECLARATION_NAME(arg_node);
+        // make regular expression (stmt)
+        char *name = STRcpy(VARDECLARATION_NAME(arg_node));
         node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), VARDECLARATION_INIT(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
-        if (INFO_STMTS(arg_info) == NULL)
+        if (INFO_HEAD(arg_info) == NULL)
         {
             INFO_HEAD(arg_info) = newStmt;
             INFO_STMTS(arg_info) = newStmt;
-            CTInote("vardec: MADE NEW ASSIGN");
         }
         else
         {
             STMTS_NEXT(INFO_STMTS(arg_info)) = newStmt;
             INFO_STMTS(arg_info) = newStmt;
-            CTInote("vardec: ADDED TO STMTS + UPDATED INFO STMTS");
         }
 
         // 'Remove' vardeclaration expression
@@ -104,18 +138,6 @@ node *RELdoRegularExpr(node *syntaxtree)
     TRAVpop();
 
     CTInote("Traversing done...\n");
-
-    if (INFO_STMTS(arg_info) != NULL)
-    {
-
-        // prefix the original sequence of statements??
-
-        // node *allStmts = TBmakeFunctionbody(NULL, NULL, INFO_HEAD(arg_info));
-    //     node *init_func = TBmakeFunction(T_void, STRcpy("__init"), allStmts, NULL);
-
-    //     // add to syntaxtree
-    //     PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(init_func, PROGRAM_DECLARATIONS(syntaxtree));
-    }
 
     DBUG_RETURN(syntaxtree);
 }

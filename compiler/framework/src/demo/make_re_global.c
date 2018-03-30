@@ -13,14 +13,6 @@
  *****************************************************************************/
 
 
-/*
-VRAGEN:
-
-- FREE'EN GAAT NOG NIET GOED
-
-*/
-
-
 #include "make_re_global.h"
 #include "types.h"
 #include "tree_basic.h"
@@ -83,28 +75,16 @@ node *REGglobaldef(node *arg_node, info *arg_info)
         {
             INFO_HEAD(arg_info) = newStmt;
             INFO_STMTS(arg_info) = newStmt;
-            CTInote("globDEF: MADE NEW ASSIGN");
         }
         else
         {
             STMTS_NEXT(INFO_STMTS(arg_info)) = newStmt;
             INFO_STMTS(arg_info) = newStmt;
-            CTInote("globDEF: ADDED TO STMTS + UPDATED INFO STMTS");
         }
 
         // 'Remove' globaldef expression
         GLOBALDEF_ASSIGN(arg_node) = NULL;
     }
-
-    // /* continue traversing child nodes */
-    // if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
-    // {
-    //     GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
-    // }
-    // if (GLOBALDEF_ASSIGN(arg_node) != NULL)
-    // {
-    //     GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
-    // }
 
     DBUG_RETURN(arg_node);
 }
@@ -133,7 +113,7 @@ node *REGdoRegularExpr(node *syntaxtree)
         node *init_func = TBmakeFunction(T_void, STRcpy("__init"), allStmts, NULL);
 
         // add to syntaxtree
-        PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(PROGRAM_DECLARATIONS(syntaxtree), init_func);
+        PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(init_func, PROGRAM_DECLARATIONS(syntaxtree));
     }
 
     DBUG_RETURN(syntaxtree);

@@ -97,6 +97,7 @@ traversals to process it.
             </traversal>
             <traversal id="REL" name="Make local regular expressions" default="sons" include="make_re_local.h">
                 <travuser>
+                    <node name="FunctionBody" />
                     <node name="VarDeclaration" />
                 </travuser>
             </traversal>

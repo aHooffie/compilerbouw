@@ -107,6 +107,17 @@ traversals to process it.
                     <node name="BinOp" />
                 </travuser>
             </traversal>
+            <traversal id="GBC" name="Generate byte code" default="sons" include="gen_byte_code.h">
+                <travuser>
+                    <node name="BinOp" />
+                    <node name="MonOp" />
+                    <node name="Cast" />
+                    <node name="Var" />
+                    <node name="Bool" />
+                    <node name="Float" />
+                    <node name="Num" />
+                </travuser>
+            </traversal>
         </general>
     </phases>
     <!--

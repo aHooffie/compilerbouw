@@ -1,7 +1,7 @@
-extern int a;
-int b = 4 + 3;
+//extern int a;
+//int b = 4 + 3;
 
-export void main (int p) {
-    int q = 4 + b;
-    return q;
+export int main (int p) {
+	int a = 4 + 4;
+    // return q;
 }

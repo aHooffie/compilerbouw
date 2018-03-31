@@ -267,7 +267,7 @@ node *GBCvar(node *arg_node, info *arg_info)
     // search for index
     for(int i = 0; i < 256; i++)
     {
-        if (INFO_VARIABLES(arg_info)[i] == name)
+        if (VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]) == name)
         {
             // store index
             index = i;
@@ -277,12 +277,14 @@ node *GBCvar(node *arg_node, info *arg_info)
 
     // what if someting went wrong and index was never found?
 
+    // klopt het wel om INFO_VARIABLES(arg_info)[index] te gebruiken????
+
     if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_int)
-        n = TBmakeInstructions(iloadc, index);
+        n = TBmakeInstructions(I_iloadc, INFO_VARIABLES(arg_info)[index]);
     else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_float)
-        n = TBmakeInstructions(floadc, index);
+        n = TBmakeInstructions(I_floadc, INFO_VARIABLES(arg_info)[index]);
     else
-        n = TBmakeInstructions(bloadc, index);
+        n = TBmakeInstructions(I_bloadc, INFO_VARIABLES(arg_info)[index]);
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);

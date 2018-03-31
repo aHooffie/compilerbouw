@@ -1,7 +1,7 @@
 //extern int a;
 //int b = 4 + 3;
 
-export int main (int p) {
+export int main (int abcde) {
     // Testing ALL EXPRESSIONS:
 	int a = 4 + 4;
     int b = 2 - 3;
@@ -16,9 +16,6 @@ export int main (int p) {
     int k = (int)4.0;
     float l = false;
     float m = true;
-    int n = 1 * 4;
-    int o = 1 * 4;
-    int q = 1 * 4;
 
     // return q;
 

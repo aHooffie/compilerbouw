@@ -71,6 +71,297 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
+/* Statements */
+/* Ifelse - not sure if done */
+node *GBCifelse(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCifelse");
+    node *n;
+    char *otherwise;
+    char *end;
+    char str[12];
+
+    /* Traverse into if condition. */
+    IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
+    INFO_BC(arg_info) += 1;
+
+    /* Check if there is an else block of statements. */
+    if (IFELSE_ELSE(arg_node) != NULL)
+    {
+        sprintf(str, "%d", INFO_BC(arg_info));
+        otherwise = STRcat(str, "_else");
+
+        /* Add the branch_f labelname to the linked list.*/
+        n = TBmakeInstructions(I_branch_f, NULL);
+        INSTRUCTIONS_ARG(n) = otherwise;
+        addNode(n, arg_info);
+
+        /* Traverse into if block. */
+        IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+
+        /* Create jump instruction. */
+        INFO_BC(arg_info) += 1;
+        sprintf(str, "%d", INFO_BC(arg_info));
+        end = STRcat(str, "_end");
+
+        /* Add the branch_f labelname to the linked list.*/
+        n = TBmakeInstructions(I_jump, NULL);
+        INSTRUCTIONS_ARG(n) = end;
+        addNode(n, arg_info);
+
+        /* Create the else label as instruction. */
+        n = TBmakeInstructions(I_ownbranch, NULL);
+        INSTRUCTIONS_ARG(n) = otherwise;
+        addNode(n, arg_info);
+
+        /* Traverse into else statements. */
+        IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
+    }
+    else
+    {
+        sprintf(str, "%d", INFO_BC(arg_info));
+        end = STRcat(str, "_end");
+
+        /* Add the branch_f labelname to the linked list.*/
+        n = TBmakeInstructions(I_branch_f, NULL);
+        INSTRUCTIONS_ARG(n) = end;
+        addNode(n, arg_info);
+
+        /* Traverse into block of statements. */
+        IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+    }
+
+    /* Create the end label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+node *GBCfor(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCfor");
+    int step = 1;
+    node *n;
+
+    /* Check if the step size is custom. */
+    if (FOR_STEP(arg_node) != NULL)
+    {
+        FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
+
+        if (NODE_TYPE(FOR_STEP(arg_node)) == N_num)
+        {
+            step = NUM_VALUE(FOR_STEP(arg_node));
+            if (step == 0)
+                CTIabort("Step size of a for loop cannot be 0.");
+        }
+
+        /* For-loop can be a negative integer. */
+        else if (NODE_TYPE(FOR_STEP(arg_node)) == N_monop)
+        {
+            if (MONOP_OP(FOR_STEP(arg_node)) == MO_neg && NODE_TYPE(MONOP_EXPR(FOR_STEP(arg_node))) == N_num)
+            {
+                step = NUM_VALUE(MONOP_EXPR(FOR_STEP(arg_node))) * -1;
+                if (step == 0.0)
+                    CTIabort("Step size of a for loop cannot be 0.");
+            }
+        }
+    }
+
+    /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    INFO_BC(arg_info) += 1;
+    char str[12];
+    char *start;
+
+    sprintf(str, "%d", INFO_BC(arg_info));
+    start = STRcat(str, "_while(FOR)");
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = start;
+    addNode(n, arg_info);
+
+    // SOMEHOW create while condition with
+    // TODO
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+
+    /* Create comparison instruction. */
+    if (step < 0)
+    {
+        n = TBmakeInstructions(I_igt, NULL);
+        addNode(n, arg_info);
+    }
+    else
+    {
+        n = TBmakeInstructions(I_ilt, NULL);
+        addNode(n, arg_info);
+    }
+
+    // instruction to branch_f endlabel here
+    // isrg
+
+    /* Traverse through block. */
+    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+
+    /* Choose right increment instruction */
+    if (step == 1)
+    {
+        n = TBmakeInstructions(I_iinc_1, NULL);
+        // ADD OFFSET OF VAR TO INCREASE WITH 1
+        addNode(n, arg_info);
+    }
+    else if (step == -1)
+    {
+        n = TBmakeInstructions(I_idec_1, NULL);
+        // ADD OFFSET OF VAR TO INCREASE WITH 1
+        addNode(n, arg_info);
+    }
+    else
+    {
+        // TO DO
+    }
+
+    /* Create the jump label. */
+    n = TBmakeInstructions(I_jump, NULL);
+    INSTRUCTIONS_ARG(n) = start;
+    addNode(n, arg_info);
+
+    char *end = "TODO";
+    /* Add the ending label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* While - done? */
+node *GBCwhile(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCwhile");
+    node *n;
+    char *start;
+    char *end;
+    char str[12];
+
+    /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    INFO_BC(arg_info) += 1;
+    sprintf(str, "%d", INFO_BC(arg_info));
+    start = STRcat(str, "_while");
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = start;
+    addNode(n, arg_info);
+
+    /* Traverse into condition. */
+    WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+
+    /* Create the ending label for the branch. */
+    INFO_BC(arg_info) += 1;
+    sprintf(str, "%d", INFO_BC(arg_info));
+    end = STRcat(str, "_end");
+
+    /* Add the branch_f labelname to the linked list.*/
+    n = TBmakeInstructions(I_branch_f, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
+
+    // Instruction for isrg here?
+    n = TBmakeInstructions(I_isrg, NULL);
+    addNode(n, arg_info);
+
+    /* Traverse into block of statements. */
+    WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+
+    /* Create the jump label. */
+    n = TBmakeInstructions(I_jump, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
+
+    /* Add the ending label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Dowhile - done? */
+node *GBCdowhile(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCdowhile");
+    char *label;
+    node *n;
+
+    /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    INFO_BC(arg_info) += 1;
+    sprintf(str, "%d", INFO_BC(arg_info));
+    label = STRcat(str, "_dowhile");
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = label;
+    addNode(n, arg_info);
+
+    /* Traverse into statements. */
+    if (DOWHILE_BLOCK(arg_node) != NULL)
+        DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+
+    /* Traverse into condition. */
+    DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_branch_t, NULL);
+    INSTRUCTIONS_ARG(n) = label;
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Return node - done. */
+node *GBCreturn(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCreturn");
+    node *n;
+
+    /* Traverse into optional expression to return. */
+    if (RETURN_EXPRESSION(arg_node) != NULL)
+        RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+
+    /* Create return instruction, according to expression type. */
+    if (RETURN_TYPE(arg_node) == T_int)
+        n = TBmakeInstructions(I_ireturn, NULL);
+    else if (RETURN_TYPE(arg_node) == T_float)
+        n = TBmakeInstructions(I_freturn, NULL);
+    else if (RETURN_TYPE(arg_node) == T_bool)
+        n = TBmakeInstructions(I_breturn, NULL);
+    else
+        n = TBmakeInstructions(I_return, NULL);
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Assign node - done. */
+node *GBCassign(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCassign");
+
+    /* Load the right side. */
+    ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
+
+    /* Store result into left side. */
+    if (ASSIGN_LET(arg_node) != NULL)
+        ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 /* Expressions */
 node *GBCternop(node *arg_node, info *arg_info)
 {

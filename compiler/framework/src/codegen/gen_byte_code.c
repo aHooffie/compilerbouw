@@ -83,8 +83,10 @@ node *GBCternop(node *arg_node, info *arg_info)
         // !!!!! KLOPT DIT? NALOPEN
         case BO_add:
             n = TBmakeInstructions(I_badd, NULL);
+            break;
         case BO_mul:
             n = TBmakeInstructions(I_bmul, NULL);
+            break;
     }
 
     /* Add the node to the list of instructions. */
@@ -97,10 +99,11 @@ node *GBCbinop(node *arg_node, info *arg_info)
 {
 
     // !! TO DO: LAATSTE TWEE CASES
-    
+
     DBUG_ENTER("GBCbinop");
 
-    node *n;
+    // NULL to silence warning..
+    node *n = NULL;
 
     // traverse expression
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
@@ -174,7 +177,7 @@ node *GBCbinop(node *arg_node, info *arg_info)
         case BO_eq:
             if (left == N_num)
                 n = TBmakeInstructions(I_ieq, NULL);
-            else if (left == N_FLOAT)
+            else if (left == N_float)
                 n = TBmakeInstructions(I_feq, NULL);
             else
                 n = TBmakeInstructions(I_beq, NULL);
@@ -183,7 +186,7 @@ node *GBCbinop(node *arg_node, info *arg_info)
         case BO_ne:
             if (left == N_num)
                 n = TBmakeInstructions(I_ine, NULL);
-            else if (left == N_FLOAT)
+            else if (left == N_float)
                 n = TBmakeInstructions(I_fne, NULL);
             else
                 n = TBmakeInstructions(I_bne, NULL);
@@ -233,12 +236,26 @@ node *GBCmonop(node *arg_node, info *arg_info)
 
 node *GBCcast(node *arg_node, info *arg_info)
 {
+
+    // TO DO !!
+
+
     DBUG_ENTER("GBCcast");
+    node *n;
+
+    // traverse expression
+    CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
+
+    // CAST_TYPE(arg_node);
+
     DBUG_RETURN(arg_node);
 }
 
 node *GBCvar(node *arg_node, info *arg_info)
 {
+
+    // TO DO !!
+
     DBUG_ENTER("GBCvar");
     // find var in table
     // makeinstruction (iloadc, index)

@@ -94,7 +94,6 @@ node *GBCternop(node *arg_node, info *arg_info)
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
-
     DBUG_RETURN(arg_node);
 }
 
@@ -119,6 +118,7 @@ node *GBCbinop(node *arg_node, info *arg_info)
     {
         case BO_add:
             if (left == N_num)
+                // optimize : met iinc
                 n = TBmakeInstructions(I_iadd, NULL);
             else
                 n = TBmakeInstructions(I_fadd, NULL);
@@ -205,7 +205,6 @@ node *GBCbinop(node *arg_node, info *arg_info)
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
-
     DBUG_RETURN(arg_node);
 }
 
@@ -233,35 +232,60 @@ node *GBCmonop(node *arg_node, info *arg_info)
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
-
     DBUG_RETURN(arg_node);
 }
 
 node *GBCcast(node *arg_node, info *arg_info)
 {
-
-    // TO DO !!
-
-
     DBUG_ENTER("GBCcast");
     node *n;
 
     // traverse expression
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
 
-    // CAST_TYPE(arg_node);
-
+    if (CAST_TYPE(arg_node) == T_int)
+        n = TBmakeInstructions(I_f2i, NULL);
+    else
+        n = TBmakeInstructions(I_i2f, NULL);
+    
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info); 
     DBUG_RETURN(arg_node);
 }
 
 node *GBCvar(node *arg_node, info *arg_info)
 {
 
-    // TO DO !!
-
     DBUG_ENTER("GBCvar");
-    // find var in table
-    // makeinstruction (iloadc, index)
+
+    node *n;
+    int index;
+
+    // store var name
+    char *name = STRcpy(VAR_NAME(arg_node));
+
+    // search for index
+    for(int i = 0; i < 256; i++)
+    {
+        if (INFO_VARIABLES(arg_info)[i] == name)
+        {
+            // store index
+            index = i;
+            break;
+        }
+    }
+
+    // what if someting went wrong and index was never found?
+
+    if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_int)
+        n = TBmakeInstructions(iloadc, index);
+    else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_float)
+        n = TBmakeInstructions(floadc, index);
+    else
+        n = TBmakeInstructions(bloadc, index);
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 

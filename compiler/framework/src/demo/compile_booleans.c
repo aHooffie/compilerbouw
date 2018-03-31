@@ -22,6 +22,7 @@
 #include "ctinfo.h"
 
 /* Traversal functions */
+// ADD AND MUL IPV AND AND OR!
 node *CBbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("CBbinop");

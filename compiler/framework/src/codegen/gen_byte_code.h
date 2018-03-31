@@ -20,6 +20,9 @@ extern node *GBCfloat(node *arg_node, info *arg_info);
 extern node *GBCcast(node *arg_node, info *arg_info);
 extern node *GBCbool(node *arg_node, info *arg_info);
 
+
+extern void printInstructions(info *arg_info);
+extern char *instrToString(instr i);
 extern void addNode(node *arg_node, info *arg_info);
 extern node *GBCdoGenByteCode(node *syntaxtree);
 

@@ -31,6 +31,7 @@ struct INFO
     node *variables[256]; // array of variables (NODES!!! not strings !! ) to store / load from
     int constantcount; // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int variablecount; // counter to check what indices are filled in the variable array
+    int branchcount; // counter to check what branch voorstuk should be used in labels
 };
 
 /* INFO structure macros */
@@ -40,6 +41,7 @@ struct INFO
 #define INFO_VARIABLES(n) ((n)->constants)
 #define INFO_VC(n) ((n)->variablecount)
 #define INFO_CC(n) ((n)->constantcount)
+#define INFO_BC(n) ((n)->branchcount)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -52,6 +54,7 @@ static info *MakeInfo(void)
     INFO_LI(result) = NULL;
     INFO_VC(result) = 0;
     INFO_CC(result) = 0;
+    INFO_BC(result) = 0;
 
     DBUG_RETURN(result);
 }

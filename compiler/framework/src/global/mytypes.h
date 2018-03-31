@@ -49,7 +49,7 @@ typedef enum {
                 /* Store variables and constants */ 
                 I_istore, I_fstore, I_bstore, I_istoren, I_fstoren, I_bstoren, I_istoreg, I_fstoreg, I_bstoreg, I_istoree, I_fstoree, I_bstoree,
                 /* Type conversion */
-                I_i2f, I_f2i, I_ipop, I_fpop, I_bpop, I_unknown
+                I_i2f, I_f2i, I_ipop, I_fpop, I_bpop, I_unknown, I_ownbranch
             } instr;
 
 #endif /* _CIVCC_MYTYPES_H_ */

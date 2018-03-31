@@ -700,9 +700,10 @@ node *TCbinop(node *arg_node, info *arg_info)
         }
         break;
 
+    // ALSO ADD TERNOP
     case BO_and:
     case BO_or:
-        /* && and || can only be done with bools. */
+
         switch (left)
         {
 
@@ -820,8 +821,6 @@ node *TCdoTypeChecking(node *syntaxtree)
     TRAVpush(TR_tc);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
-
-    CTInote("Traversing for TC done...");
 
     if (INFO_ERRORS(arg_info) != 0)
         CTIabort("Found %i error(s) during type checking. Aborting the compilation.", INFO_ERRORS(arg_info));

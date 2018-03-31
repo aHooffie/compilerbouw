@@ -2,6 +2,25 @@
 //int b = 4 + 3;
 
 export int main (int p) {
+    // Testing ALL EXPRESSIONS:
 	int a = 4 + 4;
+    int b = 2 - 3;
+    int c = 1 * 4;
+    int d = 1 / 4;
+    bool e = 1 <= 4;
+    bool f = 1 > 4;
+    int g = -4;
+    bool h = 1 != 4;
+    bool i = 1 == 4;
+    float j = 1.0 * 4.0;
+    int k = (int)4.0;
+    float l = false;
+    float m = true;
+    int n = 1 * 4;
+    int o = 1 * 4;
+    int q = 1 * 4;
+
     // return q;
+
+    // Not tested: TERNOP, VAR
 }

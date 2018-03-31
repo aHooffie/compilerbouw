@@ -26,12 +26,13 @@
 struct INFO
 {
     node *firstinstruction; // pointer to the first of the list (for the final printing, to be able to traverse)
-    node *lastinstruction; // pointer to the last of the list (to add a new node to (see function AddNode))
-    node *constants[256]; // array of integers and floats (NODES!!! not values!! ) to store / load from
-    node *variables[256]; // array of variables (NODES!!! not strings !! ) to store / load from
-    int constantcount; // counter to check what indices are filled in the constant array (if you add one, up this with 1)
-    int variablecount; // counter to check what indices are filled in the variable array
-    int branchcount; // counter to check what branch voorstuk should be used in labels
+    node *lastinstruction;  // pointer to the last of the list (to add a new node to (see function AddNode))
+    node *constants[256];   // array of integers and floats (NODES!!! not values!! ) to store / load from
+    node *variables[256];   // array of variables (NODES!!! not strings !! ) to store / load from
+    int constantcount;      // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int variablecount;      // counter to check what indices are filled in the variable array
+    int branchcount;        // counter to check what branch voorstuk should be used in labels
+    int size;               // FOR TESTING!
 };
 
 /* INFO structure macros */
@@ -42,6 +43,7 @@ struct INFO
 #define INFO_VC(n) ((n)->variablecount)
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_BC(n) ((n)->branchcount)
+#define INFO_SIZE(n) ((n)->size)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -55,6 +57,7 @@ static info *MakeInfo(void)
     INFO_VC(result) = 0;
     INFO_CC(result) = 0;
     INFO_BC(result) = 0;
+    INFO_SIZE(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -75,22 +78,25 @@ node *GBCternop(node *arg_node, info *arg_info)
 
     node *n;
 
-    // traverse expression
+    /* Traverse expression */
     TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
     TERNOP_THEN(arg_node) = TRAVdo(TERNOP_THEN(arg_node), arg_info);
     TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);
 
-    switch(TERNOP_OP(arg_node))
+    switch (TERNOP_OP(arg_node))
     {
-
-        // !!!!! KLOPT DIT? NALOPEN
-        // ADD AND/OR
-        case BO_add:
-            n = TBmakeInstructions(I_badd, NULL);
-            break;
-        case BO_mul:
-            n = TBmakeInstructions(I_bmul, NULL);
-            break;
+    // !!!!! KLOPT DIT? NALOPEN
+    // ADD AND/OR
+    case BO_add:
+        n = TBmakeInstructions(I_badd, NULL);
+        break;
+    case BO_mul:
+        n = TBmakeInstructions(I_bmul, NULL);
+        break;
+    default:
+        n = NULL;
+        CTInote("TO DO TERNOP");
+        break;
     }
 
     /* Add the node to the list of instructions. */
@@ -104,9 +110,7 @@ node *GBCbinop(node *arg_node, info *arg_info)
     // !! TO DO: LAATSTE TWEE CASES
 
     DBUG_ENTER("GBCbinop");
-
-    // NULL to silence warning..
-    node *n = NULL;
+    node *n;
 
     // traverse expression
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
@@ -114,96 +118,91 @@ node *GBCbinop(node *arg_node, info *arg_info)
 
     nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
 
-    printf("node line: %i\n", NODE_LINE(arg_node));
-
     // find out binop type
-    switch(BINOP_OP(arg_node))
+    switch (BINOP_OP(arg_node))
     {
-        case BO_add:
-            if (left == N_num)
-                // >>> optimize : met iinc??
-                n = TBmakeInstructions(I_iadd, NULL);
-            else
-                n = TBmakeInstructions(I_fadd, NULL);
-            break;
+    case BO_add:
+        if (left == N_num)
+            // >>> optimize : met iinc??
+            n = TBmakeInstructions(I_iadd, NULL);
+        else
+            n = TBmakeInstructions(I_fadd, NULL);
+        break;
 
-        case BO_sub:
-            if (left == N_num)
-                n = TBmakeInstructions(I_isub, NULL);
-            else
-                n = TBmakeInstructions(I_fsub, NULL);
-            break;
+    case BO_sub:
+        if (left == N_num)
+            n = TBmakeInstructions(I_isub, NULL);
+        else
+            n = TBmakeInstructions(I_fsub, NULL);
+        break;
 
-        case BO_mul:
-            if (left == N_num)
-                n = TBmakeInstructions(I_imul, NULL);
-            else
-                n = TBmakeInstructions(I_fmul, NULL);
-            break;
+    case BO_mul:
+        if (left == N_num)
+            n = TBmakeInstructions(I_imul, NULL);
+        else
+            n = TBmakeInstructions(I_fmul, NULL);
+        break;
 
-        case BO_div:
-            if (left == N_num)
-                n = TBmakeInstructions(I_idiv, NULL);
-            else
-                n = TBmakeInstructions(I_fdiv, NULL);
-            break;
+    case BO_div:
+        if (left == N_num)
+            n = TBmakeInstructions(I_idiv, NULL);
+        else
+            n = TBmakeInstructions(I_fdiv, NULL);
+        break;
 
-        case BO_mod:
-            n = TBmakeInstructions(I_irem, NULL);
-            break;
+    case BO_mod:
+        n = TBmakeInstructions(I_irem, NULL);
+        break;
 
-        case BO_lt:
-            if (left == N_num)
-                n = TBmakeInstructions(I_ilt, NULL);
-            else
-                n = TBmakeInstructions(I_flt, NULL);
-            break;
+    case BO_lt:
+        if (left == N_num)
+            n = TBmakeInstructions(I_ilt, NULL);
+        else
+            n = TBmakeInstructions(I_flt, NULL);
+        break;
 
-        case BO_le:
-            if (left == N_num)
-                n = TBmakeInstructions(I_ile, NULL);
-            else
-                n = TBmakeInstructions(I_fle, NULL);
-            break;
+    case BO_le:
+        if (left == N_num)
+            n = TBmakeInstructions(I_ile, NULL);
+        else
+            n = TBmakeInstructions(I_fle, NULL);
+        break;
 
-        case BO_gt:
-            if (left == N_num)
-                n = TBmakeInstructions(I_igt, NULL);
-            else
-                n = TBmakeInstructions(I_fgt, NULL);
-            break;
+    case BO_gt:
+        if (left == N_num)
+            n = TBmakeInstructions(I_igt, NULL);
+        else
+            n = TBmakeInstructions(I_fgt, NULL);
+        break;
 
-        case BO_ge:
-            if (left == N_num)
-                n = TBmakeInstructions(I_ige, NULL);
-            else
-                n = TBmakeInstructions(I_fge, NULL);
-            break;
+    case BO_ge:
+        if (left == N_num)
+            n = TBmakeInstructions(I_ige, NULL);
+        else
+            n = TBmakeInstructions(I_fge, NULL);
+        break;
 
-        case BO_eq:
-            if (left == N_num)
-                n = TBmakeInstructions(I_ieq, NULL);
-            else if (left == N_float)
-                n = TBmakeInstructions(I_feq, NULL);
-            else
-                n = TBmakeInstructions(I_beq, NULL);
-            break;
+    case BO_eq:
+        if (left == N_num)
+            n = TBmakeInstructions(I_ieq, NULL);
+        else if (left == N_float)
+            n = TBmakeInstructions(I_feq, NULL);
+        else
+            n = TBmakeInstructions(I_beq, NULL);
+        break;
 
-        case BO_ne:
-            if (left == N_num)
-                n = TBmakeInstructions(I_ine, NULL);
-            else if (left == N_float)
-                n = TBmakeInstructions(I_fne, NULL);
-            else
-                n = TBmakeInstructions(I_bne, NULL);
-            break;
+    case BO_ne:
+        if (left == N_num)
+            n = TBmakeInstructions(I_ine, NULL);
+        else if (left == N_float)
+            n = TBmakeInstructions(I_fne, NULL);
+        else
+            n = TBmakeInstructions(I_bne, NULL);
+        break;
 
-        case BO_and:
-            break;
-
-        case BO_or:
-            break;
-
+    default:
+        n = NULL;
+        CTIabort("Unknown binop type.");
     }
 
     /* Add the node to the list of instructions. */
@@ -214,23 +213,26 @@ node *GBCbinop(node *arg_node, info *arg_info)
 node *GBCmonop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCmonop");
-
     node *n;
 
-    // traverse expression
+    /* Traverse expression. */
     MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
     nodetype type = NODE_TYPE(MONOP_EXPR(arg_node));
 
     switch (MONOP_OP(arg_node))
     {
-        case MO_neg:
-            if (type == N_num)
-                n = TBmakeInstructions(I_ineg, NULL);
-            else
-                n = TBmakeInstructions(I_fneg, NULL);
-
-        case MO_not:
-            n = TBmakeInstructions(I_bnot, NULL);
+    case MO_neg:
+        if (type == N_num)
+            n = TBmakeInstructions(I_ineg, NULL);
+        else
+            n = TBmakeInstructions(I_fneg, NULL);
+        break;
+    case MO_not:
+        n = TBmakeInstructions(I_bnot, NULL);
+        break;
+    default:
+        n = NULL;
+        CTIabort("Unknown monop type");
     }
 
     /* Add the node to the list of instructions. */
@@ -243,16 +245,16 @@ node *GBCcast(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCcast");
     node *n;
 
-    // traverse expression
+    /* Traverse expression */
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
 
     if (CAST_TYPE(arg_node) == T_int)
         n = TBmakeInstructions(I_f2i, NULL);
     else
         n = TBmakeInstructions(I_i2f, NULL);
-    
+
     /* Add the node to the list of instructions. */
-    addNode(n, arg_info); 
+    addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 
@@ -260,34 +262,27 @@ node *GBCvar(node *arg_node, info *arg_info)
 {
 
     DBUG_ENTER("GBCvar");
-
     node *n;
-    int index;
 
-    // store var name
-    char *name = STRcpy(VAR_NAME(arg_node));
-
-    // search for index
-    for(int i = 0; i < 256; i++)
+    /* Find the var index in the array. */
+    int i;
+    for (i = 0; i < 256; i++)
     {
-        if (VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]) == name)
-        {
-            // store index
-            index = i;
+        if (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == TRUE)
             break;
-        }
     }
 
-    // what if someting went wrong and index was never found?
+    /* If var wasn't found. */
+    if (i == 256 && (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == FALSE))
+        CTIabort("Var wasnt found.");
 
-    // klopt het wel om INFO_VARIABLES(arg_info)[index] te gebruiken????
-
+    /* Load var from array. */
     if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_int)
-        n = TBmakeInstructions(I_iloadc, INFO_VARIABLES(arg_info)[index]);
+        n = TBmakeInstructions(I_iloadc, INFO_VARIABLES(arg_info)[i]);
     else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_float)
-        n = TBmakeInstructions(I_floadc, INFO_VARIABLES(arg_info)[index]);
+        n = TBmakeInstructions(I_floadc, INFO_VARIABLES(arg_info)[i]);
     else
-        n = TBmakeInstructions(I_bloadc, INFO_VARIABLES(arg_info)[index]);
+        n = TBmakeInstructions(I_bloadc, INFO_VARIABLES(arg_info)[i]);
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
@@ -299,24 +294,23 @@ node *GBCnum(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCnum");
     node *n;
 
-    CTInote("in num!\n");
-
     /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (NUM_VALUE(arg_node) == 0)
         n = TBmakeInstructions(I_iloadc_0, NULL);
     else if (NUM_VALUE(arg_node) == 1)
         n = TBmakeInstructions(I_iloadc_1, NULL);
-    else {
-        INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+    else
+    {
+        INFO_CONSTANTS(arg_info)
+        [INFO_CC(arg_info)] = arg_node;
         n = TBmakeInstructions(I_iloadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
-        INSTRUCTIONS_INSTR(n) = INFO_CC(arg_info);
+        INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
         INFO_CC(arg_info) += 1;
     }
 
     /* Add the node to the list of instructions. */
-    CTInote("adding node\n");
     addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
@@ -333,11 +327,12 @@ node *GBCfloat(node *arg_node, info *arg_info)
         n = TBmakeInstructions(I_fload_1, NULL);
     else
     {
-        INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+        INFO_CONSTANTS(arg_info)
+        [INFO_CC(arg_info)] = arg_node;
         n = TBmakeInstructions(I_floadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
-        INSTRUCTIONS_INSTR(n) = INFO_CC(arg_info);
+        INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
         INFO_CC(arg_info) += 1;
     }
 
@@ -364,6 +359,9 @@ node *GBCbool(node *arg_node, info *arg_info)
 /* If the list is empty, add the new node as both head and tail. Otherwise, add it to the end and update the previous last node. */
 void addNode(node *arg_node, info *arg_info)
 {
+    INFO_SIZE(arg_info) += 1;
+    CTInote("adding a node! list length: %i ", INFO_SIZE(arg_info));
+
     if (INFO_LI(arg_info) == NULL)
     {
         INFO_FI(arg_info) = arg_node;
@@ -395,7 +393,6 @@ node *GBCdoGenByteCode(node *syntaxtree)
     DBUG_RETURN(syntaxtree);
 }
 
-
 /* Helper functions */
 char *instrToString(instr type)
 {
@@ -405,7 +402,9 @@ char *instrToString(instr type)
     case I_iadd:
         s = "iadd";
         break;
-    case I_fadd: { s = "fadd"; break; }
+    case I_fadd:
+        s = "fadd";
+        break;
     case I_isub:
         s = "isub";
         break;
@@ -700,9 +699,9 @@ char *instrToString(instr type)
         CTIabort("Unknown instruction type.");
         break;
     }
+
     return s;
 }
-
 
 void printInstructions(info *arg_info)
 {
@@ -711,14 +710,15 @@ void printInstructions(info *arg_info)
     // TO DO: INDENTATIE + LABELS WITH :
 
     /* Print all instructions */
-    while (n != NULL)
+    while (INSTRUCTIONS_NEXT(n) != NULL)
     {
         printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
 
-        // if (INSTRUCTIONS_OFFSET(n) != NULL)
+        if (INSTRUCTIONS_OFFSET(n) != NULL)
             printf(" %i", INSTRUCTIONS_OFFSET(n));
+        // WHAT IF OFFSET = 0? WARNING!
 
-        // if (INSTRUCTIONS_ARG(n) != NULL)
+        if (INSTRUCTIONS_ARG(n) != NULL)
             printf(" %s", INSTRUCTIONS_ARG(n));
 
         printf("\n");
@@ -728,10 +728,10 @@ void printInstructions(info *arg_info)
 
     /* Print the last instruction. */
     printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
-    // if (INSTRUCTIONS_OFFSET(n) != NULL)
+    if (INSTRUCTIONS_OFFSET(n) != 0)
         printf(" %i", INSTRUCTIONS_OFFSET(n));
 
-    // if (INSTRUCTIONS_ARG(n) != NULL)
+    if (INSTRUCTIONS_ARG(n) != NULL)
         printf(" %s", INSTRUCTIONS_ARG(n));
 
     printf("\n");

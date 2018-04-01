@@ -109,6 +109,11 @@ traversals to process it.
             </traversal>
             <traversal id="GBC" name="Generate byte code" default="sons" include="gen_byte_code.h">
                 <travuser>
+                    <node name="IfElse" />
+                    <node name="While" />
+                    <node name="DoWhile" />
+                    <node name="Return" />
+                    <node name="TernOp" />
                     <node name="BinOp" />
                     <node name="MonOp" />
                     <node name="Cast" />

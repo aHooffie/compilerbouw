@@ -11,36 +11,54 @@
 #include "ctinfo.h"
 
 /* 
+    Milestone 15:
+    To do: that it takes advantage of specialised instructions to reduce the
+size of the corresponding byte code (OPTIM)
 
-    Milestone 12: Assembly Code Generation for Expressions and Statements
-    Implement a code generator that transforms your internal representation into a 
-    at sequence of CiviC-VM assembly instructions, pseudo instructions and labels. For this milestone leave out the
-    function call interface and restrict yourself to the body of the main function.
 
-    Statements: ifelse for while dowhile return assign (functioncallstmt)
-    Expressions: ternop binop monop var num float cast bool (functioncallexpr arrayexpr)
+    Milestone 14:
+    To do: separate compilation of CiviC modules.
+
+
+    Milestone 13:
+    To do: the full function call protocol of the CiviC-VM, but leave
+out support for multiple modules.
+
+
+    Milestone 12: 
+    To do standard: vardeclarations, for loop, ternop
+    To check: isrg/branch in alle loops goed. 
+    To edit: vars, nums, floats in arrays niet dubbel
+    To do extensions: functioncallstmt, functioncallexpr
+    Done: ifelse while dowhile return assign binop monop var num float cast bool
+    
+// NB: How many different arrays do we need? export / extern / global etc?
 
 */
 
 /* INFO structure */
 struct INFO
 {
-    node *firstinstruction; // pointer to the first of the list (for the final printing, to be able to traverse)
-    node *lastinstruction;  // pointer to the last of the list (to add a new node to (see function AddNode))
-    node *constants[256];   // array of integers and floats (NODES!!! not values!! ) to store / load from
-    node *variables[256];   // array of variables (NODES!!! not strings !! ) to store / load from
-    int constantcount;      // counter to check what indices are filled in the constant array (if you add one, up this with 1)
-    int variablecount;      // counter to check what indices are filled in the variable array
-    int branchcount;        // counter to check what branch voorstuk should be used in labels
-    int size;               // FOR TESTING!
+    node *firstinstruction;  // pointer to the first of the list (for the final printing, to be able to traverse)
+    node *lastinstruction;   // pointer to the last of the list (to add a new node to (see function AddNode))
+    node *constants[256];    // array of integers and floats (NODES!!! not values!! ) to store / load from
+    node *variables[256];    // array of variables (NODES!!! not strings !! ) to store / load from
+    node *variablesexp[256]; // array of variables (NODES!!! not strings !! ) to store / load from
+    int constantcount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int varcount;            // counter to check what indices are filled in the variable array
+    int varexpcount;         // counter to check what indices are filled in the variable array
+    int branchcount;         // counter to check what branch voorstuk should be used in labels
+    int size;                // FOR TESTING!
 };
 
 /* INFO structure macros */
 #define INFO_FI(n) ((n)->firstinstruction)
 #define INFO_LI(n) ((n)->lastinstruction)
 #define INFO_CONSTANTS(n) ((n)->constants)
-#define INFO_VARIABLES(n) ((n)->constants)
-#define INFO_VC(n) ((n)->variablecount)
+#define INFO_VARIABLES(n) ((n)->variables)
+#define INFO_VARIABLESEXP(n) ((n)->variablesexp)
+#define INFO_VC(n) ((n)->varcount)
+#define INFO_VEC(n) ((n)->varexpcount)
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_BC(n) ((n)->branchcount)
 #define INFO_SIZE(n) ((n)->size)
@@ -55,6 +73,7 @@ static info *MakeInfo(void)
     INFO_FI(result) = NULL;
     INFO_LI(result) = NULL;
     INFO_VC(result) = 0;
+    INFO_VEC(result) = 0;
     INFO_CC(result) = 0;
     INFO_BC(result) = 0;
     INFO_SIZE(result) = 0;
@@ -71,8 +90,82 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
+/* Globaldef: also exported! */
+// Does this require a different array?
+node *GBCglobaldef(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCglobaldef");
+
+    /* Traverse into array subtree - not implemented. */
+    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+
+    /* Add variable to variable array -- possible new global array ? */
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
+    INFO_VC(arg_info) += 1;
+
+    /* Check if variable should be exported, add it to that array too. */
+    if (GLOBALDEF_EXPORT(arg_node) == TRUE)
+    {
+        INFO_VARIABLESEXP(arg_info)
+        [INFO_VEC(arg_info)] = arg_node;
+        INFO_VEC(arg_info) += 1;
+    }
+
+    /* Traverse into assigning subtree. */
+    if (GLOBALDEF_INIT(arg_node) != NULL)
+        GLOBALDEF_INIT(arg_node) = TRAVdo(GLOBALDEF_INIT(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+// NB: EXTERN!!!!!!!! HIER MOET IETS MEE?
+node *GBCglobaldec(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCglobaldec");
+    node *n;
+
+    /* Traverse into array subtree - not implemented. */
+    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+
+    /* Add variable to variable array. */
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_OFFET(n) = INFO_VC(arg_node);
+    INFO_VC(arg_info) += 1;
+    addNode(n, arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+node *GBCvardeclaration(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCvardeclaration");
+    node *n;
+
+    /* Traverse into assigning subtree. */
+    if (VARDECLARATION_INIT(arg_node) != NULL)
+        VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
+
+    /* Add variable to variable array. */
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_node);
+    INFO_VC(arg_info) += 1;
+    addNode(n, arg_info);
+
+    if (VARDECLARATION_NEXT(arg_node) != NULL)
+        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 /* Statements */
-/* Ifelse - not sure if done */
+/* Ifelse */
 node *GBCifelse(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCifelse");
@@ -139,105 +232,107 @@ node *GBCifelse(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* For - werkt als enige nog niet - uitgecomment! */
 node *GBCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfor");
-    int step = 1;
-    node *n;
+    // int step = 1;
+    // node *n;
 
-    /* Check if the step size is custom. */
-    if (FOR_STEP(arg_node) != NULL)
-    {
-        FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
+    // /* Check if the step size is custom. */
+    // if (FOR_STEP(arg_node) != NULL)
+    // {
+    //     FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
 
-        if (NODE_TYPE(FOR_STEP(arg_node)) == N_num)
-        {
-            step = NUM_VALUE(FOR_STEP(arg_node));
-            if (step == 0)
-                CTIabort("Step size of a for loop cannot be 0.");
-        }
+    //     if (NODE_TYPE(FOR_STEP(arg_node)) == N_num)
+    //     {
+    //         step = NUM_VALUE(FOR_STEP(arg_node));
+    //         if (step == 0)
+    //             CTIabort("Step size of a for loop cannot be 0.");
+    //     }
 
-        /* For-loop can be a negative integer. */
-        else if (NODE_TYPE(FOR_STEP(arg_node)) == N_monop)
-        {
-            if (MONOP_OP(FOR_STEP(arg_node)) == MO_neg && NODE_TYPE(MONOP_EXPR(FOR_STEP(arg_node))) == N_num)
-            {
-                step = NUM_VALUE(MONOP_EXPR(FOR_STEP(arg_node))) * -1;
-                if (step == 0.0)
-                    CTIabort("Step size of a for loop cannot be 0.");
-            }
-        }
-    }
+    //     /* For-loop can be a negative integer. */
+    //     else if (NODE_TYPE(FOR_STEP(arg_node)) == N_monop)
+    //     {
+    //         if (MONOP_OP(FOR_STEP(arg_node)) == MO_neg && NODE_TYPE(MONOP_EXPR(FOR_STEP(arg_node))) == N_num)
+    //         {
+    //             step = NUM_VALUE(MONOP_EXPR(FOR_STEP(arg_node))) * -1;
+    //             if (step == 0.0)
+    //                 CTIabort("Step size of a for loop cannot be 0.");
+    //         }
+    //     }
+    // }
 
-    /* Create the starting label for a branch (1_while, 2_end etc. ) */
-    INFO_BC(arg_info) += 1;
-    char str[12];
-    char *start;
+    // /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    // INFO_BC(arg_info) += 1;
+    // char str[12];
+    // char *start;
 
-    sprintf(str, "%d", INFO_BC(arg_info));
-    start = STRcat(str, "_while(FOR)");
+    // sprintf(str, "%d", INFO_BC(arg_info));
+    // start = STRcat(str, "_while(FOR)");
 
-    /* Add the label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = start;
-    addNode(n, arg_info);
+    // /* Add the label as instruction. */
+    // n = TBmakeInstructions(I_ownbranch, NULL);
+    // INSTRUCTIONS_ARG(n) = start;
+    // addNode(n, arg_info);
 
-    // SOMEHOW create while condition with
-    // TODO
-    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
-    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+    // // SOMEHOW create while condition with
+    // // TODO
+    // FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    // FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
 
-    /* Create comparison instruction. */
-    if (step < 0)
-    {
-        n = TBmakeInstructions(I_igt, NULL);
-        addNode(n, arg_info);
-    }
-    else
-    {
-        n = TBmakeInstructions(I_ilt, NULL);
-        addNode(n, arg_info);
-    }
+    // /* Create comparison instruction. */
+    // if (step < 0)
+    // {
+    //     n = TBmakeInstructions(I_igt, NULL);
+    //     addNode(n, arg_info);
+    // }
+    // else
+    // {
+    //     n = TBmakeInstructions(I_ilt, NULL);
+    //     addNode(n, arg_info);
+    // }
 
-    // instruction to branch_f endlabel here
-    // isrg
+    // // instruction to branch_f endlabel here
+    // // isrg
 
-    /* Traverse through block. */
-    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+    // /* Traverse through block. */
+    // FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
 
-    /* Choose right increment instruction */
-    if (step == 1)
-    {
-        n = TBmakeInstructions(I_iinc_1, NULL);
-        // ADD OFFSET OF VAR TO INCREASE WITH 1
-        addNode(n, arg_info);
-    }
-    else if (step == -1)
-    {
-        n = TBmakeInstructions(I_idec_1, NULL);
-        // ADD OFFSET OF VAR TO INCREASE WITH 1
-        addNode(n, arg_info);
-    }
-    else
-    {
-        // TO DO
-    }
+    // /* Choose right increment instruction */
+    // if (step == 1)
+    // {
+    //     n = TBmakeInstructions(I_iinc_1, NULL);
+    //     // ADD OFFSET OF VAR TO INCREASE WITH 1
+    //     addNode(n, arg_info);
+    // }
+    // else if (step == -1)
+    // {
+    //     n = TBmakeInstructions(I_idec_1, NULL);
+    //     // ADD OFFSET OF VAR TO INCREASE WITH 1
+    //     addNode(n, arg_info);
+    // }
+    // else
+    // {
+    //     // TO DO
+    // }
 
-    /* Create the jump label. */
-    n = TBmakeInstructions(I_jump, NULL);
-    INSTRUCTIONS_ARG(n) = start;
-    addNode(n, arg_info);
+    // /* Create the jump label. */
+    // n = TBmakeInstructions(I_jump, NULL);
+    // INSTRUCTIONS_ARG(n) = start;
+    // addNode(n, arg_info);
 
-    char *end = "TODO";
-    /* Add the ending label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = end;
-    addNode(n, arg_info);
+    // char *end = "TODO";
+    // /* Add the ending label as instruction. */
+    // n = TBmakeInstructions(I_ownbranch, NULL);
+    // INSTRUCTIONS_ARG(n) = end;
+    // addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
-/* While - done? */
+/* While */
+// Check isrg / branching
 node *GBCwhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCwhile");
@@ -289,11 +384,13 @@ node *GBCwhile(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Dowhile - done? */
+/* Dowhile node. */
+// Check isrg / branching
 node *GBCdowhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCdowhile");
     char *label;
+    char str[12];
     node *n;
 
     /* Create the starting label for a branch (1_while, 2_end etc. ) */
@@ -321,22 +418,24 @@ node *GBCdowhile(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Return node - done. */
+/* Return node. */
 node *GBCreturn(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCreturn");
     node *n;
 
+    type t = SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node));
+
     /* Traverse into optional expression to return. */
-    if (RETURN_EXPRESSION(arg_node) != NULL)
-        RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+    if (RETURN_EXPR(arg_node) != NULL)
+        RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
 
     /* Create return instruction, according to expression type. */
-    if (RETURN_TYPE(arg_node) == T_int)
+    if (t == T_int)
         n = TBmakeInstructions(I_ireturn, NULL);
-    else if (RETURN_TYPE(arg_node) == T_float)
+    else if (t == T_float)
         n = TBmakeInstructions(I_freturn, NULL);
-    else if (RETURN_TYPE(arg_node) == T_bool)
+    else if (t == T_bool)
         n = TBmakeInstructions(I_breturn, NULL);
     else
         n = TBmakeInstructions(I_return, NULL);
@@ -359,6 +458,8 @@ node *GBCassign(node *arg_node, info *arg_info)
     if (ASSIGN_LET(arg_node) != NULL)
         ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
 
+    // istore?
+
     DBUG_RETURN(arg_node);
 }
 
@@ -368,6 +469,7 @@ node *GBCternop(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCternop");
 
     node *n;
+    CTInote("TERNOP");
 
     /* Traverse expression */
     TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
@@ -651,7 +753,6 @@ node *GBCbool(node *arg_node, info *arg_info)
 void addNode(node *arg_node, info *arg_info)
 {
     INFO_SIZE(arg_info) += 1;
-    CTInote("adding a node! list length: %i ", INFO_SIZE(arg_info));
 
     if (INFO_LI(arg_info) == NULL)
     {
@@ -983,8 +1084,9 @@ char *instrToString(instr type)
         break;
     case I_ownbranch:
         s = "";
+        break;
     case I_unknown:
-        CTIabort("Unknown instruction type.");
+        CTInote("Unknown instruction type.");
         break;
     default:
         CTIabort("Unknown instruction type.");
@@ -1003,6 +1105,9 @@ void printInstructions(info *arg_info)
     /* Print all instructions */
     while (INSTRUCTIONS_NEXT(n) != NULL)
     {
+        if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
+            printf("    ");
+
         printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
 
         if (INSTRUCTIONS_OFFSET(n) != NULL)
@@ -1010,7 +1115,10 @@ void printInstructions(info *arg_info)
         // WHAT IF OFFSET = 0? WARNING!
 
         if (INSTRUCTIONS_ARG(n) != NULL)
-            printf(" %s", INSTRUCTIONS_ARG(n));
+            printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
+
+        if (INSTRUCTIONS_INSTR(n) == I_ownbranch)
+            printf(":");
 
         printf("\n");
 
@@ -1018,6 +1126,9 @@ void printInstructions(info *arg_info)
     }
 
     /* Print the last instruction. */
+    if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
+        printf("    ");
+
     printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
     if (INSTRUCTIONS_OFFSET(n) != 0)
         printf(" %i", INSTRUCTIONS_OFFSET(n));

@@ -17,7 +17,7 @@ size of the corresponding byte code (OPTIM)
 
 
     Milestone 14:
-    To do: separate compilation of CiviC modules.
+    To do: separate compilation of CiviC modules = extern functions!
 
 
     Milestone 13:
@@ -106,7 +106,7 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     INFO_VC(arg_info) += 1;
 
     /* Check if variable should be exported, add it to that array too. */
-    if (GLOBALDEF_EXPORT(arg_node) == TRUE)
+    if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
     {
         INFO_VARIABLESEXP(arg_info)
         [INFO_VEC(arg_info)] = arg_node;
@@ -114,8 +114,8 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     }
 
     /* Traverse into assigning subtree. */
-    if (GLOBALDEF_INIT(arg_node) != NULL)
-        GLOBALDEF_INIT(arg_node) = TRAVdo(GLOBALDEF_INIT(arg_node), arg_info);
+    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -134,13 +134,14 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     INFO_VARIABLES(arg_info)
     [INFO_VC(arg_info)] = arg_node;
     n = TBmakeInstructions(I_iload, NULL);
-    INSTRUCTIONS_OFFET(n) = INFO_VC(arg_node);
+    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
     INFO_VC(arg_info) += 1;
     addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
+// Hierover morgen maar overleggen?
 node *GBCvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCvardeclaration");
@@ -154,7 +155,7 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     INFO_VARIABLES(arg_info)
     [INFO_VC(arg_info)] = arg_node;
     n = TBmakeInstructions(I_iload, NULL);
-    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_node);
+    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
     INFO_VC(arg_info) += 1;
     addNode(n, arg_info);
 

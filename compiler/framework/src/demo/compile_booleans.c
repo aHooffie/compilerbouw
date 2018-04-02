@@ -84,7 +84,5 @@ node *CBdoCompileBooleans(node *syntaxtree)
     syntaxtree = TRAVdo(syntaxtree, NULL);
     TRAVpop();
 
-    CTInote("Traversing done...");
-
     DBUG_RETURN(syntaxtree);
 }

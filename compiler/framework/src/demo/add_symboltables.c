@@ -1,25 +1,12 @@
 /*
- * Module: Traversing and looking for symbol table links
+ * Module: Traverse and create / look for declarations in a symbol table.
  * Prefix: AS
  */
 
 /* 
 
-TO DO (ctrl v van milestone 5)
-
-!! Context analysis disambiguates equally named symbols according to the scoping rules of the
-language, both variables and functions. For documentation as well as debugging purposes this
-disambiguation should also be visualised when displaying the abstract syntax tree after context
-analysis. This could, for example, be achieved by consistent renaming of identiers incorporating
-a suitable representation of the scope level into the variable name. Alternatively, you could also
-simply print the scope information together with the variable name when visualising the abstract
-syntax tree.
-
-!! Remove the declaration part from for-loop induction variables.
-create corresponding local variable declarations on the level of the (innermost) function definition.
-Beware of nested for-loops using the same induction variable and occurrences of identically named variables
-outside the scope of the corresponding for-loop. Like explained above, context disambiguation
-and possibly a systematic renaming of for-loop induction variables is needed.
+TO DO: Make sure that your compiler appropriately prints the symbol table, for instance as a structured
+comment in the beginning of the function body or preceding the entire function denition.
 
 */
 
@@ -141,9 +128,8 @@ node *ASglobaldec(node *arg_node, info *arg_info)
 
         GLOBALDEC_SYMBOLTABLEENTRY(arg_node) = newEntry;
     }
-    /* Continue with traversing in child nodes. */
-    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -174,11 +160,9 @@ node *ASglobaldef(node *arg_node, info *arg_info)
         GLOBALDEF_SYMBOLTABLEENTRY(arg_node) = newEntry;
     }
 
-    /* Continue with traversing in child nodes. */
-    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
-    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
-        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    GLOBALDEF_ASSIGN(arg_node) = TRAVopt(GLOBALDEF_ASSIGN(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -197,9 +181,8 @@ node *ASreturn(node *arg_node, info *arg_info)
     if (RETURN_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "Return type is not declared", NULL);
 
-    /* Continue with traversing in child nodes. */
-    if (RETURN_EXPR(arg_node) != NULL)
-        RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    RETURN_EXPR(arg_node) = TRAVopt(RETURN_EXPR(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -242,13 +225,11 @@ node *ASfunction(node *arg_node, info *arg_info)
     FUNCTION_SYMBOLTABLE(arg_node) = functionSymboltable;
 
     /* Continue with traversing in child nodes. */
-    if (FUNCTION_PARAMETERS(arg_node) != NULL)
-        FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
-    if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
-        FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     /* Print symboltable of current function. */
-    CTInote("************************************ \n Function %s symboltable. Scope level: %i. \n************************************", name, INFO_SIZE(arg_info) - 1);
+    CTInote("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, INFO_SIZE(arg_info) - 1);
     node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
     while (entry != NULL)
     {
@@ -294,11 +275,8 @@ node *ASparameters(node *arg_node, info *arg_info)
     }
 
     /* Continue with traversing in child nodes. */
-    if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
-        PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
-
-    if (PARAMETERS_NEXT(arg_node) != NULL)
-        PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+    PARAMETERS_DIMENSIONS(arg_node) = TRAVopt(PARAMETERS_DIMENSIONS(arg_node), arg_info);
+    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -326,8 +304,8 @@ node *ASexpressions(node *arg_node, info *arg_info)
         EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
     }
 
-    if (EXPRESSIONS_NEXT(arg_node) != NULL)
-        EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
 
     if (EXPRESSIONS_NEXT(arg_node) == NULL)
     {
@@ -370,13 +348,10 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
         VARDECLARATION_SYMBOLTABLEENTRY(arg_node) = newEntry;
     }
 
-    /* Continue with traversing in child nodes. */
-    if (VARDECLARATION_DIMENSIONS(arg_node) != NULL)
-        VARDECLARATION_DIMENSIONS(arg_node) = TRAVdo(VARDECLARATION_DIMENSIONS(arg_node), NULL);
-    if (VARDECLARATION_INIT(arg_node) != NULL)
-        VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
-    if (VARDECLARATION_NEXT(arg_node) != NULL)
-        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    VARDECLARATION_DIMENSIONS(arg_node) = TRAVopt(VARDECLARATION_DIMENSIONS(arg_node), NULL);
+    VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
+    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -455,6 +430,23 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* 
+
+TO DO (ctrl v van milestone 5)
+
+!! Remove the declaration part from for-loop induction variables.
+create corresponding local variable declarations on the level of the (innermost) function definition.
+Beware of nested for-loops using the same induction variable and occurrences of identically named variables
+outside the scope of the corresponding for-loop. Like explained above, context disambiguation
+and possibly a systematic renaming of for-loop induction variables is needed.
+
+*/
+node *ASfor(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("ASfor");
+    DBUG_RETURN(arg_node);
+}
+
 /* Found nodes that should read from a symbol table entry  */
 node *ASvar(node *arg_node, info *arg_info)
 {
@@ -480,9 +472,8 @@ node *ASvar(node *arg_node, info *arg_info)
     if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", VAR_NAME(arg_node));
 
-    /* Continue with traversing in child nodes. */
-    if (VAR_INDICES(arg_node) != NULL)
-        VAR_INDICES(arg_node) = TRAVdo(VAR_INDICES(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    VAR_INDICES(arg_node) = TRAVopt(VAR_INDICES(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -511,11 +502,9 @@ node *ASvarlet(node *arg_node, info *arg_info)
     if (VARLET_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", VARLET_NAME(arg_node));
 
-    /* Continue with traversing in child nodes. */
-    if (VARLET_INDICES(arg_node) != NULL)
-        VARLET_INDICES(arg_node) = TRAVdo(VARLET_INDICES(arg_node), arg_info);
-    if (VARLET_NEXT(arg_node) != NULL)
-        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+    /* Continue with traversing in optional child nodes. */
+    VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
+    VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -545,8 +534,7 @@ node *ASids(node *arg_node, info *arg_info)
         IDS_SYMBOLTABLEENTRY(arg_node) = newEntry;
     }
 
-    if (IDS_NEXT(arg_node) != NULL)
-        IDS_NEXT(arg_node) = TRAVdo(IDS_NEXT(arg_node), arg_info);
+    IDS_NEXT(arg_node) = TRAVopt(IDS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -665,8 +653,6 @@ node *ASdoAddSymbolTables(node *syntaxtree)
     TRAVpush(TR_as);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
-
-    CTInote("Traversing done...");
 
     if (INFO_ERRORS(arg_info) != 0)
         CTIabort("Found %i errors during the context analysis. Aborting the compilation.", INFO_ERRORS(arg_info));

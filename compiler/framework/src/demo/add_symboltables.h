@@ -23,8 +23,8 @@ extern node *ASfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *ASparameters(node *arg_node, info *arg_info);
 extern node *ASexpressions(node *arg_node, info *arg_info);
 
+extern node *ASfor(node *arg_node, info *arg_info);
 extern node *ASreturn(node *arg_node, info *arg_info);
-
 extern node *ASvar(node *arg_node, info *arg_info);
 extern node *ASvarlet(node *arg_node, info *arg_info);
 extern node *ASvardeclaration(node *arg_node, info *arg_info);

@@ -42,7 +42,12 @@ src = global scanparse print codegen demo framework
 #  Note that the variable names must coincide with the directory names above.
 
 
-framework   = memory.o str.o ctinfo.o main_args.o dbug.o globals.o \              free_attribs.o free.o copy.o traverse.o scanparse.o main.o \              phase.o phase_drivers.o phase_info.o phase_options.o \              check_lib.o node_basic.o free_node.o copy_node.o \              traverse_tables.o traverse_helper.o check.o \              check_node.o check_attribs.o lookup_table.o map.o
+framework   = memory.o str.o ctinfo.o main_args.o dbug.o globals.o \
+              free_attribs.o free.o copy.o traverse.o scanparse.o main.o \
+              phase.o phase_drivers.o phase_info.o phase_options.o \
+              check_lib.o node_basic.o free_node.o copy_node.o \
+              traverse_tables.o traverse_helper.o check.o \
+              check_node.o check_attribs.o lookup_table.o map.o
 
 global      = options.o usage.o myglobals.o
 
@@ -52,7 +57,8 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o \              make_re_global.o make_re_local.o
+demo        = rename_identifiers.o opt_sub.o add_symboltables.o type_checking.o \
+              make_re_global.o make_re_local.o
 
 
 ###############################################################################

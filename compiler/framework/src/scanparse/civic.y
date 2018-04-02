@@ -14,13 +14,12 @@
 #include "free.h"
 #include "globals.h"
 
-/* MULTIDIMENSIONALE ARRAYS TO DO:
-  - ArrExpr
-  - GlobalDef met ArrExpr
-  - VarDec met ArrExpr
-  - Statement (welke functiecall?)
-  - Nog even kijken naar varlet & var?
-*/
+/*
+ * Module: Scanning & Parsing of the input code. 
+ * Author: Aynel Gul & Andrea van den Hooff
+ * Arrays not implemented.
+ */
+
 
 static node *parseresult = NULL;
 extern int yylex();

@@ -515,7 +515,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvarlet");
 
-    /* Find the original function declaration in the scope above. */
+    /* Find the original vardeclaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
     node *original;
 

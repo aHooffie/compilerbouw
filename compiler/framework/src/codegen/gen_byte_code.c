@@ -96,26 +96,26 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCglobaldef");
 
-    /* Traverse into array subtree - not implemented. */
-    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    // /* Traverse into array subtree - not implemented. */
+    // if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+    //     GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
-    /* Add variable to variable array 
+    // /* Add variable to variable array 
 
-    -- possible new global array ? */
-    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
-    INFO_VC(arg_info) += 1;
+    // -- possible new global array ? */
+    // INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    // INFO_VC(arg_info) += 1;
 
-    /* Check if variable should be exported, add it to that array too. */
-    if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
-    {
-        INFO_VARIABLESEXP(arg_info)[INFO_VEC(arg_info)] = arg_node;
-        INFO_VEC(arg_info) += 1;
-    }
+    //  Check if variable should be exported, add it to that array too. 
+    // if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
+    // {
+    //     INFO_VARIABLESEXP(arg_info)[INFO_VEC(arg_info)] = arg_node;
+    //     INFO_VEC(arg_info) += 1;
+    // }
 
-    /* Traverse into assigning subtree. */
-    if (GLOBALDEF_ASSIGN(arg_node) != NULL)
-        GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
+    // /* Traverse into assigning subtree. */
+    // if (GLOBALDEF_ASSIGN(arg_node) != NULL)
+    //     GLOBALDEF_ASSIGN(arg_node) = TRAVdo(GLOBALDEF_ASSIGN(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -125,27 +125,27 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCglobaldec");
-    node *n;
+    // node *n;
 
-    /* Traverse into array subtree - not implemented. */
-    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    // /* Traverse into array subtree - not implemented. */
+    // if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+    //     GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
-    /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)
-    [INFO_VC(arg_info)] = arg_node;
+    // /* Add variable to variable array. */
+    // INFO_VARIABLES(arg_info)
+    // [INFO_VC(arg_info)] = arg_node;
 
-    if (GLOBALDEC_TYPE(arg_node) == T_int)
-        n = TBmakeInstructions(I_iloadg, NULL);
-    else if (GLOBALDEC_TYPE(arg_node) == T_float)
-        n = TBmakeInstructions(I_floadg, NULL);
-    else
-        n = TBmakeInstructions(I_bloadg, NULL);
+    // if (GLOBALDEC_TYPE(arg_node) == T_int)
+    //     n = TBmakeInstructions(I_iloadg, NULL);
+    // else if (GLOBALDEC_TYPE(arg_node) == T_float)
+    //     n = TBmakeInstructions(I_floadg, NULL);
+    // else
+    //     n = TBmakeInstructions(I_bloadg, NULL);
 
 
-    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
-    INFO_VC(arg_info) += 1;
-    addNode(n, arg_info);
+    // INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
+    // INFO_VC(arg_info) += 1;
+    // addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -169,10 +169,12 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
         n = TBmakeInstructions(I_iload, NULL);
     else if (VARDECLARATION_TYPE(arg_node) == T_float)
         n = TBmakeInstructions(I_fload, NULL);
-    else
+    else {
         n = TBmakeInstructions(I_bload, NULL);
+    }
 
     INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
+
     INFO_VC(arg_info) += 1;
     addNode(n, arg_info);
 
@@ -184,39 +186,42 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
 
 node *GBCvarlet(node *arg_node, info *arg_info)
 {
-
-    // NOG NIET GECONTROLEERD ..
-
-
     DBUG_ENTER("GBCvarlet");
     node *n;
 
-    // traverse through varlets (BOVENAAN OF ONDERAAAN??????!!)
-    if (VARLET_NEXT(arg_node) != NULL)
-        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+    // BOOL GEBRUIKEN!!!??
 
     /* Find the varlet index in the array. */
     int i;
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < INFO_VC(arg_info); i++)
     {
-        if (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == TRUE)
+
+        if (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == TRUE)
             break;
     }
 
-    /* If var wasn't found. */
-    if (i == 256 && (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == FALSE))
-        CTIabort("Variable in varlet not found.");
+    // /* If var wasn't found. */
+    // if (i == INFO_VC(arg_info) && (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == FALSE))
+    //     CTIabort("Variable in varlet not found.");
 
     /* store local variable with offset. */
     if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_int)
-        n = TBmakeInstructions(I_istore, INFO_VARIABLES(arg_info)[i]);
+        n = TBmakeInstructions(I_istore, NULL);
     else if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_float)
-        n = TBmakeInstructions(I_fstore, INFO_VARIABLES(arg_info)[i]);
+        n = TBmakeInstructions(I_fstore, NULL);
     else
-        n = TBmakeInstructions(I_bstore, INFO_VARIABLES(arg_info)[i]);
+        n = TBmakeInstructions(I_bstore, NULL);
+
+    INSTRUCTIONS_OFFSET(n) = i;
+
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
+
+        // traverse through varlets (BOVENAAN OF ONDERAAAN??????!!)
+    if (VARLET_NEXT(arg_node) != NULL)
+        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 
@@ -526,7 +531,6 @@ node *GBCternop(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCternop");
 
     node *n;
-    CTInote("TERNOP");
 
     /* Traverse expression */
     TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
@@ -714,17 +718,19 @@ node *GBCvar(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvar");
     node *n;
 
+    // ADD BOOOOOOOLLLL
+
     /* Find the var index in the array. */
     int i;
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < INFO_VC(arg_info); i++)
     {
         if (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == TRUE)
             break;
     }
 
     /* If var wasn't found. */
-    if (i == 256 && (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == FALSE))
-        CTIabort("Var wasnt found.");
+    // if (i == INFO_VC(arg_info) && (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == FALSE))
+        // CTIabort("Var wasnt found.");
 
     /* Load var from array. */
     if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_int)
@@ -746,7 +752,7 @@ node *GBCnum(node *arg_node, info *arg_info)
     bool foundDouble = FALSE;
 
     int i;
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < INFO_CC(arg_info); i++)
     {
         if (NUM_VALUE(arg_node) == NUM_VALUE(INFO_CONSTANTS(arg_info)[i]))
         {
@@ -851,6 +857,7 @@ node *GBCdoGenByteCode(node *syntaxtree)
     TRAVpop();
 
     printInstructions(arg_info);
+
 
     arg_info = FreeInfo(arg_info);
 

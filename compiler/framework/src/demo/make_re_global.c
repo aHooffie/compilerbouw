@@ -68,7 +68,10 @@ node *REGglobaldef(node *arg_node, info *arg_info)
     {
         // left hand side assign
         char *name = STRcpy(GLOBALDEF_NAME(arg_node));
-        node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), GLOBALDEF_ASSIGN(arg_node));
+
+        node *globdef = TBmakeVarlet(name, NULL, NULL);
+        VARLET_SYMBOLTABLEENTRY(globdef) = GLOBALDEF_SYMBOLTABLEENTRY(arg_node);
+        node *newAssign = TBmakeAssign(globdef, GLOBALDEF_ASSIGN(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
         if (INFO_STMTS(arg_info) == NULL)

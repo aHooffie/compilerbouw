@@ -1,6 +1,8 @@
 /*
- * Module: Traversing and type checking
+ * Module: Traverse and check correct use of types. (incl. Milestone 9 & 10)
  * Prefix: TC
+ * Author: Andrea van den Hooff
+ * Arrays not implemented.
  */
 
 #include "type_checking.h"
@@ -66,8 +68,7 @@ node *TCglobaldec(node *arg_node, info *arg_info)
         typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
     /* Traverse into array grammar. Not implemented. */
-    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -77,8 +78,7 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     DBUG_ENTER("TCglobaldef");
 
     /* Traverse into array grammar. Not implemented. */
-    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
-        GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
     /* Check assigned type of global definition. */
     if (GLOBALDEF_ASSIGN(arg_node) != NULL)
@@ -99,12 +99,8 @@ node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
-    if (FUNCTION_PARAMETERS(arg_node) != NULL)
-        FUNCTION_PARAMETERS(arg_node) = TRAVdo(FUNCTION_PARAMETERS(arg_node), arg_info);
-
-    /* Check return types. */
-    if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
-        FUNCTION_FUNCTIONBODY(arg_node) = TRAVdo(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -118,11 +114,10 @@ node *TCparameters(node *arg_node, info *arg_info)
         typeError(arg_info, arg_node, "The parameter is not of a basic type.");
 
     /* Traverse into array grammar. Not implemented. */
-    if (PARAMETERS_DIMENSIONS(arg_node) != NULL)
-        PARAMETERS_DIMENSIONS(arg_node) = TRAVdo(PARAMETERS_DIMENSIONS(arg_node), arg_info);
+    PARAMETERS_DIMENSIONS(arg_node) = TRAVopt(PARAMETERS_DIMENSIONS(arg_node), arg_info);
 
-    if (PARAMETERS_NEXT(arg_node) != NULL)
-        PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+    /* Traverse into next. */
+    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -141,7 +136,7 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
 
         if (NODE_TYPE(originalFunction) != N_function)
-            CTIabort("ER GING IETS BIJ OG FUNCTION MIS!");
+            CTIabort("Something went wrong in the functioncall on line %i!", NODE_LINE(arg_node));
         else
         {
             INFO_OG(arg_info) = originalFunction;
@@ -163,14 +158,13 @@ node *TCexpressions(node *arg_node, info *arg_info)
         param = PARAMETERS_NEXT(param);
 
     /* Find own type, put it in arg_info. */
-    if (EXPRESSIONS_EXPR(arg_node) != NULL)
-        EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+    EXPRESSIONS_EXPR(arg_node) = TRAVopt(EXPRESSIONS_EXPR(arg_node), arg_info);
 
     if (INFO_TYPE(arg_info) != PARAMETERS_TYPE(param))
         typeError(arg_info, arg_node, "Parameter type is not matching function declaration.");
 
-    if (EXPRESSIONS_NEXT(arg_node) != NULL)
-        EXPRESSIONS_NEXT(arg_node) = TRAVdo(EXPRESSIONS_NEXT(arg_node), arg_info);
+    /* Traverse into next. */
+    EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
 
     INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
 
@@ -185,6 +179,9 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
     INFO_PARAMCOUNT(arg_info) = 0;
     node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
 
+    INFO_OG(arg_info) = originalFunction;
+    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+
     /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
     {
@@ -192,11 +189,10 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
         if (FUNCTION_TYPE(originalFunction) == T_void)
             typeError(arg_info, arg_node, "The return value of this function cannot be assigned to variable.");
 
-        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
     }
 
-    INFO_OG(arg_info) = originalFunction;
-    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+    INFO_OG(arg_info) = NULL;
 
     DBUG_RETURN(arg_node);
 }
@@ -246,8 +242,7 @@ node *TCifelse(node *arg_node, info *arg_info)
     IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
 
     /* Traverse through else block of statements.*/
-    if (IFELSE_ELSE(arg_node) != NULL)
-        IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
+    IFELSE_ELSE(arg_node) = TRAVopt(IFELSE_ELSE(arg_node), arg_info);
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
@@ -316,8 +311,7 @@ node *TCassign(node *arg_node, info *arg_info)
     DBUG_ENTER("TCassign");
 
     /* Traverse left side of an assignment. */
-    if (ASSIGN_LET(arg_node) != NULL)
-        ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+    ASSIGN_LET(arg_node) = TRAVopt(ASSIGN_LET(arg_node), arg_info);
 
     type t = INFO_TYPE(arg_info);
 
@@ -700,7 +694,6 @@ node *TCbinop(node *arg_node, info *arg_info)
         }
         break;
 
-    // ALSO ADD TERNOP
     case BO_and:
     case BO_or:
 
@@ -738,6 +731,81 @@ node *TCbinop(node *arg_node, info *arg_info)
         break;
     }
 
+    // MILESTONE 10!
+    node *new;
+    if (BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or)
+    {
+        node *tempR = BINOP_RIGHT(arg_node);
+        node *tempL = BINOP_LEFT(arg_node);
+
+        if (BINOP_OP(arg_node) == BO_and)
+        {
+            /* Create new node. */
+            node *otherwise = TBmakeBool(FALSE);
+            new = TBmakeTernop(tempL, tempR, otherwise);
+            TERNOP_OP(new) = BO_and;
+            if (new == NULL)
+                CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+        }
+        else
+        {
+            /* Create new node. */
+            node *then = TBmakeBool(TRUE);
+            new = TBmakeTernop(tempL, then, tempR);
+            TERNOP_OP(new) = BO_or;
+            if (new == NULL)
+                CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+        }
+
+        /* Free the original binop node? */
+        BINOP_RIGHT(arg_node) = NULL;
+        BINOP_LEFT(arg_node) = NULL;
+
+        node *next = FREEdoFreeNode(arg_node);
+        if (next != NULL)
+            CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+
+        DBUG_RETURN(new);
+    }
+
+    if (BINOP_OP(arg_node) == BO_add || BINOP_OP(arg_node) == BO_mul)
+    {
+        if ((left == T_bool && right == T_bool) || (INFO_TYPE(arg_info) == T_bool))
+        {
+            node *tempR = BINOP_RIGHT(arg_node);
+            node *tempL = BINOP_LEFT(arg_node);
+
+            if (BINOP_OP(arg_node) == BO_mul)
+            {
+                /* Create new node. */
+                node *otherwise = TBmakeBool(FALSE);
+                new = TBmakeTernop(tempL, tempR, otherwise);
+                TERNOP_OP(new) = BO_mul;
+                if (new == NULL)
+                    CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+            }
+            else
+            {
+                /* Create new node. */
+                node *then = TBmakeBool(TRUE);
+                new = TBmakeTernop(tempL, then, tempR);
+                TERNOP_OP(new) = BO_add;
+                if (new == NULL)
+                    CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+            }
+
+            /* Free the original binop node? */
+            BINOP_RIGHT(arg_node) = NULL;
+            BINOP_LEFT(arg_node) = NULL;
+
+            node *next = FREEdoFreeNode(arg_node);
+            if (next != NULL)
+                CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
+
+            DBUG_RETURN(new);
+        }
+    }
+
     DBUG_RETURN(arg_node);
 }
 
@@ -748,8 +816,8 @@ node *TCvar(node *arg_node, info *arg_info)
 
     INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
 
-    if (VAR_INDICES(arg_node) != NULL)
-        VAR_INDICES(arg_node) = TRAVdo(VAR_INDICES(arg_node), arg_info);
+    /* Array indices, not implemented. */
+    VAR_INDICES(arg_node) = TRAVopt(VAR_INDICES(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -760,11 +828,10 @@ node *TCvarlet(node *arg_node, info *arg_info)
 
     INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
 
-    if (VARLET_NEXT(arg_node) != NULL)
-        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
-
-    if (VARLET_INDICES(arg_node) != NULL)
-        VARLET_INDICES(arg_node) = TRAVdo(VARLET_INDICES(arg_node), arg_info);
+    /* Traverse over rest. */
+    VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
+    /* Array indices, not implemented. */
+    VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -804,8 +871,8 @@ node *TCids(node *arg_node, info *arg_info)
     if (INFO_TYPE(arg_info) != T_int)
         typeError(arg_info, arg_node, "Type of an array index has to be an integer. ");
 
-    if (IDS_NEXT(arg_node) != NULL)
-        IDS_NEXT(arg_node) = TRAVdo(IDS_NEXT(arg_node), arg_info);
+    /* Array indices, not implemented. */
+    IDS_NEXT(arg_node) = TRAVopt(IDS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

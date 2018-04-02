@@ -1,6 +1,7 @@
 /*
  * Module: Traverse and create / look for declarations in a symbol table.
  * Prefix: AS
+ * Author: Andrea van den Hooff
  * Arrays not implemented.
  */
 
@@ -514,7 +515,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvarlet");
 
-    /* Find the original function declaration in the scope above. */
+    /* Find the original vardeclaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
     node *original;
 

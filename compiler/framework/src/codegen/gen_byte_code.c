@@ -100,16 +100,16 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
         GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
-    /* Add variable to variable array -- possible new global array ? */
-    INFO_VARIABLES(arg_info)
-    [INFO_VC(arg_info)] = arg_node;
+    /* Add variable to variable array 
+
+    -- possible new global array ? */
+    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
 
     /* Check if variable should be exported, add it to that array too. */
     if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
     {
-        INFO_VARIABLESEXP(arg_info)
-        [INFO_VEC(arg_info)] = arg_node;
+        INFO_VARIABLESEXP(arg_info)[INFO_VEC(arg_info)] = arg_node;
         INFO_VEC(arg_info) += 1;
     }
 
@@ -121,6 +121,7 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 }
 
 // NB: EXTERN!!!!!!!! HIER MOET IETS MEE?
+// ja denk wel: aparte instructies voor (zoals iloade)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCglobaldec");
@@ -133,7 +134,15 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     /* Add variable to variable array. */
     INFO_VARIABLES(arg_info)
     [INFO_VC(arg_info)] = arg_node;
-    n = TBmakeInstructions(I_iload, NULL);
+
+    if (GLOBALDEC_TYPE(arg_node) == T_int)
+        n = TBmakeInstructions(I_iloadg, NULL);
+    else if (GLOBALDEC_TYPE(arg_node) == T_float)
+        n = TBmakeInstructions(I_floadg, NULL);
+    else
+        n = TBmakeInstructions(I_bloadg, NULL);
+
+
     INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
     INFO_VC(arg_info) += 1;
     addNode(n, arg_info);
@@ -141,9 +150,11 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-// Hierover morgen maar overleggen?
 node *GBCvardeclaration(node *arg_node, info *arg_info)
 {
+
+    // NOG NIET GECONTROLEERD ..
+
     DBUG_ENTER("GBCvardeclaration");
     node *n;
 
@@ -152,9 +163,15 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
         VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
 
     /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)
-    [INFO_VC(arg_info)] = arg_node;
-    n = TBmakeInstructions(I_iload, NULL);
+    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+
+    if (VARDECLARATION_TYPE(arg_node) == T_int)
+        n = TBmakeInstructions(I_iload, NULL);
+    else if (VARDECLARATION_TYPE(arg_node) == T_float)
+        n = TBmakeInstructions(I_fload, NULL);
+    else
+        n = TBmakeInstructions(I_bload, NULL);
+
     INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
     INFO_VC(arg_info) += 1;
     addNode(n, arg_info);
@@ -164,6 +181,45 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
 
     DBUG_RETURN(arg_node);
 }
+
+node *GBCvarlet(node *arg_node, info *arg_info)
+{
+
+    // NOG NIET GECONTROLEERD ..
+
+
+    DBUG_ENTER("GBCvarlet");
+    node *n;
+
+    // traverse through varlets (BOVENAAN OF ONDERAAAN??????!!)
+    if (VARLET_NEXT(arg_node) != NULL)
+        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
+
+    /* Find the varlet index in the array. */
+    int i;
+    for (i = 0; i < 256; i++)
+    {
+        if (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == TRUE)
+            break;
+    }
+
+    /* If var wasn't found. */
+    if (i == 256 && (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == FALSE))
+        CTIabort("Variable in varlet not found.");
+
+    /* store local variable with offset. */
+    if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_int)
+        n = TBmakeInstructions(I_istore, INFO_VARIABLES(arg_info)[i]);
+    else if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_float)
+        n = TBmakeInstructions(I_fstore, INFO_VARIABLES(arg_info)[i]);
+    else
+        n = TBmakeInstructions(I_bstore, INFO_VARIABLES(arg_info)[i]);
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+    DBUG_RETURN(arg_node);
+}
+
 
 /* Statements */
 /* Ifelse */
@@ -687,6 +743,17 @@ node *GBCnum(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCnum");
     node *n;
+    bool foundDouble = FALSE;
+
+    int i;
+    for (i = 0; i < 256; i++)
+    {
+        if (NUM_VALUE(arg_node) == NUM_VALUE(INFO_CONSTANTS(arg_info)[i]))
+        {
+            foundDouble = TRUE;
+            break;
+        }
+    }
 
     /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (NUM_VALUE(arg_node) == 0)
@@ -695,13 +762,17 @@ node *GBCnum(node *arg_node, info *arg_info)
         n = TBmakeInstructions(I_iloadc_1, NULL);
     else
     {
-        INFO_CONSTANTS(arg_info)
-        [INFO_CC(arg_info)] = arg_node;
         n = TBmakeInstructions(I_iloadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
-        INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
-        INFO_CC(arg_info) += 1;
+        if (foundDouble == FALSE)
+        {
+            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
+            INFO_CC(arg_info) += 1;
+        }
+        else
+            INSTRUCTIONS_OFFSET(n) = i;
     }
 
     /* Add the node to the list of instructions. */

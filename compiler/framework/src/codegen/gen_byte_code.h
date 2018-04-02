@@ -2,6 +2,11 @@
 #define _GEN_BYTE_CODE_H_
 #include "types.h"
 
+extern node *GBCglobaldec(node *arg_node, info *arg_info);
+extern node *GBCglobaldef(node *arg_node, info *arg_info);
+extern node *GBCvardeclaration(node *arg_node, info *arg_info);
+extern node *GBCvarlet(node *arg_node, info *arg_info);
+
 /* Statements*/
 extern node *GBCifelse(node *arg_node, info *arg_info);
 extern node *GBCfor(node *arg_node, info *arg_info);

@@ -118,6 +118,8 @@ traversals to process it.
                     <node name="BinOp" />
                     <node name="MonOp" />
                     <node name="Cast" />
+                    <node name="VarLet" />
+                    <node name="VarDeclaration" />
                     <node name="Var" />
                     <node name="Bool" />
                     <node name="Float" />

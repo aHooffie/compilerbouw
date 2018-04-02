@@ -625,25 +625,10 @@ node *PRTbinop(node *arg_node, info *arg_info)
 
 node *PRTternop(node *arg_node, info *arg_info)
 {
-    char *tmp;
-
     DBUG_ENTER("PRTternop");
 
     TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
     printf(" ? ");
-
-    switch (TERNOP_OP(arg_node))
-    {
-    case BO_and:
-        tmp = "&&";
-        break;
-    case BO_or:
-        tmp = "||";
-        break;
-    default:
-        DBUG_ASSERT(0, "unknown ternop detected!");
-    }
-
     TERNOP_THEN(arg_node) = TRAVdo(TERNOP_THEN(arg_node), arg_info);
     printf(" : ");
     TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);

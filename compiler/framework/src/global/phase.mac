@@ -61,20 +61,14 @@ SUBPHASE( tc,
 SUBPHASE( reg, 
           "Regular expressions global",
           REGdoRegularExpr, 
-          ALWAYS,
+          NEVER,
           pet) 
 
 SUBPHASE( rel, 
           "Regular expressions local",
           RELdoRegularExpr, 
-          ALWAYS,
-          pet) 
-
-SUBPHASE( cb, 
-          "Compile booleans",
-          CBdoCompileBooleans, 
-          ALWAYS,
-          pet)               
+          NEVER,
+          pet)             
       
 ENDPHASE( pet) 
 

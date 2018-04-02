@@ -1,6 +1,7 @@
 /*
  * Module: Traverse and create / look for declarations in a symbol table.
  * Prefix: AS
+ * Author: Andrea van den Hooff
  * Arrays not implemented.
  */
 

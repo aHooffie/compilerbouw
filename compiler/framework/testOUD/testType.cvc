@@ -1,4 +1,4 @@
-/* Typechecking. */
+// /* Typechecking. */
 
 extern int q;
 // extern void r; // MAG NIET!
@@ -6,7 +6,7 @@ extern int q;
 
 // globals
 int a = 2;
-int b = 2;
+int b = 4;
 
 float c = 0.5;
 float d = 4.5;
@@ -15,56 +15,60 @@ bool e = true;
 bool f = false;
 void g;
 
-export void main (int a, int b)
+export void main(int a, int b)
 {
-	while (a) {
+	while (a)
+	{
 		a = b - b * 3 + 2 - a; // INT + INT + INT + INT
-		b = 3 - a; // INT + varINT
-		c = 2.0 + 3.4 / c; // FLOAT + varFLOAT
-		a = a + b * 3 * a; // varINT + varINT
-		f = c >= d; // varFLOAT + varFLOAT
+		b = 3 - a;			   // INT + varINT
+		c = 2.0 + 3.4 / c;	 // FLOAT + varFLOAT
+		a = a + b * 3 * a;	 // varINT + varINT
+		f = c >= d;			   // varFLOAT + varFLOAT
 		f = !e;
 		c = (float)a;
 	}
 
-	if (a) {
+	if (a)
+	{
 		a = 1;
 		return;
 	}
-	else {
+	else
+	{
 		b = 2;
 		return g;
 	}
 
-	do { 
+	do
+	{
 		a = a + b;
 	} while (a < b);
 
 	return g;
 
-// MAG NIET:
-//	a = a < d; // varINT + varFLOAT
-//	c = c <= e; // varFLOAT + varBOOL
-//	a = a % c; // varINT + varFLOAT
-//	f = e + true; // varBOOL + BOOL
-// 	f = !d;
-//	d = (int) a;
-// if (g)
-//		a = 1;
-//	return g;
-
-
+	// MAG NIET:
+	//	a = a < d; // varINT + varFLOAT
+	//	c = c <= e; // varFLOAT + varBOOL
+	//	a = a % c; // varINT + varFLOAT
+	//	f = e + true; // varBOOL + BOOL
+	// 	f = !d;
+	//	d = (int) a;
+	// if (g)
+	//		a = 1;
+	//	return g;
 }
 
-export int test (int a, int b, float c) {
-//	g = main (a, b);
+export int test(int a, int b, float c)
+{
+	// g = main(a, b); // MAG NIET en klopt
 	return 4;
 }
 
-export int foo (int b) {
-//	a = 3.0 + test(a, b, c);/ / MAG NIET! en klopt.
-//	main(); // MAG NIET! en klopt.
-//	main(a, b); // MAG NIET en klopt
+export int foo(int b)
+{
+	// a = 3.0 + test(a, b, c); // MAG NIET! en klopt.
+	// main();		// MAG NIET! en klopt.
+	// main(c, b); // MAG NIET en klopt
 	a = test(a, b, c);
 	return 4;
 }

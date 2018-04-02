@@ -6,13 +6,14 @@ export void main (int p) {
     bool d = false;
     bool e;
     
-    if (c && d)
+    if (c + d)
         c = d;
     
     if ((c) || (d))
         d = c;
 
     e = c && d;
+
     
     return;
 }

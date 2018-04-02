@@ -1,17 +1,11 @@
 
-/*****************************************************************************
- *
+/*
  * Module: make_regularexpr
- *
  * Prefix: REG
- *
- * Description:
- *
- * This module implements a traversal of the abstract syntax tree that 
+ * Description: This module implements a traversal of the abstract syntax tree that 
  * turns global variable initialisations into regular assignments
- *
- *****************************************************************************/
-
+ * Author: Aynel Gul
+ */
 
 #include "make_re_global.h"
 #include "types.h"
@@ -24,22 +18,16 @@
 #include "memory.h"
 #include "ctinfo.h"
 
-
-/*
- * INFO structure
- */
-
+/* INFO structure */
 struct INFO
 {
     node *head;
     node *stmts;
 };
 
-
 /* struct macros */
 #define INFO_HEAD(n) ((n)->head)
 #define INFO_STMTS(n) ((n)->stmts)
-
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -55,10 +43,7 @@ static info *MakeInfo(void)
     DBUG_RETURN(result);
 }
 
-
-/*
- * Traversal functions
- */
+/* Traversal functions */
 
 node *REGglobaldef(node *arg_node, info *arg_info)
 {
@@ -66,7 +51,7 @@ node *REGglobaldef(node *arg_node, info *arg_info)
 
     if (GLOBALDEF_ASSIGN(arg_node) != NULL)
     {
-        // left hand side assign
+        /* Replace the assign and add it as a new statement node instead. */
         char *name = STRcpy(GLOBALDEF_NAME(arg_node));
         node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), GLOBALDEF_ASSIGN(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
@@ -82,17 +67,14 @@ node *REGglobaldef(node *arg_node, info *arg_info)
             INFO_STMTS(arg_info) = newStmt;
         }
 
-        // 'Remove' globaldef expression
+        /* Remove the global initialisation. */
         GLOBALDEF_ASSIGN(arg_node) = NULL;
     }
 
     DBUG_RETURN(arg_node);
 }
 
-
-/*
- * Traversal start function
- */
+/* Traversal start function */
 
 node *REGdoRegularExpr(node *syntaxtree)
 {
@@ -105,14 +87,12 @@ node *REGdoRegularExpr(node *syntaxtree)
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
 
-    CTInote("Traversing done...\n");
-
     if (INFO_STMTS(arg_info) != NULL)
     {
         node *allStmts = TBmakeFunctionbody(NULL, NULL, INFO_HEAD(arg_info));
         node *init_func = TBmakeFunction(T_void, STRcpy("__init"), allStmts, NULL);
 
-        // add to syntaxtree
+        /* Add the new declarations to the syntax tree. */
         PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(init_func, PROGRAM_DECLARATIONS(syntaxtree));
     }
 

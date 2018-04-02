@@ -1,17 +1,11 @@
 
-/*****************************************************************************
- *
+/*
  * Module: make_regularexpr
- *
  * Prefix: REL
- *
- * Description:
- *
- * This module implements a traversal of the abstract syntax tree that 
+ * Description: This module implements a traversal of the abstract syntax tree that 
  * turns local variable initialisations into regular assignments
- *
- *****************************************************************************/
-
+ * Author: Aynel Gul
+ */
 
 #include "make_re_local.h"
 #include "types.h"
@@ -24,16 +18,13 @@
 #include "memory.h"
 #include "ctinfo.h"
 
-/*
- * INFO structure
- */
+/* INFO structure */
 
 struct INFO
 {
     node *head;
     node *stmts;
 };
-
 
 /* struct macros */
 #define INFO_HEAD(n) ((n)->head)
@@ -53,58 +44,49 @@ static info *MakeInfo(void)
     DBUG_RETURN(result);
 }
 
-
-/*
- * Traversal functions
- */
+/* Traversal functions */
 
 node *RELfunctionbody(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("RELfunctionbody");
 
-    // traverse through vardecls
-    if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
-        FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVdo(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
+    /* Traverse through vardecls */
+    FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVopt(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
 
     if (INFO_HEAD(arg_info) != NULL)
     {
         if (FUNCTIONBODY_STMTS(arg_node) == NULL)
-        {
             FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
-
-        }
         else
         {
-            // add before old stmts
+            /* Add the new statements in front of old stmts */
             STMTS_NEXT(INFO_STMTS(arg_info)) = FUNCTIONBODY_STMTS(arg_node);
             FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
         }
 
-        // reset head node
+        /* Reset the head node */
         INFO_HEAD(arg_info) = NULL;
     }
 
-    if (FUNCTIONBODY_LOCALFUNCTION(arg_node) != NULL)
-        FUNCTIONBODY_LOCALFUNCTION(arg_node) = TRAVdo(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
+    FUNCTIONBODY_LOCALFUNCTION(arg_node) = TRAVopt(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
 node *RELvardeclaration(node *arg_node, info *arg_info)
 {
-	DBUG_ENTER("RELvardeclaration");
+    DBUG_ENTER("RELvardeclaration");
 
-    if (VARDECLARATION_NEXT(arg_node) != NULL)
-        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
+    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     if (VARDECLARATION_INIT(arg_node) != NULL)
     {
-        // make regular expression (stmt)
+        /* Make the regular expression as Statement node. */
         char *name = STRcpy(VARDECLARATION_NAME(arg_node));
         node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), VARDECLARATION_INIT(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
-        // if first vardecl
+        /* Check if it is the first new vardeclaration */
         if (INFO_HEAD(arg_info) == NULL)
         {
             INFO_HEAD(arg_info) = newStmt;
@@ -116,16 +98,14 @@ node *RELvardeclaration(node *arg_node, info *arg_info)
             INFO_STMTS(arg_info) = newStmt;
         }
 
-        // 'Remove' vardeclaration expression
+        /* 'Remove' vardeclaration expression */
         VARDECLARATION_INIT(arg_node) = NULL;
     }
 
-	DBUG_RETURN(arg_node);
+    DBUG_RETURN(arg_node);
 }
 
-/*
- * Traversal start function
- */
+/* Traversal start function */
 
 node *RELdoRegularExpr(node *syntaxtree)
 {
@@ -137,8 +117,6 @@ node *RELdoRegularExpr(node *syntaxtree)
     TRAVpush(TR_rel);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
-
-    CTInote("Traversing done...\n");
 
     DBUG_RETURN(syntaxtree);
 }

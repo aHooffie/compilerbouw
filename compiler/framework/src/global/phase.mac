@@ -61,13 +61,13 @@ SUBPHASE( tc,
 SUBPHASE( reg, 
           "Regular expressions global",
           REGdoRegularExpr, 
-          NEVER,
+          ALWAYS,
           pet) 
 
 SUBPHASE( rel, 
           "Regular expressions local",
           RELdoRegularExpr, 
-          NEVER,
+          ALWAYS,
           pet)             
       
 ENDPHASE( pet) 
@@ -79,7 +79,7 @@ PHASE( cg,
        "Generating Code",
        ALWAYS)
 
-SUBPHASE( prt, "Generating byte code", GBCdoGenByteCode, NEVER, cg)      
+SUBPHASE( prt, "Generating byte code", GBCdoGenByteCode, ALWAYS, cg)      
 SUBPHASE( prt_ast, "Print ast", PRTdoPrint, ALWAYS, cg)      
 
 SUBPHASE( frtr, 

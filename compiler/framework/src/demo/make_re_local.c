@@ -77,13 +77,14 @@ node *RELvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("RELvardeclaration");
 
-    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     if (VARDECLARATION_INIT(arg_node) != NULL)
     {
         /* Make the regular expression as Statement node. */
         char *name = STRcpy(VARDECLARATION_NAME(arg_node));
-        node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), VARDECLARATION_INIT(arg_node));
+        node *varlet = TBmakeVarlet(name, NULL, NULL);
+        VARLET_SYMBOLTABLEENTRY(varlet) = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
+        node *newAssign = TBmakeAssign(varlet, VARDECLARATION_INIT(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
         /* Check if it is the first new vardeclaration */
@@ -101,6 +102,8 @@ node *RELvardeclaration(node *arg_node, info *arg_info)
         /* 'Remove' vardeclaration expression */
         VARDECLARATION_INIT(arg_node) = NULL;
     }
+
+    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

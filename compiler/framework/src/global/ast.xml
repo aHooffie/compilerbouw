@@ -105,6 +105,8 @@ traversals to process it.
             </traversal>
             <traversal id="GBC" name="Generate byte code" default="sons" include="gen_byte_code.h">
                 <travuser>
+                    <node name="GlobalDef" />
+                    <node name="GlobalDec" />
                     <node name="IfElse" />
                     <node name="While" />
                     <node name="DoWhile" />

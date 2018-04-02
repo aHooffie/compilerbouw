@@ -106,7 +106,7 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     // INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     // INFO_VC(arg_info) += 1;
 
-    //  Check if variable should be exported, add it to that array too. 
+    //  // Check if variable should be exported, add it to that array too. 
     // if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
     // {
     //     INFO_VARIABLESEXP(arg_info)[INFO_VEC(arg_info)] = arg_node;
@@ -124,6 +124,10 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 // ja denk wel: aparte instructies voor (zoals iloade)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
+
+    // CRASHT NOGGG
+
+
     DBUG_ENTER("GBCglobaldec");
     // node *n;
 
@@ -132,8 +136,7 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     //     GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
     // /* Add variable to variable array. */
-    // INFO_VARIABLES(arg_info)
-    // [INFO_VC(arg_info)] = arg_node;
+    // INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
 
     // if (GLOBALDEC_TYPE(arg_node) == T_int)
     //     n = TBmakeInstructions(I_iloadg, NULL);

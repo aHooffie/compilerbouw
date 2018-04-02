@@ -104,6 +104,7 @@ node *RELvardeclaration(node *arg_node, info *arg_info)
         node *newAssign = TBmakeAssign(TBmakeVarlet(name, NULL, NULL), VARDECLARATION_INIT(arg_node));
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
+        // if first vardecl
         if (INFO_HEAD(arg_info) == NULL)
         {
             INFO_HEAD(arg_info) = newStmt;

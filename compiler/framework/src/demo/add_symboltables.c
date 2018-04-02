@@ -1,12 +1,22 @@
 /*
  * Module: Traverse and create / look for declarations in a symbol table.
  * Prefix: AS
+ * Arrays not implemented.
  */
 
 /* 
 
 TO DO: Make sure that your compiler appropriately prints the symbol table, for instance as a structured
 comment in the beginning of the function body or preceding the entire function denition.
+
+// TO DO: Integer in een forloop kan later nog aangeroepen worden.
+
+Pieter:
+
+Uhm de symbol table wordt bij ons niet geprint in de context analysis
+Die wordt terwijl je de code print gewoon erboven in een comment geprint
+En bij ons zijn de symbol tables gekoppeld aan module node
+dus daar zeg je in print.c gewoon travdo op je symbol tables(en ook in je fundef)
 
 */
 
@@ -28,7 +38,8 @@ struct INFO
     node *og;
     int size;
     int errors;
-    int FUNCTIONCOUNT;
+    int functioncount;
+    char *forloopinit;
     int count;
 };
 
@@ -37,7 +48,7 @@ struct INFO
 #define INFO_OG(n) ((n)->og)
 #define INFO_SIZE(n) ((n)->size)
 #define INFO_ERRORS(n) ((n)->errors)
-#define INFO_FUNCTIONCOUNT(n) ((n)->FUNCTIONCOUNT)
+#define INFO_FUNCTIONCOUNT(n) ((n)->functioncount)
 #define INFO_COUNT(n) ((n)->count)
 
 /* INFO functions */
@@ -52,6 +63,7 @@ static info *MakeInfo(void)
     INFO_SIZE(result) = 0;
     INFO_ERRORS(result) = 0;
     INFO_FUNCTIONCOUNT(result) = 0;
+    INFO_COUNT(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -336,7 +348,7 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     }
     else
     {
-        /* Else, insert the globaldef into the symbol table linked list at the end. */
+        /* Else, insert the vardeclaration into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, VARDECLARATION_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
@@ -430,20 +442,40 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* 
-
-TO DO (ctrl v van milestone 5)
-
-!! Remove the declaration part from for-loop induction variables.
-create corresponding local variable declarations on the level of the (innermost) function definition.
-Beware of nested for-loops using the same induction variable and occurrences of identically named variables
-outside the scope of the corresponding for-loop. Like explained above, context disambiguation
-and possibly a systematic renaming of for-loop induction variables is needed.
-
-*/
+/* Move the declaration from within a for-loop to the innermost function. */
 node *ASfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfor");
+
+    char *name = STRcpy(FOR_INITVAR(arg_node));
+
+    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
+    {
+        stError(arg_info, arg_node, "has already been declared.\n", name);
+        printLine(arg_info, name);
+    }
+    else
+    {
+        /* Else, insert the for-loop initialisation into the symbol table linked list at the end. */
+        node *newEntry = TBmakeSymboltableentry(name, T_int, INFO_SIZE(arg_info) - 1, NULL);
+        node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+
+        if (last == NULL)
+        {
+            SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+        }
+        else
+        {
+            SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+        }
+    }
+
+    /* Traverse into child nodes. */
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+    FOR_STEP(arg_node) = TRAVopt(FOR_STEP(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 

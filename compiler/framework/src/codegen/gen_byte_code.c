@@ -46,12 +46,14 @@ struct INFO
     node *lastinstruction;   // pointer to the last of the list (to add a new node to (see function AddNode))
     node *constants[256];    // array of integers and floats (NODES!!! not values!! ) to store / load from
     node *variables[256];    // array of variables (NODES!!! not strings !! ) to store / load from
-    node *functions[256];    // array of functions (NODES!!! not strings !! ) to export
+    node *exportfun[256];    // array of functions (NODES!!! not strings !! ) to export
+    node *importvar[256];
     node *variablesexp[256]; // array of variables (NODES!!! not strings !! ) to store / load from
     int constantcount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int varcount;            // counter to check what indices are filled in the variable array
     int varexpcount;         // counter to check what indices are filled in the variable array
-    int functioncount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int exportfuncount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int importvarcount;
     int branchcount;         // counter to check what branch voorstuk should be used in labels
     
     int size;                // FOR TESTING!
@@ -63,13 +65,15 @@ struct INFO
 #define INFO_LI(n) ((n)->lastinstruction)
 #define INFO_CONSTANTS(n) ((n)->constants)
 #define INFO_VARIABLES(n) ((n)->variables)
-#define INFO_FUNCTIONS(n) ((n)->functions)
+#define INFO_EXPORTFUN(n) ((n)->exportfun)
+#define INFO_IMPORTVAR(n) ((n)->importvar)
 #define INFO_VARIABLESEXP(n) ((n)->variablesexp)
 #define INFO_VC(n) ((n)->varcount)
 #define INFO_VEC(n) ((n)->varexpcount)
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_BC(n) ((n)->branchcount)
-#define INFO_FC(n) ((n)->functioncount)
+#define INFO_EFC(n) ((n)->exportfuncount)
+#define INFO_IVC(n) ((n)->importvarcount)
 #define INFO_LC(n) ((n)->localvarcount)
 #define INFO_SIZE(n) ((n)->size)
 
@@ -86,7 +90,8 @@ static info *MakeInfo(void)
     INFO_VEC(result) = 0;
     INFO_CC(result) = 0;
     INFO_BC(result) = 0;
-    INFO_FC(result) = 0;
+    INFO_EFC(result) = 0;
+    INFO_IVC(result) = 0;
     INFO_LC(result) = 0;
     INFO_SIZE(result) = 0;
 
@@ -136,19 +141,17 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 // ja denk wel: aparte instructies voor (zoals iloade)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
-
-    // CRASHT NOGGG !!!
-
+    // NOG NIET GETEST
 
     DBUG_ENTER("GBCglobaldec");
     // node *n;
 
-    // /* Traverse into array subtree - not implemented. */
-    // if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
-    //     GLOBALDEC_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    /* Traverse into array subtree - not implemented. */
+    GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
-    // /* Add variable to variable array. */
-    // INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    /* Add variable to variable array. */
+    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    INFO_IMPORTVAR(arg_info)[INFO_IVC(arg_info)] = arg_node;
 
     // if (GLOBALDEC_TYPE(arg_node) == T_int)
     //     n = TBmakeInstructions(I_iloadg, NULL);
@@ -157,9 +160,10 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     // else
     //     n = TBmakeInstructions(I_bloadg, NULL);
 
-
     // INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
-    // INFO_VC(arg_info) += 1;
+
+    INFO_VC(arg_info) += 1;
+    INFO_IVC(arg_info) += 1;
     // addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
@@ -190,8 +194,8 @@ node *GBCfunction(node *arg_node, info *arg_info)
 
     /* Check if function needs to be exported. */
     if (FUNCTION_ISEXPORT(arg_node) == TRUE) {
-        INFO_FUNCTIONS(arg_info)[INFO_FC(arg_info)] = arg_node;
-        INFO_FC(arg_info) += 1;
+        INFO_EXPORTFUN(arg_info)[INFO_EFC(arg_info)] = arg_node;
+        INFO_EFC(arg_info) += 1;
 
     }
 
@@ -699,31 +703,88 @@ node *GBCvar(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvar");
 
     node *n;
+    nodetype nt; 
     int i;
-    bool foundDouble = FALSE;
+    bool foundVardec = FALSE;
 
     for (i = 0; i < INFO_VC(arg_info); i++)
     {
-        if (STReq(VAR_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+        if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_vardeclaration)
         {
-            foundDouble = TRUE;
-            break;
+            if (STReq(VAR_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                nt = N_vardeclaration;
+                break;
+            }
+        }
+        else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_parameters)
+        {
+            // is param
+            if (STReq(VAR_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                nt = N_parameters;
+                break;
+            }
+        }
+        else
+        {
+            // is global
+            if (STReq(VAR_NAME(arg_node), GLOBALDEC_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                nt = N_globaldec;
+                break;
+            }
         }
     }
 
+
+    // NETTER OPLOSSENNNN
+    if (INFO_VC(arg_info) == 0)
+        nt = N_num;
+
     /* If var wasn't found. */
-    if (foundDouble == FALSE)
+    if (foundVardec == FALSE)
         CTIabort("Error during code generation, line %i", NODE_LINE(arg_node));
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
 
-    if (t == T_int)
-        n = TBmakeInstructions(I_iloadc, NULL);
-    else if (t == T_float)
-        n = TBmakeInstructions(I_floadc, NULL);
-    else
-        n = TBmakeInstructions(I_bloadc, NULL);
+    switch(nt)
+    {
+        case N_vardeclaration:
+        case N_parameters:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_iloadc, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_floadc, NULL);
+            else
+                n = TBmakeInstructions(I_bloadc, NULL);
+            break;
+
+        case N_globaldec:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_iloade, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_floade, NULL);
+            else
+                n = TBmakeInstructions(I_bloade, NULL);
+            break;
+
+        case N_globaldef:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_iloadg, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_floadg, NULL);
+            else
+                n = TBmakeInstructions(I_bloadg, NULL);
+            break;
+
+        default:
+            n = NULL;
+    }
 
     INSTRUCTIONS_OFFSET(n) = i;
 
@@ -751,10 +812,19 @@ node *GBCvarlet(node *arg_node, info *arg_info)
                 break;
             }
         }
-        else
+        else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_parameters)
         {
             // is param
             if (STReq(VARLET_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                break;
+            }
+        }
+        else
+        {
+            // is global
+            if (STReq(VARLET_NAME(arg_node), GLOBALDEC_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
             {
                 foundVardec = TRUE;
                 break;
@@ -1280,14 +1350,15 @@ void printInstructions(info *arg_info)
     printf("\n");
 
 
+    /* Add exports */
     char *returntype;
     char *paramtype;
 
-    for (int i = 0; i < INFO_FC(arg_info); i++) {
-        returntype = TypetoString(FUNCTION_TYPE(INFO_FUNCTIONS(arg_info)[i]));
-        printf(".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_FUNCTIONS(arg_info)[i]), returntype);
+    for (int i = 0; i < INFO_EFC(arg_info); i++) {
+        returntype = TypetoString(FUNCTION_TYPE(INFO_EXPORTFUN(arg_info)[i]));
+        printf(".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]), returntype);
 
-        node * param = FUNCTION_PARAMETERS(INFO_FUNCTIONS(arg_info)[i]);
+        node * param = FUNCTION_PARAMETERS(INFO_EXPORTFUN(arg_info)[i]);
 
         while (param != NULL)
         {
@@ -1296,7 +1367,15 @@ void printInstructions(info *arg_info)
             param = PARAMETERS_NEXT(param);
         }
 
-        printf("%s\n", FUNCTION_NAME(INFO_FUNCTIONS(arg_info)[i]));
+        printf("%s\n", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]));
     }
 
+    /* Add imports */
+    char *globaltype;
+
+    for (int i = 0; i < INFO_IVC(arg_info); i++)
+    {
+        globaltype = TypetoString(GLOBALDEC_TYPE(INFO_IMPORTVAR(arg_info)[i]));
+        printf(".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
+    }
 }

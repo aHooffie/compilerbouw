@@ -1,4 +1,4 @@
-// extern int a;
+extern int a;
 // int x = 4 + 3;
 
 export int main(int abcde, float hello, bool test)

@@ -161,8 +161,8 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
 
-    /* Traverse into assigning subtree. */
-    VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
+    // /* Traverse into assigning subtree. */
+    // VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
 
     if (VARDECLARATION_NEXT(arg_node) != NULL)
         VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
@@ -678,6 +678,7 @@ node *GBCvar(node *arg_node, info *arg_info)
 node *GBCvarlet(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCvarlet");
+
     node *n;
     int i;
     bool foundDouble = FALSE;
@@ -693,7 +694,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
 
     /* If varlet wasn't found. */
     if (foundDouble == FALSE)
-        CTIabort("Error during code generation, line %i", NODE_LINE(arg_node));
+        CTIabort("Error during VARLET code generation, line %i", NODE_LINE(arg_node));
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));

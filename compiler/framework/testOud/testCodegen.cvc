@@ -1,31 +1,31 @@
 // extern int a;
 // int x = 4 + 3;
 
-// export int main(int abcde)
-// {
+export int main(int abcde)
+{
     // Testing ALL EXPRESSIONS:
     int a = 4 + 4;
-    // int b = 2 - 3;
-    // int c = 1 * 4;
-    // int d = 1 / 4;
-    // bool e = 1 <= 4;
-    // bool f = 1 > 4;
-    // int g = -4;
-    // bool h = 1 != 4;
-    // bool i = 1 == 4;
-    // float j = 1.0 * 4.0;
-    // int k = (int)4.0;
-    // bool l = false;
-    // bool m = true;
+    int b = 2 - 3;
+    int c = 1 * 4;
+    int d = 1 / 4;
+    bool e = 1 <= 4;
+    bool f = 1 > 4;
+    int g = -4;
+    bool h = 1 != 4;
+    bool i = 1 == 4;
+    float j = 1.0 * 4.0;
+    int k = (int)4.0;
+    bool l = false;
+    bool m = true;
     // do
     // {
     //     a = 1 + 2;
     // } while (1 < 2);
 
-    // return 4;
+    return 4;
 
     // Not tested: TERNOP, VAR
-// }
+}
 
 // export void test(int abcde)
 // {

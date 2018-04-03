@@ -21,14 +21,16 @@ struct INFO
 {
     int errors;
     int paramcount;
+    int funreturn;
     type current;
     node *og;
 };
 
 /* INFO macros */
 #define INFO_ERRORS(n) ((n)->errors)
-#define INFO_TYPE(n) ((n)->current)
 #define INFO_PARAMCOUNT(n) ((n)->paramcount)
+#define INFO_FUNRETURN(n) ((n)->funreturn)
+#define INFO_TYPE(n) ((n)->current)
 #define INFO_OG(n) ((n)->og)
 
 /* INFO functions */
@@ -40,6 +42,7 @@ static info *MakeInfo(void)
 
     result = (info *)MEMmalloc(sizeof(info));
     INFO_ERRORS(result) = 0;
+    INFO_FUNRETURN(result) = 0;
     INFO_PARAMCOUNT(result) = 0;
     INFO_OG(result) = NULL;
 
@@ -95,12 +98,18 @@ node *TCglobaldef(node *arg_node, info *arg_info)
 }
 
 /* Function node. */
-node *TCfunction(node *arg_node, info *arg_info)
+node *TCfunctionbody(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCfunction");
+    DBUG_ENTER("TCfunctionbody");
 
-    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+   	FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVopt(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
+	FUNCTIONBODY_LOCALFUNCTION(arg_node) = TRAVopt(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
+	FUNCTIONBODY_STMTS(arg_node) = TRAVopt(FUNCTIONBODY_STMTS(arg_node), arg_info);
+
+    if (INFO_FUNRETURN(arg_info) == 0)
+        typeError(arg_info, arg_node, "Function is missing a return call.");
+    
+    INFO_FUNRETURN(arg_info) = 0;
 
     DBUG_RETURN(arg_node);
 }
@@ -288,7 +297,7 @@ node *TCdowhile(node *arg_node, info *arg_info)
 
 node *TCreturn(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCwhile");
+    DBUG_ENTER("TCreturn");
 
     /* Check the return type. */
     if (RETURN_EXPR(arg_node) != NULL)
@@ -301,6 +310,7 @@ node *TCreturn(node *arg_node, info *arg_info)
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
+    INFO_FUNRETURN(arg_info) = 1;
 
     DBUG_RETURN(arg_node);
 }

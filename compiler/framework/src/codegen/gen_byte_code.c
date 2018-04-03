@@ -681,6 +681,8 @@ node *GBCmonop(node *arg_node, info *arg_info)
 
 node *GBCcast(node *arg_node, info *arg_info)
 {
+    // !! WERKT NIETTTTTTT AAAAAHHH !!
+
     DBUG_ENTER("GBCcast");
     node *n;
 
@@ -799,6 +801,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvarlet");
 
     node *n;
+    nodetype nt;
     int i;
     bool foundVardec = FALSE;
 
@@ -809,6 +812,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
             {
                 foundVardec = TRUE;
+                nt = N_vardeclaration;
                 break;
             }
         }
@@ -818,6 +822,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             if (STReq(VARLET_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
             {
                 foundVardec = TRUE;
+                nt = N_parameters;
                 break;
             }
         }
@@ -827,10 +832,15 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             if (STReq(VARLET_NAME(arg_node), GLOBALDEC_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
             {
                 foundVardec = TRUE;
+                nt = N_globaldec;
                 break;
             }
         }
     }
+
+    // NETTER OPLOSSENNNN
+    if (INFO_VC(arg_info) == 0)
+        nt = N_num;
 
     /* If varlet wasn't found. */
     if (foundVardec == FALSE)
@@ -839,14 +849,41 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
 
-    /* store local variable with offset. */
-    if (t == T_int)
-         n = TBmakeInstructions(I_istore, NULL);
-    else if (t == T_float)
-        n = TBmakeInstructions(I_fstore, NULL);
-    else
-        n = TBmakeInstructions(I_bstore, NULL);
+    switch(nt)
+    {
+        case N_vardeclaration:
+        case N_parameters:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_istore, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_fstore, NULL);
+            else
+                n = TBmakeInstructions(I_bstore, NULL);
+            break;
 
+        case N_globaldec:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_istoree, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_fstoree, NULL);
+            else
+                n = TBmakeInstructions(I_bstoree, NULL);
+            break;
+
+        case N_globaldef:
+            if (t == T_int) 
+                n = TBmakeInstructions(I_istoreg, NULL);
+            else if (t == T_float)
+                n = TBmakeInstructions(I_fstoreg, NULL);
+            else
+                n = TBmakeInstructions(I_bstoreg, NULL);
+            break;
+
+        default:
+            n = NULL;
+    }
+
+    /* store local variable with offset. */
     INSTRUCTIONS_OFFSET(n) = i;
 
     /* Add the node to the list of instructions. */

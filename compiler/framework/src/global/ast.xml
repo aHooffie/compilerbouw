@@ -107,6 +107,7 @@ traversals to process it.
                 <travuser>
                     <node name="GlobalDef" />
                     <node name="GlobalDec" />
+                    <node name="Parameters" />
                     <node name="VarDeclaration" />
                     <node name="IfElse" />
                     <node name="While" />

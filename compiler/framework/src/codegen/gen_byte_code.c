@@ -153,6 +153,20 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+node *GBCparameters(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCparameters");
+
+    // store at index
+    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    INFO_VC(arg_info) += 1;
+
+    if (PARAMETERS_NEXT(arg_node) != NULL)
+        PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
 node *GBCvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCvardeclaration");
@@ -681,19 +695,19 @@ node *GBCvarlet(node *arg_node, info *arg_info)
 
     node *n;
     int i;
-    bool foundDouble = FALSE;
+    bool foundVardec = FALSE;
 
     for (i = 0; i < INFO_VC(arg_info); i++)
     {
         if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
         {
-            foundDouble = TRUE;
+            foundVardec = TRUE;
             break;
         }
     }
 
     /* If varlet wasn't found. */
-    if (foundDouble == FALSE)
+    if (foundVardec == FALSE)
         CTIabort("Error during VARLET code generation, line %i", NODE_LINE(arg_node));
 
     /* Load var from array. */

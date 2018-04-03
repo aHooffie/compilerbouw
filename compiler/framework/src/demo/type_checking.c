@@ -98,15 +98,14 @@ node *TCglobaldef(node *arg_node, info *arg_info)
 }
 
 /* Function node. */
-node *TCfunctionbody(node *arg_node, info *arg_info)
+node *TCfunction(node *arg_node, info *arg_info)
 {
-    DBUG_ENTER("TCfunctionbody");
+    DBUG_ENTER("TCfunction");
 
-   	FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVopt(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
-	FUNCTIONBODY_LOCALFUNCTION(arg_node) = TRAVopt(FUNCTIONBODY_LOCALFUNCTION(arg_node), arg_info);
-	FUNCTIONBODY_STMTS(arg_node) = TRAVopt(FUNCTIONBODY_STMTS(arg_node), arg_info);
+   	FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
 
-    if (INFO_FUNRETURN(arg_info) == 0)
+    if (INFO_FUNRETURN(arg_info) == 0 && FUNCTION_TYPE(arg_node))
         typeError(arg_info, arg_node, "Function is missing a return call.");
     
     INFO_FUNRETURN(arg_info) = 0;

@@ -450,32 +450,28 @@ node *ASfor(node *arg_node, info *arg_info)
 
     char *name = STRcpy(FOR_INITVAR(arg_node));
 
-    if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
-    {
-        stError(arg_info, arg_node, "has already been declared.\n", name);
-        printLine(arg_info, name);
-    }
-    else
-    {
-        /* Else, insert the for-loop initialisation into the symbol table linked list at the end. */
-        node *newEntry = TBmakeSymboltableentry(name, T_int, INFO_SIZE(arg_info) - 1, NULL);
-        node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
-
-        if (last == NULL)
-        {
-            SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
-        }
-        else
-        {
-            SYMBOLTABLEENTRY_NEXT(last) = newEntry;
-        }
-    }
+    /* Create new symbol table and add it to the stack. */
+    node *forSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
+    stackPush(forSymboltable, arg_info);
 
     /* Traverse into child nodes. */
     FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
     FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
     FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
     FOR_STEP(arg_node) = TRAVopt(FOR_STEP(arg_node), arg_info);
+
+    /* Print symboltable of current function. */
+    CTInote("************************************ \n For loop %s's symboltable. Scope level: %i. \n************************************", name, INFO_SIZE(arg_info) - 1);
+    node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+    while (entry != NULL)
+    {
+        CTInote("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        entry = SYMBOLTABLEENTRY_NEXT(entry);
+    }
+    CTInote("************************************");
+
+    /* Remove the linked list at the end of the traversal. */
+    stackPop(arg_info);
 
     DBUG_RETURN(arg_node);
 }

@@ -353,7 +353,7 @@ stmt:   assign
 
 assign: varlet LET expr SEMICOLON
         {
-          $$ = TBmakeAssign( $1, $3);
+          $$ = TBmakeAssign( $3, $1);
         }
         ;
 

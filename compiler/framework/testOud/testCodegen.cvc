@@ -1,49 +1,51 @@
-extern int a;
-int x = 4 + 3;
+// extern int a;
+// int x = 4 + 3;
 
-export int main(int abcde)
-{
+// export int main(int abcde)
+// {
     // Testing ALL EXPRESSIONS:
     int a = 4 + 4;
-    int b = 2 - 3;
-    int c = 1 * 4;
-    int d = 1 / 4;
-    bool e = 1 <= 4;
-    bool f = 1 > 4;
-    int g = -4;
-    bool h = 1 != 4;
-    bool i = 1 == 4;
-    float j = 1.0 * 4.0;
-    int k = (int)4.0;
-    bool l = false;
-    bool m = true;
-    do
-    {
-        a = 1 + 2;
-    } while (1 < 2);
+    // int b = 2 - 3;
+    // int c = 1 * 4;
+    // int d = 1 / 4;
+    // bool e = 1 <= 4;
+    // bool f = 1 > 4;
+    // int g = -4;
+    // bool h = 1 != 4;
+    // bool i = 1 == 4;
+    // float j = 1.0 * 4.0;
+    // int k = (int)4.0;
+    // bool l = false;
+    // bool m = true;
+    // do
+    // {
+    //     a = 1 + 2;
+    // } while (1 < 2);
 
-    return 4;
+    // return 4;
 
     // Not tested: TERNOP, VAR
-}
+// }
 
-export void test(int abcde)
-{
+// export void test(int abcde)
+// {
     // >>> !! OVERSCHRIJFT !! <<<
 
-    int a = 1;
+    // int a;
+
+    // a = 1;
 
     // nog een foute in while/else ofzo
     // istore gebeurt voor iload
-    while (3 == 1)
-        a = 2;
-    // if (true && true)
+    // while (3 == 1)
     //     a = 2;
-    // else
-    //     a = 3;
+    // // if (true && true)
+    // //     a = 2;
+    // // else
+    // //     a = 3;
 
-    if (1 <= 2)
-        a = 1;
+    // if (1 <= 2)
+    //     a = 1;
 
-    return;
-}
+    // return;
+// }

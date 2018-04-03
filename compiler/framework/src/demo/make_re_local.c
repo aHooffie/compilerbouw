@@ -84,7 +84,7 @@ node *RELvardeclaration(node *arg_node, info *arg_info)
         char *name = STRcpy(VARDECLARATION_NAME(arg_node));
         node *varlet = TBmakeVarlet(name, NULL, NULL);
         VARLET_SYMBOLTABLEENTRY(varlet) = VARDECLARATION_SYMBOLTABLEENTRY(arg_node);
-        node *newAssign = TBmakeAssign(varlet, VARDECLARATION_INIT(arg_node));
+        node *newAssign = TBmakeAssign(VARDECLARATION_INIT(arg_node), varlet);
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
         /* Check if it is the first new vardeclaration */

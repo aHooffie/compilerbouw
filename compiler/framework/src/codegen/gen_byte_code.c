@@ -155,79 +155,20 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
 
 node *GBCvardeclaration(node *arg_node, info *arg_info)
 {
-
-    // NOG NIET GECONTROLEERD ..
-
     DBUG_ENTER("GBCvardeclaration");
-    node *n;
-
-    /* Traverse into assigning subtree. */
-    if (VARDECLARATION_INIT(arg_node) != NULL)
-        VARDECLARATION_INIT(arg_node) = TRAVdo(VARDECLARATION_INIT(arg_node), arg_info);
 
     /* Add variable to variable array. */
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
-
-    if (VARDECLARATION_TYPE(arg_node) == T_int)
-        n = TBmakeInstructions(I_iload, NULL);
-    else if (VARDECLARATION_TYPE(arg_node) == T_float)
-        n = TBmakeInstructions(I_fload, NULL);
-    else {
-        n = TBmakeInstructions(I_bload, NULL);
-    }
-
-    INSTRUCTIONS_OFFSET(n) = INFO_VC(arg_info);
-
     INFO_VC(arg_info) += 1;
-    addNode(n, arg_info);
+
+    /* Traverse into assigning subtree. */
+    VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
 
     if (VARDECLARATION_NEXT(arg_node) != NULL)
         VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
-
-node *GBCvarlet(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCvarlet");
-    node *n;
-
-    // BOOL GEBRUIKEN!!!??
-
-    /* Find the varlet index in the array. */
-    int i;
-    for (i = 0; i < INFO_VC(arg_info); i++)
-    {
-
-        if (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == TRUE)
-            break;
-    }
-
-    // /* If var wasn't found. */
-    // if (i == INFO_VC(arg_info) && (STReq(VARLET_NAME(INFO_VARIABLES(arg_info)[i]), VARLET_NAME(arg_node)) == FALSE))
-    //     CTIabort("Variable in varlet not found.");
-
-    /* store local variable with offset. */
-    if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_int)
-        n = TBmakeInstructions(I_istore, NULL);
-    else if (SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == T_float)
-        n = TBmakeInstructions(I_fstore, NULL);
-    else
-        n = TBmakeInstructions(I_bstore, NULL);
-
-    INSTRUCTIONS_OFFSET(n) = i;
-
-
-    /* Add the node to the list of instructions. */
-    addNode(n, arg_info);
-
-        // traverse through varlets (BOVENAAN OF ONDERAAAN??????!!)
-    if (VARLET_NEXT(arg_node) != NULL)
-        VARLET_NEXT(arg_node) = TRAVdo(VARLET_NEXT(arg_node), arg_info);
-
-    DBUG_RETURN(arg_node);
-}
-
 
 /* Statements */
 /* Ifelse */
@@ -511,23 +452,6 @@ node *GBCreturn(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Assign node - done. */
-node *GBCassign(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCassign");
-
-    /* Load the right side. */
-    ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
-
-    /* Store result into left side. */
-    if (ASSIGN_LET(arg_node) != NULL)
-        ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
-
-    // istore?
-
-    DBUG_RETURN(arg_node);
-}
-
 /* Expressions */
 node *GBCternop(node *arg_node, info *arg_info)
 {
@@ -563,24 +487,20 @@ node *GBCternop(node *arg_node, info *arg_info)
 
 node *GBCbinop(node *arg_node, info *arg_info)
 {
-
-    // !! TO DO: LAATSTE TWEE CASES
-
     DBUG_ENTER("GBCbinop");
     node *n;
 
-    // traverse expression
+    /* Traverse expressions */
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
     nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
 
-    // find out binop type
     switch (BINOP_OP(arg_node))
     {
     case BO_add:
         if (left == N_num)
-            // >>> optimize : met iinc??
+            // TO DO > optimize : met iinc??
             n = TBmakeInstructions(I_iadd, NULL);
         else
             n = TBmakeInstructions(I_fadd, NULL);
@@ -715,39 +635,89 @@ node *GBCcast(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* WERKT */
 node *GBCvar(node *arg_node, info *arg_info)
 {
-
     DBUG_ENTER("GBCvar");
+
     node *n;
-
-    // ADD BOOOOOOOLLLL
-
-    /* Find the var index in the array. */
     int i;
+    bool foundDouble = FALSE;
+
     for (i = 0; i < INFO_VC(arg_info); i++)
     {
-        if (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == TRUE)
+        if (STReq(VAR_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+        {
+            foundDouble = TRUE;
             break;
+        }
     }
 
     /* If var wasn't found. */
-    // if (i == INFO_VC(arg_info) && (STReq(VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i]), VAR_NAME(arg_node)) == FALSE))
-        // CTIabort("Var wasnt found.");
+    if (foundDouble == FALSE)
+        CTIabort("Error during code generation, line %i", NODE_LINE(arg_node));
 
     /* Load var from array. */
-    if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_int)
-        n = TBmakeInstructions(I_iloadc, INFO_VARIABLES(arg_info)[i]);
-    else if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node)) == T_float)
-        n = TBmakeInstructions(I_floadc, INFO_VARIABLES(arg_info)[i]);
+    type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
+
+    if (t == T_int)
+        n = TBmakeInstructions(I_iloadc, NULL);
+    else if (t == T_float)
+        n = TBmakeInstructions(I_floadc, NULL);
     else
-        n = TBmakeInstructions(I_bloadc, INFO_VARIABLES(arg_info)[i]);
+        n = TBmakeInstructions(I_bloadc, NULL);
+
+    INSTRUCTIONS_OFFSET(n) = i;
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 
+/* WERKT */
+node *GBCvarlet(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCvarlet");
+    node *n;
+    int i;
+    bool foundDouble = FALSE;
+
+    for (i = 0; i < INFO_VC(arg_info); i++)
+    {
+        if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+        {
+            foundDouble = TRUE;
+            break;
+        }
+    }
+
+    /* If varlet wasn't found. */
+    if (foundDouble == FALSE)
+        CTIabort("Error during code generation, line %i", NODE_LINE(arg_node));
+
+    /* Load var from array. */
+    type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
+
+    /* store local variable with offset. */
+    if (t == T_int)
+         n = TBmakeInstructions(I_istore, NULL);
+    else if (t == T_float)
+        n = TBmakeInstructions(I_fstore, NULL);
+    else
+        n = TBmakeInstructions(I_bstore, NULL);
+
+    INSTRUCTIONS_OFFSET(n) = i;
+
+    /* Add the node to the list of instructions. */
+    addNode(n, arg_info);
+
+    /* Continue with other varlets. */
+    VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* WERKT */
 node *GBCnum(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCnum");
@@ -789,14 +759,14 @@ node *GBCnum(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* WERKT */
 node *GBCfloat(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfloat");
     node *n;
-
+    int i;
     bool foundDouble = FALSE;
 
-    int i;
     for (i = 0; i < INFO_CC(arg_info); i++)
     {
         if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_float && FLOAT_VALUE(arg_node) == FLOAT_VALUE(INFO_CONSTANTS(arg_info)[i]))
@@ -832,6 +802,7 @@ node *GBCfloat(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* WERKT */
 node *GBCbool(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCbool");
@@ -847,7 +818,8 @@ node *GBCbool(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* If the list is empty, add the new node as both head and tail. Otherwise, add it to the end and update the previous last node. */
+/* If the list is empty, add the new node as both head and tail.
+    Otherwise, add it to the end and update the previous last node. */
 void addNode(node *arg_node, info *arg_info)
 {
     INFO_SIZE(arg_info) += 1;
@@ -877,7 +849,6 @@ node *GBCdoGenByteCode(node *syntaxtree)
     TRAVpop();
 
     printInstructions(arg_info);
-
 
     arg_info = FreeInfo(arg_info);
 

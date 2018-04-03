@@ -680,22 +680,22 @@ traversals to process it.
         <node name="Assign">
             <description>represents assignment statement</description>
             <sons>
-                <son name="Let">
-                    <description>represents left hand side variable; can be missing to represent procedure calls</description>
+                <son name="Expr">
+                    <description>represents right hand side expression</description>
                     <targets>
-                        <target mandatory="no">
-                            <node name="VarLet" />
+                        <target mandatory="yes">
+                            <set name="Expr" />
                             <phases>
                                 <all />
                             </phases>
                         </target>
                     </targets>
                 </son>
-                <son name="Expr">
-                    <description>represents right hand side expression</description>
+                <son name="Let">
+                    <description>represents left hand side variable; can be missing to represent procedure calls</description>
                     <targets>
-                        <target mandatory="yes">
-                            <set name="Expr" />
+                        <target mandatory="no">
+                            <node name="VarLet" />
                             <phases>
                                 <all />
                             </phases>

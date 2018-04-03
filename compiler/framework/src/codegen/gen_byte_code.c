@@ -42,21 +42,21 @@ out support for multiple modules.
 /* INFO structure */
 struct INFO
 {
-    node *firstinstruction;  // pointer to the first of the list (for the final printing, to be able to traverse)
-    node *lastinstruction;   // pointer to the last of the list (to add a new node to (see function AddNode))
-    node *constants[256];    // array of integers and floats (NODES!!! not values!! ) to store / load from
-    node *variables[256];    // array of variables (NODES!!! not strings !! ) to store / load from
-    node *exportfun[256];    // array of functions (NODES!!! not strings !! ) to export
+    node *firstinstruction; // pointer to the first of the list (for the final printing, to be able to traverse)
+    node *lastinstruction;  // pointer to the last of the list (to add a new node to (see function AddNode))
+    node *constants[256];   // array of integers and floats (NODES!!! not values!! ) to store / load from
+    node *variables[256];   // array of variables (NODES!!! not strings !! ) to store / load from
+    node *exportfun[256];   // array of functions (NODES!!! not strings !! ) to export
     node *importvar[256];
     node *variablesexp[256]; // array of variables (NODES!!! not strings !! ) to store / load from
     int constantcount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int varcount;            // counter to check what indices are filled in the variable array
     int varexpcount;         // counter to check what indices are filled in the variable array
-    int exportfuncount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
+    int exportfuncount;      // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int importvarcount;
-    int branchcount;         // counter to check what branch voorstuk should be used in labels
-    
-    int size;                // FOR TESTING!
+    int branchcount; // counter to check what branch voorstuk should be used in labels
+
+    int size; // FOR TESTING!
     int localvarcount;
 };
 
@@ -117,13 +117,13 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     // if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
     //     GLOBALDEF_DIMENSIONS(arg_node) = TRAVdo(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
-    // /* Add variable to variable array 
+    // /* Add variable to variable array
 
     // -- possible new global array ? */
     // INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     // INFO_VC(arg_info) += 1;
 
-    //  // Check if variable should be exported, add it to that array too. 
+    //  // Check if variable should be exported, add it to that array too.
     // if (GLOBALDEF_ISEXPORT(arg_node) == TRUE)
     // {
     //     INFO_VARIABLESEXP(arg_info)[INFO_VEC(arg_info)] = arg_node;
@@ -150,8 +150,10 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
     /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
-    INFO_IMPORTVAR(arg_info)[INFO_IVC(arg_info)] = arg_node;
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
+    INFO_IMPORTVAR(arg_info)
+    [INFO_IVC(arg_info)] = arg_node;
 
     // if (GLOBALDEC_TYPE(arg_node) == T_int)
     //     n = TBmakeInstructions(I_iloadg, NULL);
@@ -169,7 +171,7 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-// FUNC EXPORT???!!!! 
+// FUNC EXPORT???!!!!
 node *GBCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunction");
@@ -193,12 +195,12 @@ node *GBCfunction(node *arg_node, info *arg_info)
     INFO_LC(arg_info) = 0;
 
     /* Check if function needs to be exported. */
-    if (FUNCTION_ISEXPORT(arg_node) == TRUE) {
-        INFO_EXPORTFUN(arg_info)[INFO_EFC(arg_info)] = arg_node;
+    if (FUNCTION_ISEXPORT(arg_node) == TRUE)
+    {
+        INFO_EXPORTFUN(arg_info)
+        [INFO_EFC(arg_info)] = arg_node;
         INFO_EFC(arg_info) += 1;
-
     }
-
 
     DBUG_RETURN(arg_node);
 }
@@ -207,7 +209,8 @@ node *GBCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCparameters");
 
-    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
 
     PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
@@ -222,10 +225,11 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     INFO_LC(arg_info) += 1;
 
     /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    INFO_VARIABLES(arg_info)
+    [INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
-    
-    VARDECLARATION_NEXT(arg_node) = TRAVdopt(VARDECLARATION_NEXT(arg_node), arg_info);
+
+    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -493,8 +497,7 @@ node *GBCreturn(node *arg_node, info *arg_info)
     type t = SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node));
 
     /* Traverse into optional expression to return. */
-    RETURN_EXPR(arg_node) = TRAVdopt(RETURN_EXPR(arg_node), arg_info);
-
+    RETURN_EXPR(arg_node) = TRAVopt(RETURN_EXPR(arg_node), arg_info);
 
     /* Create return instruction, according to expression type. */
     if (t == T_int)
@@ -703,7 +706,7 @@ node *GBCvar(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvar");
 
     node *n;
-    nodetype nt; 
+    nodetype nt;
     int i;
     bool foundVardec = FALSE;
 
@@ -740,7 +743,6 @@ node *GBCvar(node *arg_node, info *arg_info)
         }
     }
 
-
     // NETTER OPLOSSENNNN
     if (INFO_VC(arg_info) == 0)
         nt = N_num;
@@ -752,38 +754,38 @@ node *GBCvar(node *arg_node, info *arg_info)
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
 
-    switch(nt)
+    switch (nt)
     {
-        case N_vardeclaration:
-        case N_parameters:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_iloadc, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_floadc, NULL);
-            else
-                n = TBmakeInstructions(I_bloadc, NULL);
-            break;
+    case N_vardeclaration:
+    case N_parameters:
+        if (t == T_int)
+            n = TBmakeInstructions(I_iloadc, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_floadc, NULL);
+        else
+            n = TBmakeInstructions(I_bloadc, NULL);
+        break;
 
-        case N_globaldec:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_iloade, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_floade, NULL);
-            else
-                n = TBmakeInstructions(I_bloade, NULL);
-            break;
+    case N_globaldec:
+        if (t == T_int)
+            n = TBmakeInstructions(I_iloade, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_floade, NULL);
+        else
+            n = TBmakeInstructions(I_bloade, NULL);
+        break;
 
-        case N_globaldef:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_iloadg, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_floadg, NULL);
-            else
-                n = TBmakeInstructions(I_bloadg, NULL);
-            break;
+    case N_globaldef:
+        if (t == T_int)
+            n = TBmakeInstructions(I_iloadg, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_floadg, NULL);
+        else
+            n = TBmakeInstructions(I_bloadg, NULL);
+        break;
 
-        default:
-            n = NULL;
+    default:
+        n = NULL;
     }
 
     INSTRUCTIONS_OFFSET(n) = i;
@@ -847,38 +849,38 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
 
-    switch(nt)
+    switch (nt)
     {
-        case N_vardeclaration:
-        case N_parameters:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_istore, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_fstore, NULL);
-            else
-                n = TBmakeInstructions(I_bstore, NULL);
-            break;
+    case N_vardeclaration:
+    case N_parameters:
+        if (t == T_int)
+            n = TBmakeInstructions(I_istore, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_fstore, NULL);
+        else
+            n = TBmakeInstructions(I_bstore, NULL);
+        break;
 
-        case N_globaldec:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_istoree, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_fstoree, NULL);
-            else
-                n = TBmakeInstructions(I_bstoree, NULL);
-            break;
+    case N_globaldec:
+        if (t == T_int)
+            n = TBmakeInstructions(I_istoree, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_fstoree, NULL);
+        else
+            n = TBmakeInstructions(I_bstoree, NULL);
+        break;
 
-        case N_globaldef:
-            if (t == T_int) 
-                n = TBmakeInstructions(I_istoreg, NULL);
-            else if (t == T_float)
-                n = TBmakeInstructions(I_fstoreg, NULL);
-            else
-                n = TBmakeInstructions(I_bstoreg, NULL);
-            break;
+    case N_globaldef:
+        if (t == T_int)
+            n = TBmakeInstructions(I_istoreg, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_fstoreg, NULL);
+        else
+            n = TBmakeInstructions(I_bstoreg, NULL);
+        break;
 
-        default:
-            n = NULL;
+    default:
+        n = NULL;
     }
 
     /* store local variable with offset. */
@@ -922,7 +924,8 @@ node *GBCnum(node *arg_node, info *arg_info)
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            INFO_CONSTANTS(arg_info)
+            [INFO_CC(arg_info)] = arg_node;
             INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
             INFO_CC(arg_info) += 1;
         }
@@ -961,11 +964,12 @@ node *GBCfloat(node *arg_node, info *arg_info)
     {
 
         n = TBmakeInstructions(I_floadc, NULL);
-        
+
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            INFO_CONSTANTS(arg_info)
+            [INFO_CC(arg_info)] = arg_node;
             INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
             INFO_CC(arg_info) += 1;
         }
@@ -1384,8 +1388,6 @@ void printInstructions(info *arg_info)
 
     printf("\n");
 
-
-
     /* Add constants */
     char *consttype;
     int numval;
@@ -1400,7 +1402,6 @@ void printInstructions(info *arg_info)
             consttype = TypetoString(T_int);
             numval = NUM_VALUE(INFO_CONSTANTS(arg_info)[i]);
             printf(".const %s %i \n", consttype, numval);
-
         }
         else
         {
@@ -1417,11 +1418,12 @@ void printInstructions(info *arg_info)
     char *returntype;
     char *paramtype;
 
-    for (int i = 0; i < INFO_EFC(arg_info); i++) {
+    for (int i = 0; i < INFO_EFC(arg_info); i++)
+    {
         returntype = TypetoString(FUNCTION_TYPE(INFO_EXPORTFUN(arg_info)[i]));
         printf(".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]), returntype);
 
-        node * param = FUNCTION_PARAMETERS(INFO_EXPORTFUN(arg_info)[i]);
+        node *param = FUNCTION_PARAMETERS(INFO_EXPORTFUN(arg_info)[i]);
 
         while (param != NULL)
         {

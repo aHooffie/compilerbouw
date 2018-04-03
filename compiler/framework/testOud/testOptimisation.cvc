@@ -1,0 +1,12 @@
+export void main (int p) {
+
+    //int q = 0;
+    //int s = 0 * r;
+    //int t = 1;
+    int r = 4;
+
+    int u = 1 * r;
+    int v = 2 + 5;
+    
+    return;
+}

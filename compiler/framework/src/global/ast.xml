@@ -71,7 +71,7 @@ traversals to process it.
                     <node name="FunctionCallStmt" />
                     <node name="FunctionCallExpr" />
                     <node name="Expressions" />
-                    <node name="Function" />
+                    <node name="FunctionBody" />
                     <node name="Parameters" />
                     <node name="GlobalDec" />
                     <node name="GlobalDef" />

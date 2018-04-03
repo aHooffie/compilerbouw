@@ -163,21 +163,21 @@ globaldef: type ID SEMICOLON
 
 function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
         {
-          $$ = TBmakeFunction($1, $2, $7, $4);
+          $$ = TBmakeFunction($1, $2, $4, $7);
         }
         |
         type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
         {
-            $$ = TBmakeFunction($1, $2, $6, NULL);
+            $$ = TBmakeFunction($1, $2, NULL, $6);
         }
         | EXPORT type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
         {
-          $$ = TBmakeFunction($2, $3, $8, $5);
+          $$ = TBmakeFunction($2, $3, $5, $8);
           FUNCTION_ISEXPORT($$) = TRUE;
         }
         | EXPORT type ID BRACKET_L BRACKET_R PAR_L funbody PAR_R
         {
-            $$ = TBmakeFunction($2, $3, $7, NULL);
+            $$ = TBmakeFunction($2, $3, NULL, $7);
             FUNCTION_ISEXPORT($$) = TRUE;
         }
         | EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
@@ -186,7 +186,7 @@ function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
         }
         | EXTERN type ID BRACKET_L params BRACKET_R SEMICOLON
         {
-          $$ = TBmakeFunction($2, $3, NULL, $5);
+          $$ = TBmakeFunction($2, $3, $5, NULL);
         }
         ;
 

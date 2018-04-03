@@ -93,7 +93,7 @@ node *REGdoRegularExpr(node *syntaxtree)
     if (INFO_STMTS(arg_info) != NULL)
     {
         node *allStmts = TBmakeFunctionbody(NULL, NULL, INFO_HEAD(arg_info));
-        node *init_func = TBmakeFunction(T_void, STRcpy("__init"), allStmts, NULL);
+        node *init_func = TBmakeFunction(T_void, STRcpy("__init"), NULL, allStmts);
 
         /* Add the new declarations to the syntax tree. */
         PROGRAM_DECLARATIONS(syntaxtree) = TBmakeDeclarations(init_func, PROGRAM_DECLARATIONS(syntaxtree));

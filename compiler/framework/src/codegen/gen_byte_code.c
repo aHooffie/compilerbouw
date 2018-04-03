@@ -6,9 +6,12 @@
 #include "dbug.h"
 #include "str.h"
 #include "globals.h"
+// #include "add_symboltables.h"
 
 #include "memory.h"
 #include "ctinfo.h"
+
+extern char *TypetoString(type Type);
 
 /* 
     Milestone 15:
@@ -43,12 +46,16 @@ struct INFO
     node *lastinstruction;   // pointer to the last of the list (to add a new node to (see function AddNode))
     node *constants[256];    // array of integers and floats (NODES!!! not values!! ) to store / load from
     node *variables[256];    // array of variables (NODES!!! not strings !! ) to store / load from
+    node *functions[256];    // array of functions (NODES!!! not strings !! ) to export
     node *variablesexp[256]; // array of variables (NODES!!! not strings !! ) to store / load from
     int constantcount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int varcount;            // counter to check what indices are filled in the variable array
     int varexpcount;         // counter to check what indices are filled in the variable array
+    int functioncount;       // counter to check what indices are filled in the constant array (if you add one, up this with 1)
     int branchcount;         // counter to check what branch voorstuk should be used in labels
+    
     int size;                // FOR TESTING!
+    int localvarcount;
 };
 
 /* INFO structure macros */
@@ -56,11 +63,14 @@ struct INFO
 #define INFO_LI(n) ((n)->lastinstruction)
 #define INFO_CONSTANTS(n) ((n)->constants)
 #define INFO_VARIABLES(n) ((n)->variables)
+#define INFO_FUNCTIONS(n) ((n)->functions)
 #define INFO_VARIABLESEXP(n) ((n)->variablesexp)
 #define INFO_VC(n) ((n)->varcount)
 #define INFO_VEC(n) ((n)->varexpcount)
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_BC(n) ((n)->branchcount)
+#define INFO_FC(n) ((n)->functioncount)
+#define INFO_LC(n) ((n)->localvarcount)
 #define INFO_SIZE(n) ((n)->size)
 
 /* INFO functions */
@@ -76,6 +86,8 @@ static info *MakeInfo(void)
     INFO_VEC(result) = 0;
     INFO_CC(result) = 0;
     INFO_BC(result) = 0;
+    INFO_FC(result) = 0;
+    INFO_LC(result) = 0;
     INFO_SIZE(result) = 0;
 
     DBUG_RETURN(result);
@@ -125,7 +137,7 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
 
-    // CRASHT NOGGG
+    // CRASHT NOGGG !!!
 
 
     DBUG_ENTER("GBCglobaldec");
@@ -153,11 +165,44 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+// FUNC EXPORT???!!!! 
+node *GBCfunction(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCfunction");
+    node *n;
+
+    /* Add the labelname to the linked list.*/
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = FUNCTION_NAME(arg_node);
+    addNode(n, arg_info);
+
+    /* Create esr instruction. */
+    n = TBmakeInstructions(I_esr, NULL);
+    addNode(n, arg_info);
+
+    /* Traverse into child nodes. */
+    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+
+    /* Add offset to esr, reset variablecount for next function. */
+    INSTRUCTIONS_OFFSET(n) = INFO_LC(arg_info);
+    INFO_LC(arg_info) = 0;
+
+    /* Check if function needs to be exported. */
+    if (FUNCTION_ISEXPORT(arg_node) == TRUE) {
+        INFO_FUNCTIONS(arg_info)[INFO_FC(arg_info)] = arg_node;
+        INFO_FC(arg_info) += 1;
+
+    }
+
+
+    DBUG_RETURN(arg_node);
+}
+
 node *GBCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCparameters");
 
-    // store at index
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
 
@@ -171,12 +216,11 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCvardeclaration");
 
+    INFO_LC(arg_info) += 1;
+
     /* Add variable to variable array. */
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
-
-    // /* Traverse into assigning subtree. */
-    // VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
 
     if (VARDECLARATION_NEXT(arg_node) != NULL)
         VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
@@ -699,10 +743,22 @@ node *GBCvarlet(node *arg_node, info *arg_info)
 
     for (i = 0; i < INFO_VC(arg_info); i++)
     {
-        if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+        if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_vardeclaration)
         {
-            foundVardec = TRUE;
-            break;
+            if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                break;
+            }
+        }
+        else
+        {
+            // is param
+            if (STReq(VARLET_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
+            {
+                foundVardec = TRUE;
+                break;
+            }
         }
     }
 
@@ -1223,5 +1279,24 @@ void printInstructions(info *arg_info)
 
     printf("\n");
 
-    /* Print mogelijk nog andere instructies met een . (voor later) */
+
+    char *returntype;
+    char *paramtype;
+
+    for (int i = 0; i < INFO_FC(arg_info); i++) {
+        returntype = TypetoString(FUNCTION_TYPE(INFO_FUNCTIONS(arg_info)[i]));
+        printf(".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_FUNCTIONS(arg_info)[i]), returntype);
+
+        node * param = FUNCTION_PARAMETERS(INFO_FUNCTIONS(arg_info)[i]);
+
+        while (param != NULL)
+        {
+            paramtype = TypetoString(PARAMETERS_TYPE(param));
+            printf("%s ", paramtype);
+            param = PARAMETERS_NEXT(param);
+        }
+
+        printf("%s\n", FUNCTION_NAME(INFO_FUNCTIONS(arg_info)[i]));
+    }
+
 }

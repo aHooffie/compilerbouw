@@ -107,6 +107,7 @@ traversals to process it.
                 <travuser>
                     <node name="GlobalDef" />
                     <node name="GlobalDec" />
+                    <node name="Function" />
                     <node name="Parameters" />
                     <node name="VarDeclaration" />
                     <node name="IfElse" />
@@ -237,22 +238,22 @@ traversals to process it.
         <node name="Function">
             <description>represents function declaration + defintion</description>
             <sons>
-                <son name="FunctionBody">
-                    <description>represents (optional) body with statement(s) (if function == def)</description>
+                <son name="Parameters">
+                    <description>represents (optional) parameters </description>
                     <targets>
                         <target mandatory="no">
-                            <node name="FunctionBody" />
+                            <node name="Parameters" />
                             <phases>
                                 <all />
                             </phases>
                         </target>
                     </targets>
                 </son>
-                <son name="Parameters">
-                    <description>represents (optional) parameters </description>
+                <son name="FunctionBody">
+                    <description>represents (optional) body with statement(s) (if function == def)</description>
                     <targets>
                         <target mandatory="no">
-                            <node name="Parameters" />
+                            <node name="FunctionBody" />
                             <phases>
                                 <all />
                             </phases>

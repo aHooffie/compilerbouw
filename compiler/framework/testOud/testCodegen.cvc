@@ -1,7 +1,7 @@
 // extern int a;
 // int x = 4 + 3;
 
-export int main(int abcde)
+export int main(int abcde, float hello, bool test)
 {
     // Testing ALL EXPRESSIONS:
     int a = 4 + 4;

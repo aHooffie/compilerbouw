@@ -210,8 +210,7 @@ node *GBCparameters(node *arg_node, info *arg_info)
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
 
-    if (PARAMETERS_NEXT(arg_node) != NULL)
-        PARAMETERS_NEXT(arg_node) = TRAVdo(PARAMETERS_NEXT(arg_node), arg_info);
+    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -225,9 +224,8 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     /* Add variable to variable array. */
     INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
     INFO_VC(arg_info) += 1;
-
-    if (VARDECLARATION_NEXT(arg_node) != NULL)
-        VARDECLARATION_NEXT(arg_node) = TRAVdo(VARDECLARATION_NEXT(arg_node), arg_info);
+    
+    VARDECLARATION_NEXT(arg_node) = TRAVdopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -495,8 +493,8 @@ node *GBCreturn(node *arg_node, info *arg_info)
     type t = SYMBOLTABLEENTRY_TYPE(RETURN_SYMBOLTABLEENTRY(arg_node));
 
     /* Traverse into optional expression to return. */
-    if (RETURN_EXPR(arg_node) != NULL)
-        RETURN_EXPR(arg_node) = TRAVdo(RETURN_EXPR(arg_node), arg_info);
+    RETURN_EXPR(arg_node) = TRAVdopt(RETURN_EXPR(arg_node), arg_info);
+
 
     /* Create return instruction, according to expression type. */
     if (t == T_int)
@@ -1386,6 +1384,34 @@ void printInstructions(info *arg_info)
 
     printf("\n");
 
+
+
+    /* Add constants */
+    char *consttype;
+    int numval;
+    float floatval;
+
+    // DUBBELE CODE MET PRINT DOOR %i EN %f
+
+    for (int i = 0; i < INFO_CC(arg_info); i++)
+    {
+        if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_num)
+        {
+            consttype = TypetoString(T_int);
+            numval = NUM_VALUE(INFO_CONSTANTS(arg_info)[i]);
+            printf(".const %s %i \n", consttype, numval);
+
+        }
+        else
+        {
+            // float
+            consttype = TypetoString(T_float);
+            floatval = FLOAT_VALUE(INFO_CONSTANTS(arg_info)[i]);
+            printf(".const %s %f \n", consttype, floatval);
+        }
+
+        // printf(".const %s %i \n", consttype, constvalue);
+    }
 
     /* Add exports */
     char *returntype;

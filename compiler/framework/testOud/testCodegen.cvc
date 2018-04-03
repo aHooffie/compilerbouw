@@ -13,7 +13,7 @@ export int main(int abcde, float hello, bool test)
     int g = -4;
     bool h = 1 != 4;
     bool i = 1 == 4;
-    float j = 1.0 * 4.0;
+    float j = 1.0 * 4.000023;
     int k = (int)4.0;
     bool l = false;
     bool m = true;

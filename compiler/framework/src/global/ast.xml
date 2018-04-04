@@ -1506,6 +1506,17 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Offset">
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
                 <attribute name="Original">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">

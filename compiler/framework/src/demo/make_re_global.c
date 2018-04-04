@@ -56,6 +56,7 @@ node *REGglobaldef(node *arg_node, info *arg_info)
 
         node *globdef = TBmakeVarlet(name, NULL, NULL);
         VARLET_SYMBOLTABLEENTRY(globdef) = GLOBALDEF_SYMBOLTABLEENTRY(arg_node);
+
         node *newAssign = TBmakeAssign(GLOBALDEF_ASSIGN(arg_node), globdef);
         node *newStmt = TBmakeStmts(newAssign, NULL);
 
@@ -85,7 +86,6 @@ node *REGdoRegularExpr(node *syntaxtree)
 
     info *arg_info;
     arg_info = MakeInfo();
-
     TRAVpush(TR_reg);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();

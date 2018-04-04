@@ -1,13 +1,9 @@
 /*****************************************************************************
  *
  * Module: opt_sub
- *
  * Prefix: OS
- *
- * Description:
- *
- * This module implements a demo traversal of the abstract syntax tree that 
- * replaces subtractions with identical left and right argument by zeros.
+ * Description: This module implements some simple arithmetic optimisations.
+ * Author: Andrea van den Hooff
  *
  *****************************************************************************/
 
@@ -31,8 +27,9 @@ node *OSbinop(node *arg_node, info *arg_info)
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
     node *n;
+    int val;
 
-    /* Original opt sub: 2 - 2 or x - x = 0. */
+    /* Replace subtraction (optimisation). */
     if (BINOP_OP(arg_node) == BO_sub)
     {
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_var) &&
@@ -43,14 +40,22 @@ node *OSbinop(node *arg_node, info *arg_info)
             arg_node = TBmakeNum(0);
         }
         else if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
-                 (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num) &&
-                 (NUM_VALUE(BINOP_LEFT(arg_node)) == NUM_VALUE(BINOP_RIGHT(arg_node))))
+                 (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
         {
-            arg_node = FREEdoFreeTree(arg_node);
-            arg_node = TBmakeNum(0);
+            if (NUM_VALUE(BINOP_LEFT(arg_node)) == NUM_VALUE(BINOP_RIGHT(arg_node)))
+            {
+                arg_node = FREEdoFreeTree(arg_node);
+                arg_node = TBmakeNum(0);
+            }
+            else
+            {
+                val = NUM_VALUE(BINOP_LEFT(arg_node)) - NUM_VALUE(BINOP_RIGHT(arg_node));
+                arg_node = FREEdoFreeTree(arg_node);
+                arg_node = TBmakeNum(val);
+            }
         }
     }
-    /* Added optimisation for x * 0. and x * 1. */
+    /* Replace multiplication: var * 0, var * 1 & num * num (optimisation). */
     else if (BINOP_OP(arg_node) == BO_mul)
     {
         if (NODE_TYPE(BINOP_LEFT(arg_node)) == N_num)
@@ -72,6 +77,12 @@ node *OSbinop(node *arg_node, info *arg_info)
                 BINOP_RIGHT(arg_node) = NULL;
                 arg_node = FREEdoFreeTree(arg_node);
                 arg_node = n;
+            }
+            else if (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num)
+            {
+                val = NUM_VALUE(BINOP_LEFT(arg_node)) * NUM_VALUE(BINOP_RIGHT(arg_node));
+                arg_node = FREEdoFreeTree(arg_node);
+                arg_node = TBmakeNum(val);
             }
         }
         else if (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num)
@@ -96,15 +107,27 @@ node *OSbinop(node *arg_node, info *arg_info)
             }
         }
     }
-    /* Constant folding. ( 2 + 4 ) = 6. */
+    /* Replace division: num / num (optimisation). */
+    else if (BINOP_OP(arg_node) == BO_div)
+    {
+        if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
+            (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num) &&
+            (NUM_VALUE(BINOP_RIGHT(arg_node)) != 0))
+        {
+            val = NUM_VALUE(BINOP_LEFT(arg_node)) / NUM_VALUE(BINOP_RIGHT(arg_node));
+            arg_node = FREEdoFreeTree(arg_node);
+            arg_node = TBmakeNum(val);
+        }
+    }
+    /* Constant folding: 2 + 4  = 6 (optimisation). */
     else if (BINOP_OP(arg_node) == BO_add)
     {
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
         {
-            int value = NUM_VALUE(BINOP_LEFT(arg_node)) + NUM_VALUE(BINOP_RIGHT(arg_node));
+            val = NUM_VALUE(BINOP_LEFT(arg_node)) + NUM_VALUE(BINOP_RIGHT(arg_node));
             arg_node = FREEdoFreeTree(arg_node);
-            arg_node = TBmakeNum(value);
+            arg_node = TBmakeNum(val);
         }
     }
 

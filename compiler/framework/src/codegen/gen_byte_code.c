@@ -59,6 +59,7 @@ struct INFO
     int globalcount;
     int localvarcount; // counter to check esr offset
     int branchcount;   // counter to check what branch voorstuk should be used in labels
+    // int functionreturncount; // counter to check if return has been created.
 };
 
 /* INFO structure macros */
@@ -77,6 +78,7 @@ struct INFO
 #define INFO_GC(n) ((n)->globalcount)
 #define INFO_LC(n) ((n)->localvarcount) // for esr count
 #define INFO_BC(n) ((n)->branchcount)
+
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -145,7 +147,6 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-
 // VOID FUNCTIONS MOETEN OOK RETURNEN!
 node *GBCfunction(node *arg_node, info *arg_info)
 {
@@ -179,7 +180,8 @@ node *GBCfunction(node *arg_node, info *arg_info)
     }
 
     /* Create return instruction. */
-    if (STReq(FUNCTION_NAME(arg_node), "__init") == TRUE) {
+    // if (STReq(FUNCTION_NAME(arg_node), "__init") == TRUE) {
+    if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return) {
         n = TBmakeInstructions(I_return, NULL);
         addNode(n, arg_info);
     }

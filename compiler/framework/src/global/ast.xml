@@ -1586,6 +1586,18 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <!-- <attribute name="Args">
+                    <description>represents an optional second argument in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="no">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>             -->
             </attributes>
         </node>
         <!-- 

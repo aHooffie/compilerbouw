@@ -5,7 +5,9 @@ extern int a;
 export void main(int abcde, float hello, bool test)
 {
     // Testing ALL EXPRESSIONS:
-    int a = 4;
+    int a;
+    int b;
+    a = 3;
     // bool b = true;
     // int b = 2 - 3;
     // int c = 1 * 4;
@@ -24,19 +26,22 @@ export void main(int abcde, float hello, bool test)
     //     a = 1 + 2;
     // } while (1 < 2);
 
-    if (a < a && a < 4) {
-        if (a < 5)
-            a = 4;
-        else
-            a = 6;
-    }
+    // if (a < a && a < 4) {
+    //     if (a < 5)
+    //         a = 4;
+    //     else
+    //         a = 6;
+    // }
     // else
     //     a = 8;
 
     // return;
 
-//     //     // Not tested: TERNOP
-//     // }
+    // for (int i = 0, 10)
+    // {
+    //     a = a + 1;
+    // }
+
 }
 
 // export void test(int abcde)

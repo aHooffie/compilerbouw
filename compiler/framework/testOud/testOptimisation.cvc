@@ -1,0 +1,12 @@
+export void main (int p) {
+    int a = 4;
+    int b = 1 * a;
+    int c = a * 0;
+    int d = 2 + 5;
+    int e = 3 * 4;
+    int f = 10 / 5;
+    int g = 10 - 5;
+    int h = 10 - 10;
+    int i = g - g;
+    return;
+}

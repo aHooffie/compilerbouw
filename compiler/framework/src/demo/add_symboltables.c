@@ -42,6 +42,8 @@ struct INFO
     int count;
     int functioncount;
     int offsetcount;
+    int globaldeccount;
+    int globaldefcount;
     char *forloopinit;
 };
 
@@ -53,6 +55,8 @@ struct INFO
 #define INFO_FUNCTIONCOUNT(n) ((n)->functioncount)
 #define INFO_COUNT(n) ((n)->count)
 #define INFO_OFFSETCOUNT(n) ((n)->offsetcount)
+#define INFO_GDC(n) ((n)->globaldeccount)
+#define INFO_GDF(n) ((n)->globaldefcount)
 
 
 /* INFO functions */
@@ -69,6 +73,8 @@ static info *MakeInfo(void)
     INFO_FUNCTIONCOUNT(result) = 0;
     INFO_COUNT(result) = 0;
     INFO_OFFSETCOUNT(result) = 0;
+    INFO_GDC(result) = 0;
+    INFO_GDF(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -137,8 +143,10 @@ node *ASglobaldec(node *arg_node, info *arg_info)
     {
         /* Else, insert the globaldec into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, GLOBALDEC_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
-        SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OFFSETCOUNT(arg_info);
-        INFO_OFFSETCOUNT(arg_info) += 1;
+        SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
+        SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_GDC(arg_info);
+        
+        INFO_GDC(arg_info) += 1;
 
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
@@ -170,9 +178,10 @@ node *ASglobaldef(node *arg_node, info *arg_info)
     {
         /* Else, insert the globaldef into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, GLOBALDEF_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
-        SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OFFSETCOUNT(arg_info);
-        INFO_OFFSETCOUNT(arg_info) += 1;
-        
+        SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
+        SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_GDF(arg_info);
+        INFO_GDF(arg_info) += 1;
+
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
         if (last == NULL)
@@ -286,7 +295,9 @@ node *ASparameters(node *arg_node, info *arg_info)
         /* Else, insert the function into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, PARAMETERS_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OFFSETCOUNT(arg_info);
-            INFO_OFFSETCOUNT(arg_info) += 1;
+        SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
+
+        INFO_OFFSETCOUNT(arg_info) += 1;
 
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
@@ -367,7 +378,8 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
         /* Else, insert the vardeclaration into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, VARDECLARATION_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OFFSETCOUNT(arg_info);
-            INFO_OFFSETCOUNT(arg_info) += 1;
+        SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
+        INFO_OFFSETCOUNT(arg_info) += 1;
 
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
 
@@ -544,9 +556,9 @@ node *ASvarlet(node *arg_node, info *arg_info)
     {
         original = findOriginal(SYMBOLTABLE_NEXT(symboltable), VARLET_NAME(arg_node));
 
-        if (original == NULL)
+        if (original == NULL) {
             symboltable = SYMBOLTABLE_PREV(symboltable);
-        else
+        }else
         {
             VARLET_SYMBOLTABLEENTRY(arg_node) = original;
             break;

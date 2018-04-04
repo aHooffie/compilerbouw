@@ -705,7 +705,6 @@ node *TCbinop(node *arg_node, info *arg_info)
 
     case BO_and:
     case BO_or:
-
         switch (left)
         {
 
@@ -775,44 +774,6 @@ node *TCbinop(node *arg_node, info *arg_info)
             CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
 
         DBUG_RETURN(new);
-    }
-
-    if (BINOP_OP(arg_node) == BO_add || BINOP_OP(arg_node) == BO_mul)
-    {
-        if ((left == T_bool && right == T_bool) || (INFO_TYPE(arg_info) == T_bool))
-        {
-            node *tempR = BINOP_RIGHT(arg_node);
-            node *tempL = BINOP_LEFT(arg_node);
-
-            if (BINOP_OP(arg_node) == BO_mul)
-            {
-                /* Create new node. */
-                node *otherwise = TBmakeBool(FALSE);
-                new = TBmakeTernop(tempL, tempR, otherwise);
-                TERNOP_OP(new) = BO_mul;
-                if (new == NULL)
-                    CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
-            }
-            else
-            {
-                /* Create new node. */
-                node *then = TBmakeBool(TRUE);
-                new = TBmakeTernop(tempL, then, tempR);
-                TERNOP_OP(new) = BO_add;
-                if (new == NULL)
-                    CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
-            }
-
-            /* Free the original binop node? */
-            BINOP_RIGHT(arg_node) = NULL;
-            BINOP_LEFT(arg_node) = NULL;
-
-            node *next = FREEdoFreeNode(arg_node);
-            if (next != NULL)
-                CTIabort("Something went wrong in checking the types in line %i.", NODE_LINE(arg_node));
-
-            DBUG_RETURN(new);
-        }
     }
 
     DBUG_RETURN(arg_node);
@@ -956,6 +917,15 @@ char *nodetypetoString(node *arg_node)
         break;
     case N_monop:
         typeString = "int";
+        break;
+            case N_globaldef:
+        typeString = "globaldef";
+        break;
+            case N_globaldec:
+        typeString = "globaldec";
+        break;
+            case N_vardeclaration:
+        typeString = "vardeclaration";
         break;
     default:
         typeString = "Not known yet";

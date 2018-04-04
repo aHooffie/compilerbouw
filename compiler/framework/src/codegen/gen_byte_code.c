@@ -47,7 +47,6 @@ struct INFO
     node *firstinstruction;
     node *lastinstruction;
     node *constants[256];
-    node *variables[256];
     node *exportfun[256];
     node *exportvar[256];
     node *importvar[256];
@@ -66,19 +65,17 @@ struct INFO
 #define INFO_FI(n) ((n)->firstinstruction)
 #define INFO_LI(n) ((n)->lastinstruction)
 #define INFO_CONSTANTS(n) ((n)->constants)
-#define INFO_VARIABLES(n) ((n)->variables)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_EXPORTVAR(n) ((n)->exportvar)
 #define INFO_IMPORTVAR(n) ((n)->importvar)
 #define INFO_GLOBAL(n) ((n)->global)
 
-#define INFO_VC(n) ((n)->varcount)
-#define INFO_EVC(n) ((n)->exportvarcount)
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_EFC(n) ((n)->exportfuncount)
+#define INFO_EVC(n) ((n)->exportvarcount)
 #define INFO_IVC(n) ((n)->importvarcount)
 #define INFO_GC(n) ((n)->globalcount)
-#define INFO_LC(n) ((n)->localvarcount)
+#define INFO_LC(n) ((n)->localvarcount) // for esr count
 #define INFO_BC(n) ((n)->branchcount)
 
 /* INFO functions */
@@ -91,14 +88,13 @@ static info *MakeInfo(void)
 
     INFO_FI(result) = NULL;
     INFO_LI(result) = NULL;
-    INFO_VC(result) = 0;
     INFO_EVC(result) = 0;
     INFO_CC(result) = 0;
     INFO_EFC(result) = 0;
     INFO_IVC(result) = 0;
     INFO_GC(result) = 0;
     INFO_LC(result) = 0;
-    INFO_BC(result) = 0;
+    INFO_BC(result) = 1;
 
     DBUG_RETURN(result);
 }
@@ -115,14 +111,12 @@ static info *FreeInfo(info *info)
 node *GBCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCglobaldec");
+
     /* Traverse into array subtree - not implemented. */
     GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
-    /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)[INFO_VC(arg_info)] = arg_node;
+    /* Add variable to import variable array. */
     INFO_IMPORTVAR(arg_info)[INFO_IVC(arg_info)] = arg_node;
-
-    INFO_VC(arg_info) += 1;
     INFO_IVC(arg_info) += 1;
 
     DBUG_RETURN(arg_node);
@@ -151,6 +145,8 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+
+// VOID FUNCTIONS MOETEN OOK RETURNEN!
 node *GBCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunction");
@@ -162,8 +158,10 @@ node *GBCfunction(node *arg_node, info *arg_info)
     addNode(n, arg_info);
 
     /* Create esr instruction. */
-    n = TBmakeInstructions(I_esr, NULL);
-    addNode(n, arg_info);
+    if (STReq(FUNCTION_NAME(arg_node), "__init") == FALSE) {
+        n = TBmakeInstructions(I_esr, NULL);
+        addNode(n, arg_info);
+    }
 
     /* Traverse into child nodes. */
     FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
@@ -180,18 +178,11 @@ node *GBCfunction(node *arg_node, info *arg_info)
         INFO_EFC(arg_info) += 1;
     }
 
-    DBUG_RETURN(arg_node);
-}
-
-node *GBCparameters(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("GBCparameters");
-
-    INFO_VARIABLES(arg_info)
-    [INFO_VC(arg_info)] = arg_node;
-    INFO_VC(arg_info) += 1;
-
-    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
+    /* Create return instruction. */
+    if (STReq(FUNCTION_NAME(arg_node), "__init") == TRUE) {
+        n = TBmakeInstructions(I_return, NULL);
+        addNode(n, arg_info);
+    }
 
     DBUG_RETURN(arg_node);
 }
@@ -201,12 +192,6 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvardeclaration");
 
     INFO_LC(arg_info) += 1;
-
-    /* Add variable to variable array. */
-    INFO_VARIABLES(arg_info)
-    [INFO_VC(arg_info)] = arg_node;
-    INFO_VC(arg_info) += 1;
-
     VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
@@ -493,32 +478,45 @@ node *GBCternop(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCternop");
 
     node *n;
+    char str[12];
+    char *label;
+    char *end;
 
     /* Traverse expression */
     TERNOP_CONDITION(arg_node) = TRAVdo(TERNOP_CONDITION(arg_node), arg_info);
+    
+    /* Create branch + label. */
+    n = TBmakeInstructions(I_branch_f, NULL);
+    sprintf(str, "%d", INFO_BC(arg_info));
+    label = STRcat(str, "_false_ternop");
+    INSTRUCTIONS_ARG(n) = label;
+    INFO_BC(arg_info) += 1;
+    addNode(n, arg_info);
+
     TERNOP_THEN(arg_node) = TRAVdo(TERNOP_THEN(arg_node), arg_info);
+
+    /* Create branch + label. */
+    n = TBmakeInstructions(I_jump, NULL);
+    sprintf(str, "%d", INFO_BC(arg_info));
+    end = STRcat(str, "_end");
+    INSTRUCTIONS_ARG(n) = end;
+    INFO_BC(arg_info) += 1;
+    addNode(n, arg_info);
+
+    /* Label! */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = label;
+    addNode(n, arg_info);
+
     TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);
 
-    switch (TERNOP_OP(arg_node))
-    {
-    // !!!!! KLOPT DIT? NALOPEN
-    // ADD AND/OR
-    case BO_add:
-    case BO_and:
-        n = TBmakeInstructions(I_badd, NULL);
-        break;
-    case BO_mul:
-    case BO_or:
-        n = TBmakeInstructions(I_bmul, NULL);
-        break;
-    default:
-        n = NULL;
-        CTInote("TO DO TERNOP");
-        break;
-    }
+    /* End label! */
+    n = TBmakeInstructions(I_ownbranch, NULL);
+    INSTRUCTIONS_ARG(n) = end;
+    addNode(n, arg_info);
 
     /* Add the node to the list of instructions. */
-    addNode(n, arg_info);
+    // addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 
@@ -549,7 +547,6 @@ node *GBCbinop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Unknown types in binop.");
         }
     }
-    CTInote("nodetype: %s", nodetypetoString(BINOP_LEFT(arg_node)));
 
     switch (BINOP_OP(arg_node))
     {
@@ -557,6 +554,8 @@ node *GBCbinop(node *arg_node, info *arg_info)
         if (left == N_num)
             // TO DO > optimize : met iinc??
             n = TBmakeInstructions(I_iadd, NULL);
+        else if (left == N_bool)
+            n = TBmakeInstructions(I_badd, NULL);
         else
             n = TBmakeInstructions(I_fadd, NULL);
         break;
@@ -571,6 +570,8 @@ node *GBCbinop(node *arg_node, info *arg_info)
     case BO_mul:
         if (left == N_num)
             n = TBmakeInstructions(I_imul, NULL);
+        else if (left == N_bool)
+            n = TBmakeInstructions(I_bmul, NULL);
         else
             n = TBmakeInstructions(I_fmul, NULL);
         break;
@@ -698,52 +699,8 @@ node *GBCvar(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvar");
 
     node *n;
-    nodetype nt;
-    int i;
-    bool foundVardec = FALSE;
-
-    for (i = 0; i < INFO_VC(arg_info); i++)
-    {
-        if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_vardeclaration)
-        {
-            if (STReq(VAR_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_vardeclaration;
-                break;
-            }
-        }
-        else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_parameters)
-        {
-            if (STReq(VAR_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_parameters;
-                break;
-            }
-        }
-        else // is global
-        {
-            if (STReq(VAR_NAME(arg_node), GLOBALDEC_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_globaldec;
-                break;
-            }
-        }
-    }
-
-    // NETTER OPLOSSENNNN
-    if (INFO_VC(arg_info) == 0)
-        nt = N_num;
-
-    /* If var wasn't found. */
-    if (foundVardec == FALSE)
-        CTIabort("Error during code generation, line %i", NODE_LINE(arg_node));
-
-    // >>>> NETTER OPLOSSENNNN <<<<
-    if (INFO_VC(arg_info) == 0)
-        nt = N_num;
+    nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
+    int offset = SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node));
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
@@ -752,12 +709,21 @@ node *GBCvar(node *arg_node, info *arg_info)
     {
     case N_vardeclaration:
     case N_parameters:
-        if (t == T_int)
-            n = TBmakeInstructions(I_iloadc, NULL);
-        else if (t == T_float)
-            n = TBmakeInstructions(I_floadc, NULL);
-        else
-            n = TBmakeInstructions(I_bloadc, NULL);
+        if (t == T_int) {
+            // if (offset == 1) OPTIMALISATION???
+            //     n = TBmakeInstructions(I_iload_1, NULL);
+            // else if (offset == 2)
+            //     n = TBmakeInstructions(I_iload_2, NULL);
+            // else if (offset == 3)
+            //     n = TBmakeInstructions(I_iload_3, NULL);
+            // else
+                n = TBmakeInstructions(I_iload, NULL);
+        } else if (t == T_float) {
+            n = TBmakeInstructions(I_fload, NULL);
+
+        } else {
+           n = TBmakeInstructions(I_bload, NULL);
+        }
         break;
 
     case N_globaldec:
@@ -782,7 +748,8 @@ node *GBCvar(node *arg_node, info *arg_info)
         n = NULL;
     }
 
-    INSTRUCTIONS_OFFSET(n) = i;
+    INSTRUCTIONS_OFFSET(n) = offset;
+    CTInote("%s %i HIERR", VAR_NAME(arg_node), offset);
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
@@ -795,64 +762,8 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvarlet");
 
     node *n;
-    nodetype nt;
-    int i;
-    bool foundVardec = FALSE;
-
-    for (i = 0; i < INFO_VC(arg_info); i++)
-    {
-        if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_vardeclaration)
-        {
-            if (STReq(VARLET_NAME(arg_node), VARDECLARATION_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_vardeclaration;
-                break;
-            }
-        }
-        else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_parameters)
-        {
-            if (STReq(VARLET_NAME(arg_node), PARAMETERS_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_parameters;
-                break;
-            }
-        }
-        // else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_globaldef)
-        // {
-        //     CTInote("found globaldef!");
-        //     if (STReq(VARLET_NAME(arg_node), GLOBALDEF_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-        //     {
-        //         foundVardec = TRUE;
-        //         nt = N_globaldef;
-        //         break;
-        //     }
-        // }
-        else if (NODE_TYPE(INFO_VARIABLES(arg_info)[i]) == N_globaldec)
-        {
-            if (STReq(VARLET_NAME(arg_node), GLOBALDEC_NAME(INFO_VARIABLES(arg_info)[i])) == TRUE)
-            {
-                foundVardec = TRUE;
-                nt = N_globaldec;
-                break;
-            }
-        }
-    }
-
-    if (SYMBOLTABLEENTRY_SCOPE(VARLET_SYMBOLTABLEENTRY(arg_node)) == 0) {
-        foundVardec = TRUE;
-        nt = N_globaldef;
-    }
-
-    // >>> NETTER OPLOSSENNNN !!!! <<<
-    if (INFO_VC(arg_info) == 0 && nt != N_globaldef) {
-        nt = N_num;
-    }
-
-    /* If varlet wasn't found. */
-    if (foundVardec == FALSE)
-        CTIabort("Error during VARLET code generation, line %i", NODE_LINE(arg_node));
+    nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
+    int offset = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
@@ -875,6 +786,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             n = TBmakeInstructions(I_fstoree, NULL);
         else
             n = TBmakeInstructions(I_bstoree, NULL);
+        INSTRUCTIONS_OFFSET(n) = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
         break;
 
     case N_globaldef:
@@ -884,7 +796,6 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             n = TBmakeInstructions(I_fstoreg, NULL);
         else
             n = TBmakeInstructions(I_bstoreg, NULL);
-            CTInote("%s %i", VARLET_NAME(arg_node), SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node)));
         INSTRUCTIONS_OFFSET(n) = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
         break;
 
@@ -892,9 +803,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
         n = NULL;
     }
 
-    /* store local variable with offset. */
-    if (nt != N_globaldef)
-        INSTRUCTIONS_OFFSET(n) = i;
+    INSTRUCTIONS_OFFSET(n) = offset;
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
@@ -1342,9 +1251,9 @@ char *instrToString(instr type)
     case I_ownbranch:
         s = "";
         break;
-    case I_unknown:
-        CTInote("Unknown instruction type.");
-        break;
+    // case I_unknown:
+    //     CTInote("Unknown instruction type.");
+    //     break;
     default:
         CTIabort("Unknown instruction type.");
         break;
@@ -1358,42 +1267,43 @@ void printInstructions(info *arg_info)
     node *n = INFO_FI(arg_info);
 
     // TO DO: INDENTATIE + LABELS WITH :
+    if (INFO_FI(arg_info) != NULL) {
+        /* Print all instructions */
+        while (INSTRUCTIONS_NEXT(n) != NULL)
+        {
+            if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
+                printf("    ");
 
-    /* Print all instructions */
-    while (INSTRUCTIONS_NEXT(n) != NULL)
-    {
+            printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
+
+            if (INSTRUCTIONS_OFFSET(n) != NULL)
+                printf(" %i", INSTRUCTIONS_OFFSET(n));
+            // WHAT IF OFFSET = 0? WARNING!
+
+            if (INSTRUCTIONS_ARG(n) != NULL)
+                printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
+
+            if (INSTRUCTIONS_INSTR(n) == I_ownbranch)
+                printf(":");
+
+            printf("\n");
+
+            n = INSTRUCTIONS_NEXT(n);
+        }
+
+        /* Print the last instruction. */
         if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
             printf("    ");
 
         printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
-
-        if (INSTRUCTIONS_OFFSET(n) != NULL)
+        // if (INSTRUCTIONS_OFFSET(n) != 0)
             printf(" %i", INSTRUCTIONS_OFFSET(n));
-        // WHAT IF OFFSET = 0? WARNING!
 
         if (INSTRUCTIONS_ARG(n) != NULL)
-            printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
-
-        if (INSTRUCTIONS_INSTR(n) == I_ownbranch)
-            printf(":");
+            printf(" %s", INSTRUCTIONS_ARG(n));
 
         printf("\n");
-
-        n = INSTRUCTIONS_NEXT(n);
     }
-
-    /* Print the last instruction. */
-    if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
-        printf("    ");
-
-    printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
-    // if (INSTRUCTIONS_OFFSET(n) != 0)
-        printf(" %i", INSTRUCTIONS_OFFSET(n));
-
-    if (INSTRUCTIONS_ARG(n) != NULL)
-        printf(" %s", INSTRUCTIONS_ARG(n));
-
-    printf("\n");
 
     /* Add constants */
     char *consttype;

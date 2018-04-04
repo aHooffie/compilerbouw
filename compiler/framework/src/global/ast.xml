@@ -108,7 +108,6 @@ traversals to process it.
                     <node name="GlobalDef" />
                     <node name="GlobalDec" />
                     <node name="Function" />
-                    <node name="Parameters" />
                     <node name="VarDeclaration" />
                     <node name="IfElse" />
                     <node name="While" />
@@ -1522,7 +1521,7 @@ traversals to process it.
                     <type name="Link">
                         <targets>
                             <target mandatory="no">
-                                <node name="Function" />
+                                <any/>
                                 <phases>
                                     <all />
                                 </phases>

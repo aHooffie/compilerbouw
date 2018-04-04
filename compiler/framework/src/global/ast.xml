@@ -233,6 +233,135 @@ traversals to process it.
             </sons>
         </node>
         <!-- 
+      Node GlobalDec: 
+    -->
+        <node name="GlobalDec">
+            <description>represents global declaration</description>
+            <sons>
+                <son name="Dimensions">
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Ids"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+            <attributes>
+                <attribute name ="Type">
+                    <description>represents all possible types</description>
+                    <type name ="Type">
+                        <targets>
+                            <target mandatory="yes">
+                                <any/>
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Name">
+                    <description>represents identifier in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="SymbolTableEntry">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
+        </node>
+        <!-- 
+      Node GlobalDef: 
+    -->
+        <node name="GlobalDef">
+            <description>represents global definition</description>
+            <sons>
+                <son name="Dimensions">
+                    <targets>
+                        <target mandatory="no">
+                            <node name="Expressions"/>
+                            <phases>
+                                <all/>
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+                <son name="Assign">
+                    <description>represents (optional) assignment to expression</description>
+                    <targets>
+                        <target mandatory="no">
+                            <set name="Expr" />
+                            <phases>
+                                <all />
+                            </phases>
+                        </target>
+                    </targets>
+                </son>
+            </sons>
+            <attributes>
+                <attribute name="Name">
+                    <description>represents identifier in character string representation</description>
+                    <type name="String">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Type">
+                    <description>represents all possible types</description>
+                    <type name="Type">
+                        <targets>
+                            <target mandatory="yes">
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="SymbolTableEntry">
+                    <description>represents link to symbol table entry</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
+            <flags>
+                <flag name ="IsExport" />
+            </flags>
+        </node>
+        <!-- 
       Node Function: 
     -->
         <node name="Function">
@@ -440,135 +569,6 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
-        </node>
-        <!-- 
-      Node GlobalDec: 
-    -->
-        <node name="GlobalDec">
-            <description>represents global declaration</description>
-            <sons>
-                <son name="Dimensions">
-                    <targets>
-                        <target mandatory="no">
-                            <node name="Ids"/>
-                            <phases>
-                                <all/>
-                            </phases>
-                        </target>
-                    </targets>
-                </son>
-            </sons>
-            <attributes>
-                <attribute name ="Type">
-                    <description>represents all possible types</description>
-                    <type name ="Type">
-                        <targets>
-                            <target mandatory="yes">
-                                <any/>
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-                <attribute name="Name">
-                    <description>represents identifier in character string representation</description>
-                    <type name="String">
-                        <targets>
-                            <target mandatory="yes">
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-                <attribute name="SymbolTableEntry">
-                    <description>represents link to symbol table entry</description>
-                    <type name="Link">
-                        <targets>
-                            <target mandatory="no">
-                                <node name="SymbolTableEntry" />
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-            </attributes>
-        </node>
-        <!-- 
-      Node GlobalDef: 
-    -->
-        <node name="GlobalDef">
-            <description>represents global definition</description>
-            <sons>
-                <son name="Dimensions">
-                    <targets>
-                        <target mandatory="no">
-                            <node name="Expressions"/>
-                            <phases>
-                                <all/>
-                            </phases>
-                        </target>
-                    </targets>
-                </son>
-                <son name="Assign">
-                    <description>represents (optional) assignment to expression</description>
-                    <targets>
-                        <target mandatory="no">
-                            <set name="Expr" />
-                            <phases>
-                                <all />
-                            </phases>
-                        </target>
-                    </targets>
-                </son>
-            </sons>
-            <attributes>
-                <attribute name="Name">
-                    <description>represents identifier in character string representation</description>
-                    <type name="String">
-                        <targets>
-                            <target mandatory="yes">
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-                <attribute name="Type">
-                    <description>represents all possible types</description>
-                    <type name="Type">
-                        <targets>
-                            <target mandatory="yes">
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-                <attribute name="SymbolTableEntry">
-                    <description>represents link to symbol table entry</description>
-                    <type name="Link">
-                        <targets>
-                            <target mandatory="no">
-                                <node name="SymbolTableEntry" />
-                                <phases>
-                                    <all />
-                                </phases>
-                            </target>
-                        </targets>
-                    </type>
-                </attribute>
-            </attributes>
-            <flags>
-                <flag name ="IsExport" />
-            </flags>
         </node>
         <!-- 
         VarDeclaration:

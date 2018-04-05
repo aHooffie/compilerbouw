@@ -196,44 +196,47 @@ node *GBCfunction(node *arg_node, info *arg_info)
         // add to importfun
         INFO_IMPORTFUN(arg_info)[INFO_IFC(arg_info)] = arg_node;
         INFO_IFC(arg_info) += 1;
-    } 
-
-    /* Add the labelname to the linked list.*/
-    n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARGS(n) = FUNCTION_NAME(arg_node);
-    addNode(n, arg_info);
-
-    /* Create esr instruction. */
-    if (STReq(FUNCTION_NAME(arg_node), "__init") == FALSE)
+    }
+    else
     {
-        n = TBmakeInstructions(I_esr, NULL);
+
+        /* Add the labelname to the linked list.*/
+        n = TBmakeInstructions(I_ownbranch, NULL);
+        INSTRUCTIONS_ARGS(n) = FUNCTION_NAME(arg_node);
         addNode(n, arg_info);
-    }
 
-    /* Traverse into child nodes. */
-    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+        /* Create esr instruction. */
+        if (STReq(FUNCTION_NAME(arg_node), "__init") == FALSE)
+        {
+            n = TBmakeInstructions(I_esr, NULL);
+            addNode(n, arg_info);
+        }
 
-    /* Add offset to esr, reset variablecount for next function. */
-    if (INFO_LC(arg_info) != 0)
-    {
-        char *s = STRitoa(INFO_LC(arg_info));
-        INSTRUCTIONS_ARGS(n) = s;
-        INFO_LC(arg_info) = 0;
-    }
+        /* Traverse into child nodes. */
+        FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+        FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
-    /* Check if function needs to be exported. */
-    if (FUNCTION_ISEXPORT(arg_node) == TRUE)
-    {
-        INFO_EXPORTFUN(arg_info)[INFO_EFC(arg_info)] = arg_node;
-        INFO_EFC(arg_info) += 1;
-    }
+        /* Add offset to esr, reset variablecount for next function. */
+        if (INFO_LC(arg_info) != 0)
+        {
+            char *s = STRitoa(INFO_LC(arg_info));
+            INSTRUCTIONS_ARGS(n) = s;
+            INFO_LC(arg_info) = 0;
+        }
 
-    /* Create return instruction for init and void functions that did not have a return. */
-    if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return)
-    {
-        n = TBmakeInstructions(I_return, NULL);
-        addNode(n, arg_info);
+        /* Check if function needs to be exported. */
+        if (FUNCTION_ISEXPORT(arg_node) == TRUE)
+        {
+            INFO_EXPORTFUN(arg_info)[INFO_EFC(arg_info)] = arg_node;
+            INFO_EFC(arg_info) += 1;
+        }
+
+        /* Create return instruction for init and void functions that did not have a return. */
+        if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return)
+        {
+            n = TBmakeInstructions(I_return, NULL);
+            addNode(n, arg_info);
+        }
     }
 
     DBUG_RETURN(arg_node);

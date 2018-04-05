@@ -5,10 +5,25 @@ export int main(int a, int b)
 {
     // a = a + b;
     int c;
-    foo();
+    int d;
 
-    // dit accepteert ie, lijkt me niet correct!?
-    a = main(4, 5);
+    void bar() {
+
+        int twee () {
+
+            int drie(){
+                return 0;
+            }
+
+            c = 4;
+            drie();
+            return c;
+        }
+
+        twee();
+        return;
+    }
+    c = 4;
 
     return 4;
 }

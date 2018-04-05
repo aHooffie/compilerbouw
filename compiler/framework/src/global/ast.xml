@@ -108,6 +108,7 @@ traversals to process it.
                     <node name="GlobalDef" />
                     <node name="GlobalDec" />
                     <node name="Function" />
+                    <node name="FunctionBody" />
                     <node name="FunctionCallStmt" />
                     <node name="FunctionCallExpr" />
                     <node name="VarDeclaration" />
@@ -530,6 +531,19 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Scope">
+                    <description>represents scope of current parameter</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
             </attributes>
         </node>
         <!-- 
@@ -574,7 +588,7 @@ traversals to process it.
             </sons>
         </node>
         <!-- 
-        VarDeclaration:
+        node VarDeclaration:
          -->
         <node name="VarDeclaration">
             <sons>
@@ -640,6 +654,19 @@ traversals to process it.
                         <targets>
                             <target mandatory="no">
                                 <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Scope">
+                    <description>represents scope of current decl</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
                                 <phases>
                                     <all />
                                 </phases>
@@ -1178,6 +1205,19 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Scope">
+                    <description>represents scope of current var</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
             </attributes>
         </node>
         <!-- 
@@ -1228,6 +1268,19 @@ traversals to process it.
                         <targets>
                             <target mandatory="no">
                                 <node name="SymbolTableEntry" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Scope">
+                    <description>represents scope of current varlet</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
                                 <phases>
                                     <all />
                                 </phases>

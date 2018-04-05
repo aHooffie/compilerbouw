@@ -122,6 +122,8 @@ traversals to process it.
                     <node name="Bool" />
                     <node name="Float" />
                     <node name="Num" />
+                    <node name="FunctionCallStmt" />
+                    <node name="Expressions" />
                 </travuser>
             </traversal>
         </general>
@@ -444,6 +446,7 @@ traversals to process it.
             </attributes>
             <flags>
                 <flag name ="IsExport" />
+                <flag name ="IsExtern" />
             </flags>
         </node>
         <!-- 
@@ -1573,7 +1576,7 @@ traversals to process it.
                             </target>
                         </targets>
                     </type>
-                </attribute>            
+                </attribute>
             </attributes>
         </node>
         <!-- 

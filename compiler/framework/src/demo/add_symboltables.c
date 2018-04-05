@@ -58,7 +58,6 @@ struct INFO
 #define INFO_GDC(n) ((n)->globaldeccount)
 #define INFO_GDF(n) ((n)->globaldefcount)
 
-
 /* INFO functions */
 static info *MakeInfo(void)
 {
@@ -145,7 +144,7 @@ node *ASglobaldec(node *arg_node, info *arg_info)
         node *newEntry = TBmakeSymboltableentry(name, GLOBALDEC_TYPE(arg_node), INFO_SIZE(arg_info) - 1, NULL);
         SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
         SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_GDC(arg_info);
-        
+
         INFO_GDC(arg_info) += 1;
 
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
@@ -404,7 +403,7 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
     DBUG_ENTER("ASfunctioncallstmt");
 
     /* Find the original function declaration in the scope above. */
-    node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+    node *symboltable = INFO_STACK(arg_info);
     node *original;
 
     while (symboltable != NULL)
@@ -556,9 +555,9 @@ node *ASvarlet(node *arg_node, info *arg_info)
     {
         original = findOriginal(SYMBOLTABLE_NEXT(symboltable), VARLET_NAME(arg_node));
 
-        if (original == NULL) {
+        if (original == NULL)
             symboltable = SYMBOLTABLE_PREV(symboltable);
-        }else
+        else
         {
             VARLET_SYMBOLTABLEENTRY(arg_node) = original;
             break;

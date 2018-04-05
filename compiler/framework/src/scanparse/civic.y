@@ -183,10 +183,12 @@ function: type ID BRACKET_L params BRACKET_R PAR_L funbody PAR_R
         | EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
         {
           $$ = TBmakeFunction($2, $3, NULL, NULL);
+          FUNCTION_ISEXTERN($$) = TRUE;
         }
         | EXTERN type ID BRACKET_L params BRACKET_R SEMICOLON
         {
           $$ = TBmakeFunction($2, $3, $5, NULL);
+          FUNCTION_ISEXTERN($$) = TRUE;
         }
         ;
 

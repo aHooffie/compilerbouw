@@ -1,72 +1,88 @@
 // int x = 3;
-// extern int a;
+extern void foo();
 
-
-export void main(int abcde, float hello, bool test)
+export void main(int a, int b)
 {
-    // Testing ALL EXPRESSIONS:
-    int a;
-    float c;
-    bool b;
-    // c = (float) a;
-    // a = (int) b;
-    // b = (bool) c;
-    b = (bool) b;
-    // a = 3;
-    // bool b = true;
-    // int b = 2 - 3;
-    // int c = 1 * 4;
-    // int d = 1 / 4;
-    // bool e = 1 <= 4;
-    // bool f = 1 > 4;
-    // int g = -4;
-    // bool h = 1 != 4;
-    // bool i = 1 == 4;
-    // float j = 1.0 * 4.000023;
-    // int k = (int)4.0;
-    // bool l = false;
-    // bool m = true;
-    // do
-    // {
-    //     a = 1 + 2;
-    // } while (1 < 2);
-
-    // if (a < a && a < 4) {
-    //     if (a < 5)
-    //         a = 4;
-    //     else
-    //         a = 6;
-    // }
-    // else
-    //     a = 8;
-
-    // return;
-
-    // for (int i = 0, 10)
-    // {
-    //     a = a + 1;
-    // }
-
+    a = a + b;
 }
-
-// export void test(int abcde)
+// Testing ALL EXPRESSIONS:
+// int a;
+// float c;
+// bool b;
+// c = (float) a;
+// a = (int) b;
+// b = (bool) c;
+// b = (bool) b;
+// a = 3;
+// bool b = true;
+// int b = 2 - 3;
+// int c = 1 * 4;
+// int d = 1 / 4;
+// bool e = 1 <= 4;
+// bool f = 1 > 4;
+// int g = -4;
+// bool h = 1 != 4;
+// bool i = 1 == 4;
+// float j = 1.0 * 4.000023;
+// int k = (int)4.0;
+// bool l = false;
+// bool m = true;
+// do
 // {
-//     // // >>> !! OVERSCHRIJFT !! <<<
+//     a = 1 + 2;
+// } while (1 < 2);
 
-//     int a;
-
-//     a = 1;
-
-//     // // nog een foute in while/else ofzo
-//     // while (3 == 1)
-//     //     a = 2;
-//     // if (true && true)
-//     //     a = 2;
-//     // else
-//     //     a = 3;
-
-//     // if (1 <= 2)
-//     //     a = 1;
-
-//     return;
+// if (a < a && a < 4) {
+//     if (a < 5)
+//         a = 4;
+//     else
+//         a = 6;
 // }
+// else
+//     a = 8;
+
+// return;
+
+// for (int i = 0, 10)
+// {
+//     a = a + 1;
+// }
+
+// }
+
+export void test(int abcde)
+{
+    //     // // >>> !! OVERSCHRIJFT !! <<<
+
+    void bar()
+    {
+        return;
+    }
+
+    void local()
+    {
+        main(abcde, abcde);
+        foo();
+        bar();
+    }
+
+    main(abcde, abcde);
+    foo();
+    bar();
+    //     int a;
+
+    //     a = 1;
+
+    //     // // nog een foute in while/else ofzo
+    //     // while (3 == 1)
+    //     //     a = 2;
+    //     // if (true && true)
+    //     //     a = 2;
+    //     // else
+    //     //     a = 3;
+
+    //     // if (1 <= 2)
+    //     //     a = 1;
+
+    //     return;
+}

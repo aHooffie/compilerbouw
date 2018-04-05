@@ -2,6 +2,9 @@
 #define _GEN_BYTE_CODE_H_
 #include "types.h"
 
+extern node *GBCfunctioncallstmt(node *arg_node, info *arg_info);
+
+/* Variable declarations. */
 extern node *GBCglobaldec(node *arg_node, info *arg_info);
 extern node *GBCglobaldef(node *arg_node, info *arg_info);
 extern node *GBCfunction(node *arg_node, info *arg_info);
@@ -17,6 +20,7 @@ extern node *GBCreturn(node *arg_node, info *arg_info);
 extern node *GBCassign(node *arg_node, info *arg_info);
 
 /* Expressions */
+extern node *GBCexpressions(node *arg_node, info *arg_info);
 extern node *GBCternop(node *arg_node, info *arg_info);
 extern node *GBCbinop(node *arg_node, info *arg_info);
 extern node *GBCmonop(node *arg_node, info *arg_info);

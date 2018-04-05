@@ -343,19 +343,18 @@ node *TCcast(node *arg_node, info *arg_info)
 
     /* Type check.*/
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
-    INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
-
     node *new, *condition, *then, *otherwise, *temp;
     type expr = INFO_TYPE(arg_info);
     type cast = CAST_TYPE(arg_node);
     temp = CAST_EXPR(arg_node);
-
+    INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
     /* Change Cast into Ternary operator. */
     switch (cast)
     {
     case T_bool:
-        if (expr == T_float)
+        if (expr == T_float) {
             condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
+        }
         else if (expr == T_int)
             condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
         else if (expr == T_bool)
@@ -372,9 +371,7 @@ node *TCcast(node *arg_node, info *arg_info)
         new = TBmakeTernop(condition, then, otherwise);
         break;
     case T_int:
-        if (expr == T_float)
-            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
-        else if (expr == T_bool)
+        if (expr == T_bool)
             condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
         else if (expr == T_int)
         {
@@ -391,9 +388,7 @@ node *TCcast(node *arg_node, info *arg_info)
         new = TBmakeTernop(condition, then, otherwise);
         break;
     case T_float:
-        if (expr == T_int)
-            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
-        else if (expr == T_bool)
+        if (expr == T_bool)
             condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
         else if (expr == T_float)
         {
@@ -828,6 +823,7 @@ node *TCnum(node *arg_node, info *arg_info)
 node *TCbool(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCbool");
+
     INFO_TYPE(arg_info) = T_bool;
     DBUG_RETURN(arg_node);
 }

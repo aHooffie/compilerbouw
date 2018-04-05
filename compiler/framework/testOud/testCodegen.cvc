@@ -1,13 +1,18 @@
-int x = 3;
-extern int a;
+// int x = 3;
+// extern int a;
 
 
 export void main(int abcde, float hello, bool test)
 {
     // Testing ALL EXPRESSIONS:
     int a;
-    int b;
-    a = 3;
+    float c;
+    bool b;
+    // c = (float) a;
+    // a = (int) b;
+    // b = (bool) c;
+    b = (bool) b;
+    // a = 3;
     // bool b = true;
     // int b = 2 - 3;
     // int c = 1 * 4;

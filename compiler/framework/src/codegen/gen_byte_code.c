@@ -117,7 +117,7 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
     /* Traverse into array subtree - not implemented. */
     GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
 
-    /* Add variable to import variable array. */
+    /* Add global variable to import variable array. */
     INFO_IMPORTVAR(arg_info)[INFO_IVC(arg_info)] = arg_node;
     INFO_IVC(arg_info) += 1;
 
@@ -138,6 +138,7 @@ node *GBCglobaldef(node *arg_node, info *arg_info)
         INFO_EVC(arg_info) += 1;
     }
 
+    /* Add it to globals array. */
     INFO_GLOBAL(arg_info)[INFO_GC(arg_info)] = arg_node;
     INFO_GC(arg_info) += 1;
 
@@ -155,7 +156,7 @@ node *GBCfunction(node *arg_node, info *arg_info)
 
     /* Add the labelname to the linked list.*/
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = FUNCTION_NAME(arg_node);
+    INSTRUCTIONS_ARGS(n) = FUNCTION_NAME(arg_node);
     addNode(n, arg_info);
 
     /* Create esr instruction. */
@@ -169,8 +170,11 @@ node *GBCfunction(node *arg_node, info *arg_info)
     FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     /* Add offset to esr, reset variablecount for next function. */
-    INSTRUCTIONS_OFFSET(n) = INFO_LC(arg_info);
-    INFO_LC(arg_info) = 0;
+    if (INFO_LC(arg_info) != 0) {
+        char * s = STRitoa(INFO_LC(arg_info));
+        INSTRUCTIONS_ARGS(n) = s;
+        INFO_LC(arg_info) = 0;
+    }
 
     /* Check if function needs to be exported. */
     if (FUNCTION_ISEXPORT(arg_node) == TRUE)
@@ -179,8 +183,7 @@ node *GBCfunction(node *arg_node, info *arg_info)
         INFO_EFC(arg_info) += 1;
     }
 
-    /* Create return instruction. */
-    // if (STReq(FUNCTION_NAME(arg_node), "__init") == TRUE) {
+    /* Create return instruction for init and void functions that did not have a return. */
     if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return) {
         n = TBmakeInstructions(I_return, NULL);
         addNode(n, arg_info);
@@ -207,7 +210,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
     node *n;
     char *otherwise;
     char *end;
-    char str[12];
+    char *str;
 
     /* Traverse into if condition. */
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
@@ -216,12 +219,12 @@ node *GBCifelse(node *arg_node, info *arg_info)
     /* Check if there is an else block of statements. */
     if (IFELSE_ELSE(arg_node) != NULL)
     {
-        sprintf(str, "%d", INFO_BC(arg_info));
+        str = STRitoa(INFO_BC(arg_info));
         otherwise = STRcat(str, "_else");
 
         /* Add the branch_f labelname to the linked list.*/
         n = TBmakeInstructions(I_branch_f, NULL);
-        INSTRUCTIONS_ARG(n) = otherwise;
+        INSTRUCTIONS_ARGS(n) = otherwise;
         addNode(n, arg_info);
 
         /* Traverse into if block. */
@@ -229,17 +232,17 @@ node *GBCifelse(node *arg_node, info *arg_info)
 
         /* Create jump instruction. */
         INFO_BC(arg_info) += 1;
-        sprintf(str, "%d", INFO_BC(arg_info));
+        str = STRitoa(INFO_BC(arg_info));
         end = STRcat(str, "_end");
 
         /* Add the branch_f labelname to the linked list.*/
         n = TBmakeInstructions(I_jump, NULL);
-        INSTRUCTIONS_ARG(n) = end;
+        INSTRUCTIONS_ARGS(n) = end;
         addNode(n, arg_info);
 
         /* Create the else label as instruction. */
         n = TBmakeInstructions(I_ownbranch, NULL);
-        INSTRUCTIONS_ARG(n) = otherwise;
+        INSTRUCTIONS_ARGS(n) = otherwise;
         addNode(n, arg_info);
 
         /* Traverse into else statements. */
@@ -247,12 +250,12 @@ node *GBCifelse(node *arg_node, info *arg_info)
     }
     else
     {
-        sprintf(str, "%d", INFO_BC(arg_info));
+        str = STRitoa(INFO_BC(arg_info));
         end = STRcat(str, "_end");
 
         /* Add the branch_f labelname to the linked list.*/
         n = TBmakeInstructions(I_branch_f, NULL);
-        INSTRUCTIONS_ARG(n) = end;
+        INSTRUCTIONS_ARGS(n) = end;
         addNode(n, arg_info);
 
         /* Traverse into block of statements. */
@@ -261,7 +264,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
 
     /* Create the end label as instruction. */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = end;
+    INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
@@ -300,7 +303,7 @@ node *GBCfor(node *arg_node, info *arg_info)
 
     // /* Create the starting label for a branch (1_while, 2_end etc. ) */
     // INFO_BC(arg_info) += 1;
-    // char str[12];
+    // char *str;
     // char *start;
 
     // sprintf(str, "%d", INFO_BC(arg_info));
@@ -373,16 +376,16 @@ node *GBCwhile(node *arg_node, info *arg_info)
     node *n;
     char *start;
     char *end;
-    char str[12];
+    char *str;
 
     /* Create the starting label for a branch (1_while, 2_end etc. ) */
     INFO_BC(arg_info) += 1;
-    sprintf(str, "%d", INFO_BC(arg_info));
+    str = STRitoa(INFO_BC(arg_info));
     start = STRcat(str, "_while");
 
     /* Add the label as instruction. */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = start;
+    INSTRUCTIONS_ARGS(n) = start;
     addNode(n, arg_info);
 
     /* Traverse into condition. */
@@ -390,12 +393,12 @@ node *GBCwhile(node *arg_node, info *arg_info)
 
     /* Create the ending label for the branch. */
     INFO_BC(arg_info) += 1;
-    sprintf(str, "%d", INFO_BC(arg_info));
+    str = STRitoa(INFO_BC(arg_info));
     end = STRcat(str, "_end");
 
     /* Add the branch_f labelname to the linked list.*/
     n = TBmakeInstructions(I_branch_f, NULL);
-    INSTRUCTIONS_ARG(n) = end;
+    INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
     /* Traverse into block of statements. */
@@ -403,12 +406,12 @@ node *GBCwhile(node *arg_node, info *arg_info)
 
     /* Create the jump label. */
     n = TBmakeInstructions(I_jump, NULL);
-    INSTRUCTIONS_ARG(n) = start;
+    INSTRUCTIONS_ARGS(n) = start;
     addNode(n, arg_info);
 
     /* Add the ending label as instruction. */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = end;
+    INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
@@ -419,29 +422,28 @@ node *GBCdowhile(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCdowhile");
     char *label;
-    char str[12];
+    char *str;
     node *n;
 
     /* Create the starting label for a branch (1_while, 2_end etc. ) */
     INFO_BC(arg_info) += 1;
-    sprintf(str, "%d", INFO_BC(arg_info));
+    str = STRitoa(INFO_BC(arg_info));
     label = STRcat(str, "_dowhile");
 
     /* Add the label as instruction. */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = label;
+    INSTRUCTIONS_ARGS(n) = label;
     addNode(n, arg_info);
 
     /* Traverse into statements. */
-    if (DOWHILE_BLOCK(arg_node) != NULL)
-        DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+    DOWHILE_BLOCK(arg_node) = TRAVopt(DOWHILE_BLOCK(arg_node), arg_info);
 
     /* Traverse into condition. */
     DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
 
     /* Add the label as instruction. */
     n = TBmakeInstructions(I_branch_t, NULL);
-    INSTRUCTIONS_ARG(n) = label;
+    INSTRUCTIONS_ARGS(n) = label;
     addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
@@ -480,7 +482,7 @@ node *GBCternop(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCternop");
 
     node *n;
-    char str[12];
+    char *str;
     char *label;
     char *end;
 
@@ -489,9 +491,9 @@ node *GBCternop(node *arg_node, info *arg_info)
     
     /* Create branch + label. */
     n = TBmakeInstructions(I_branch_f, NULL);
-    sprintf(str, "%d", INFO_BC(arg_info));
+    str = STRitoa(INFO_BC(arg_info));
     label = STRcat(str, "_false_ternop");
-    INSTRUCTIONS_ARG(n) = label;
+    INSTRUCTIONS_ARGS(n) = label;
     INFO_BC(arg_info) += 1;
     addNode(n, arg_info);
 
@@ -499,26 +501,24 @@ node *GBCternop(node *arg_node, info *arg_info)
 
     /* Create branch + label. */
     n = TBmakeInstructions(I_jump, NULL);
-    sprintf(str, "%d", INFO_BC(arg_info));
+    str = STRitoa(INFO_BC(arg_info));
     end = STRcat(str, "_end");
-    INSTRUCTIONS_ARG(n) = end;
+    INSTRUCTIONS_ARGS(n) = end;
     INFO_BC(arg_info) += 1;
     addNode(n, arg_info);
 
     /* Label! */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = label;
+    INSTRUCTIONS_ARGS(n) = label;
     addNode(n, arg_info);
 
     TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);
 
     /* End label! */
     n = TBmakeInstructions(I_ownbranch, NULL);
-    INSTRUCTIONS_ARG(n) = end;
+    INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
-    /* Add the node to the list of instructions. */
-    // addNode(n, arg_info);
     DBUG_RETURN(arg_node);
 }
 
@@ -675,10 +675,9 @@ node *GBCmonop(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+// WERKT NIET??
 node *GBCcast(node *arg_node, info *arg_info)
 {
-    // >>>>> !! WERKT NIETTTTTTT AAAAAHHH !! <<<<<<
-
     DBUG_ENTER("GBCcast");
     node *n;
 
@@ -701,6 +700,7 @@ node *GBCvar(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvar");
 
     node *n;
+    char *str;
     nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
     int offset = SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node));
 
@@ -750,8 +750,8 @@ node *GBCvar(node *arg_node, info *arg_info)
         n = NULL;
     }
 
-    INSTRUCTIONS_OFFSET(n) = offset;
-    CTInote("%s %i HIERR", VAR_NAME(arg_node), offset);
+    str = STRitoa(offset);
+    INSTRUCTIONS_ARGS(n) = str;
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
@@ -766,6 +766,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     node *n;
     nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
     int offset = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
+    char *str;
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
@@ -788,7 +789,9 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             n = TBmakeInstructions(I_fstoree, NULL);
         else
             n = TBmakeInstructions(I_bstoree, NULL);
-        INSTRUCTIONS_OFFSET(n) = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
+        
+        str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node)));
+        INSTRUCTIONS_ARGS(n) = str;
         break;
 
     case N_globaldef:
@@ -798,14 +801,16 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             n = TBmakeInstructions(I_fstoreg, NULL);
         else
             n = TBmakeInstructions(I_bstoreg, NULL);
-        INSTRUCTIONS_OFFSET(n) = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
+        str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node)));
+        INSTRUCTIONS_ARGS(n) = str;
         break;
 
     default:
         n = NULL;
     }
 
-    INSTRUCTIONS_OFFSET(n) = offset;
+    str = STRitoa(offset);
+    INSTRUCTIONS_ARGS(n) = str;
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
@@ -822,16 +827,8 @@ node *GBCnum(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCnum");
     node *n;
     bool foundDouble = FALSE;
-
+    char *str;
     int i;
-    for (i = 0; i < INFO_CC(arg_info); i++)
-    {
-        if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_num && NUM_VALUE(arg_node) == NUM_VALUE(INFO_CONSTANTS(arg_info)[i]))
-        {
-            foundDouble = TRUE;
-            break;
-        }
-    }
 
     /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (NUM_VALUE(arg_node) == 0)
@@ -840,18 +837,30 @@ node *GBCnum(node *arg_node, info *arg_info)
         n = TBmakeInstructions(I_iloadc_1, NULL);
     else
     {
+        /* Find original constant in array.*/
+        for (i = 0; i < INFO_CC(arg_info); i++)
+        {
+            if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_num && NUM_VALUE(arg_node) == NUM_VALUE(INFO_CONSTANTS(arg_info)[i]))
+            {
+                foundDouble = TRUE;
+                break;
+            }
+        }
         n = TBmakeInstructions(I_iloadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            INFO_CONSTANTS(arg_info)
-            [INFO_CC(arg_info)] = arg_node;
-            INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
+            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            str = STRitoa(INFO_BC(arg_info));
+            INSTRUCTIONS_ARGS(n) = str;
             INFO_CC(arg_info) += 1;
         }
-        else
-            INSTRUCTIONS_OFFSET(n) = i;
+        else {
+            str = STRitoa(INFO_BC(arg_info));
+            INSTRUCTIONS_ARGS(n) = str;
+        }
+            // INSTRUCTIONS_OFFSET(n) = i;
     }
 
     /* Add the node to the list of instructions. */
@@ -865,16 +874,8 @@ node *GBCfloat(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCfloat");
     node *n;
     int i;
+    char *str;
     bool foundDouble = FALSE;
-
-    for (i = 0; i < INFO_CC(arg_info); i++)
-    {
-        if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_float && FLOAT_VALUE(arg_node) == FLOAT_VALUE(INFO_CONSTANTS(arg_info)[i]))
-        {
-            foundDouble = TRUE;
-            break;
-        }
-    }
 
     /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (FLOAT_VALUE(arg_node) == 0.0)
@@ -883,19 +884,31 @@ node *GBCfloat(node *arg_node, info *arg_info)
         n = TBmakeInstructions(I_fload_1, NULL);
     else
     {
+        /* Find original float declaration in array. */
+        for (i = 0; i < INFO_CC(arg_info); i++)
+        {
+            if (NODE_TYPE(INFO_CONSTANTS(arg_info)[i]) == N_float && FLOAT_VALUE(arg_node) == FLOAT_VALUE(INFO_CONSTANTS(arg_info)[i]))
+            {
+                foundDouble = TRUE;
+                break;
+            }
+        }
 
         n = TBmakeInstructions(I_floadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            INFO_CONSTANTS(arg_info)
-            [INFO_CC(arg_info)] = arg_node;
-            INSTRUCTIONS_OFFSET(n) = INFO_CC(arg_info);
+            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            str = STRitoa(INFO_CC(arg_info));
+            INSTRUCTIONS_ARGS(n) = str;
             INFO_CC(arg_info) += 1;
         }
-        else
-            INSTRUCTIONS_OFFSET(n) = i;
+        else {
+            str = STRitoa(i);
+            INSTRUCTIONS_ARGS(n) = str;
+        }
+            // INSTRUCTIONS_OFFSET(n) = i;
     }
 
     /* Add the node to the list of instructions. */
@@ -1253,9 +1266,6 @@ char *instrToString(instr type)
     case I_ownbranch:
         s = "";
         break;
-    // case I_unknown:
-    //     CTInote("Unknown instruction type.");
-    //     break;
     default:
         CTIabort("Unknown instruction type.");
         break;
@@ -1278,12 +1288,12 @@ void printInstructions(info *arg_info)
 
             printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
 
-            if (INSTRUCTIONS_OFFSET(n) != NULL)
-                printf(" %i", INSTRUCTIONS_OFFSET(n));
+            if (INSTRUCTIONS_ARGS(n) != NULL)
+                printf(" %s", INSTRUCTIONS_ARGS(n));
             // WHAT IF OFFSET = 0? WARNING!
 
-            if (INSTRUCTIONS_ARG(n) != NULL)
-                printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
+            // if (INSTRUCTIONS_ARG(n) != NULL)
+            //     printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
 
             if (INSTRUCTIONS_INSTR(n) == I_ownbranch)
                 printf(":");
@@ -1298,11 +1308,11 @@ void printInstructions(info *arg_info)
             printf("    ");
 
         printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
-        // if (INSTRUCTIONS_OFFSET(n) != 0)
-            printf(" %i", INSTRUCTIONS_OFFSET(n));
+        if (INSTRUCTIONS_ARGS(n) != NULL)
+            printf(" %s", INSTRUCTIONS_ARGS(n));
 
-        if (INSTRUCTIONS_ARG(n) != NULL)
-            printf(" %s", INSTRUCTIONS_ARG(n));
+        // if (INSTRUCTIONS_ARG(n) != NULL)
+            // printf(" %s", INSTRUCTIONS_ARG(n));
 
         printf("\n");
     }

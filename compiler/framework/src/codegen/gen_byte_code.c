@@ -45,6 +45,7 @@ struct INFO
     int exportfuncount;
     int exportvarcount;
     int importvarcount;
+    int importfuncount;
     int globalcount;
     int localvarcount; // counter to check esr offset
     int branchcount;   // counter to check what branch voorstuk should be used in labels
@@ -60,12 +61,14 @@ struct INFO
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_EXPORTVAR(n) ((n)->exportvar)
 #define INFO_IMPORTVAR(n) ((n)->importvar)
+#define INFO_IMPORTFUN(n) ((n)->importfun)
 #define INFO_GLOBAL(n) ((n)->global)
 
 #define INFO_CC(n) ((n)->constantcount)
 #define INFO_EFC(n) ((n)->exportfuncount)
 #define INFO_EVC(n) ((n)->exportvarcount)
 #define INFO_IVC(n) ((n)->importvarcount)
+#define INFO_IFC(n) ((n)->importfuncount)
 #define INFO_GC(n) ((n)->globalcount)
 #define INFO_LC(n) ((n)->localvarcount) // for esr count
 #define INFO_BC(n) ((n)->branchcount)
@@ -85,6 +88,7 @@ static info *MakeInfo(void)
     INFO_CC(result) = 0;
     INFO_EFC(result) = 0;
     INFO_IVC(result) = 0;
+    INFO_IFC(result) = 0;
     INFO_GC(result) = 0;
     INFO_LC(result) = 0;
     INFO_BC(result) = 1;
@@ -184,10 +188,14 @@ node *GBCfunction(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCfunction");
     node *n;
 
-    if (FUNCTION_ISEXTERN(arg_node) == TRUE)
+    if (FUNCTION_ISEXTERN(arg_node) == TRUE) // TRUE hoeft niet volgens mij
     {
         // DO NOT MAKE INSTRUCTIONS BUT PRINT IMPORT FUN AT BOTTOM
         CTInote("FOUND GLOBAL FUN");
+
+        // add to importfun
+        INFO_IMPORTFUN(arg_info)[INFO_IFC(arg_info)] = arg_node;
+        INFO_IFC(arg_info) += 1;
     } 
 
     /* Add the labelname to the linked list.*/
@@ -1442,5 +1450,24 @@ void printInstructions(info *arg_info)
     {
         globaltype = TypetoString(GLOBALDEC_TYPE(INFO_IMPORTVAR(arg_info)[i]));
         printf(".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
+    }
+
+    /* Add imported functions. */
+    for (int i = 0; i < INFO_IFC(arg_info); i++)
+    {
+        returntype = TypetoString(FUNCTION_TYPE(INFO_IMPORTFUN(arg_info)[i]));
+
+        printf(".importfun \"%s\" %s ", FUNCTION_NAME(INFO_IMPORTFUN(arg_info)[i]), returntype);
+
+        node *param = FUNCTION_PARAMETERS(INFO_IMPORTFUN(arg_info)[i]);
+
+        while (param != NULL)
+        {
+            paramtype = TypetoString(PARAMETERS_TYPE(param));
+            printf("%s ", paramtype);
+            param = PARAMETERS_NEXT(param);
+        }
+
+        printf("\n");
     }
 }

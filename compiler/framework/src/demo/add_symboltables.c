@@ -283,6 +283,8 @@ node *ASparameters(node *arg_node, info *arg_info)
     DBUG_ENTER("ASparameters");
     char *name = PARAMETERS_NAME(arg_node);
 
+    PARAMETERS_SCOPE(arg_node) = INFO_SIZE(arg_info);
+
     /* Found parameter. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
     {
@@ -365,6 +367,8 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvardeclaration");
     char *name = VARDECLARATION_NAME(arg_node);
+
+    VARDECLARATION_SCOPE(arg_node) = INFO_SIZE(arg_info);
 
     /* Found vardeclaration. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
@@ -525,6 +529,8 @@ node *ASvar(node *arg_node, info *arg_info)
     node *symboltable = INFO_STACK(arg_info);
     node *original;
 
+    VAR_SCOPE(arg_node) = INFO_SIZE(arg_info);
+
     while (symboltable != NULL)
     {
         original = findOriginal(SYMBOLTABLE_NEXT(symboltable), VAR_NAME(arg_node));
@@ -554,6 +560,8 @@ node *ASvarlet(node *arg_node, info *arg_info)
     /* Find the original vardeclaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
     node *original;
+
+    VARLET_SCOPE(arg_node) = INFO_SIZE(arg_info);
 
     while (symboltable != NULL)
     {

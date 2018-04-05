@@ -16,7 +16,7 @@
 
 /*
  * Module: Scanning & Parsing of the input code. 
- * Author: Aynel Gul & Andrea van den Hooff
+ * Authors: Aynel Gul & Andrea van den Hooff
  * Arrays not implemented.
  */
 

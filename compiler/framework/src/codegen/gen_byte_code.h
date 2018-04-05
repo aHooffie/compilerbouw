@@ -9,6 +9,7 @@ extern node *GBCfunctioncallexpr(node *arg_node, info *arg_info);
 extern node *GBCglobaldec(node *arg_node, info *arg_info);
 extern node *GBCglobaldef(node *arg_node, info *arg_info);
 extern node *GBCfunction(node *arg_node, info *arg_info);
+extern node *GBCfunctionbody(node *arg_node, info *arg_info);
 extern node *GBCvardeclaration(node *arg_node, info *arg_info);
 extern node *GBCvarlet(node *arg_node, info *arg_info);
 

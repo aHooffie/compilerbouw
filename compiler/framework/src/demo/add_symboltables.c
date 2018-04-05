@@ -8,8 +8,10 @@
 // NOTE: TURNED PRINTING SYMBOL TABLES OFF IN ASPROGRAM AND ASFUNCTION
 
 #include "add_symboltables.h"
+
 #include "ctinfo.h"
 #include "dbug.h"
+#include "free.h"
 #include "globals.h"
 #include "memory.h"
 #include "str.h"

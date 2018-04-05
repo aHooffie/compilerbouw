@@ -1,0 +1,23 @@
+export void main () {
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    
+    a = a + b;
+    a = a - b;
+    a = a * b;
+
+    b = a + b + c;
+    b = a - b - c;
+    b = a * b * c;
+
+    c = a - b + c;
+    c = a + b - c;
+    
+    e = a + b * c;
+    e = a * b + c;
+    
+    return;
+}

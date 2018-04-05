@@ -73,9 +73,13 @@ export int test(int a, int b, float c)
 
 export int foo(int b)
 {
+	int q;
+	int r;
+	int s;
+	float t;
 	// a = 3.0 + test(a, b, c); // MAG NIET! en klopt.
 	// main();		// MAG NIET! en klopt.
 	// main(c, b); // MAG NIET en klopt
-	a = test(a, b, c);
+	a = test(q, q, t);
 	return 4;
 }

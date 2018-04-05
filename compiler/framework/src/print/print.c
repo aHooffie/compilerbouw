@@ -167,7 +167,7 @@ node *PRTglobaldef(node *arg_node, info *arg_info)
 node *PRTfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("PRTfunction");
-    if (FUNCTION_ISEXTERN == TRUE)
+    if (FUNCTION_ISEXTERN(arg_node) == TRUE)
         printf("extern ");
 
     if (FUNCTION_ISEXPORT(arg_node) == TRUE)
@@ -523,7 +523,7 @@ node *PRTlocalfunction(node *arg_node, info *arg_info)
 
     /* Traverse child nodes. */
     LOCALFUNCTION_FUNCTION(arg_node) = TRAVdo(LOCALFUNCTION_FUNCTION(arg_node), arg_info);
-    LOCALFUNCTION_NEXT(arg_node) = TRAVdo(LOCALFUNCTION_NEXT(arg_node), arg_info);
+    LOCALFUNCTION_NEXT(arg_node) = TRAVopt(LOCALFUNCTION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

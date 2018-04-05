@@ -46,6 +46,13 @@ export void main(int a, int b)
 
 	return g;
 
+	for (int forloop = 0, b)
+	{
+		b = b + 1;
+	}
+
+	// forloop = 2;
+
 	// MAG NIET:
 	//	a = a < d; // varINT + varFLOAT
 	//	c = c <= e; // varFLOAT + varBOOL

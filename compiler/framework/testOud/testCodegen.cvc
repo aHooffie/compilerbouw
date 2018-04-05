@@ -1,9 +1,16 @@
 // int x = 3;
 extern void foo();
 
-export void main(int a, int b)
+export int main(int a, int b)
 {
-    a = a + b;
+    // a = a + b;
+    int c;
+    foo();
+
+    // dit accepteert ie, lijkt me niet correct!?
+    a = main(4, 5);
+
+    return 4;
 }
 // Testing ALL EXPRESSIONS:
 // int a;
@@ -50,25 +57,25 @@ export void main(int a, int b)
 
 // }
 
-export void test(int abcde)
-{
-    //     // // >>> !! OVERSCHRIJFT !! <<<
+// export void test(int abcde)
+// {
+//     //     // // >>> !! OVERSCHRIJFT !! <<<
 
-    void bar()
-    {
-        return;
-    }
+//     void bar()
+//     {
+//         return;
+//     }
 
-    void local()
-    {
-        main(abcde, abcde);
-        foo();
-        bar();
-    }
+//     void local()
+//     {
+//         main(abcde, abcde);
+//         foo();
+//         bar();
+//     }
 
-    main(abcde, abcde);
-    foo();
-    bar();
+//     main(abcde, abcde);
+//     foo();
+//     bar();
     //     int a;
 
     //     a = 1;
@@ -85,4 +92,4 @@ export void test(int abcde)
     //     //     a = 1;
 
     //     return;
-}
+// }

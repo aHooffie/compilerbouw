@@ -108,6 +108,8 @@ traversals to process it.
                     <node name="GlobalDef" />
                     <node name="GlobalDec" />
                     <node name="Function" />
+                    <node name="FunctionCallStmt" />
+                    <node name="FunctionCallExpr" />
                     <node name="VarDeclaration" />
                     <node name="IfElse" />
                     <node name="While" />
@@ -122,7 +124,6 @@ traversals to process it.
                     <node name="Bool" />
                     <node name="Float" />
                     <node name="Num" />
-                    <node name="FunctionCallStmt" />
                     <node name="Expressions" />
                 </travuser>
             </traversal>
@@ -941,6 +942,19 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Scope">
+                    <description>represents scope of current call</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
                 <attribute name="SymbolTableEntry">
                     <description>represents link to symbol table entry</description>
                     <type name="Link">
@@ -1315,6 +1329,19 @@ traversals to process it.
                     <type name="String">
                         <targets>
                             <target mandatory="yes">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+                <attribute name="Scope">
+                    <description>represents identifier in character string representation</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
                                 <any />
                                 <phases>
                                     <all />

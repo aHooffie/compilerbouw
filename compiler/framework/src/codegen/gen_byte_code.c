@@ -106,37 +106,220 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
+
+/*
+    ______  NOT TESTED YET ______
+*/
+node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("GBCfunctioncallexpr");
+
+    node *n;
+    char *s;
+    int scopeDiff = FUNCTIONCALLEXPR_SCOPE(arg_node) - SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
+
+    /* Subroutine call and jump labels. */
+    /* global subroutine. */
+    if (SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node)) == 0)
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isrg, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine (extern/not extern)
+        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL( FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node))) == TRUE)
+        {
+            n = TBmakeInstructions(I_jsre, NULL);
+            s = STRitoa(SYMBOLTABLEENTRY_OFFSET(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node)));
+        
+        }
+        else
+        {
+            n = TBmakeInstructions(I_jsr, NULL);
+            s = STRitoa(INFO_EC(arg_info));
+            s = STRcatn(3, s, " ", FUNCTIONCALLEXPR_NAME(arg_node));
+        }
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+    /* subroutine outer scope. */
+    else if (scopeDiff > 0)
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isrn, NULL);
+        s = STRitoa(scopeDiff);
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
+        n = TBmakeInstructions(I_jsr, NULL);
+        s = STRitoa(INFO_EC(arg_info));
+        s = STRcatn(3, s, " ", FUNCTIONCALLEXPR_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+
+    /* subroutine current scope. */
+    else if (scopeDiff == 0)
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isr, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
+        n = TBmakeInstructions(I_jsr, NULL);
+        s = STRitoa(INFO_EC(arg_info));
+        s = STRcatn(3, s, " ", FUNCTIONCALLEXPR_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+    /* subroutine nested function. */
+    else
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isrl, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
+        n = TBmakeInstructions(I_jsr, NULL);
+        s = STRitoa(INFO_EC(arg_info));
+        s = STRcatn(3, s, " ", FUNCTIONCALLEXPR_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+
+    INFO_EC(arg_info) = 0;
+
+    DBUG_RETURN(arg_node);
+}
+
+
+
+/*
+    ______  NOT TESTED YET ______
+           only the globals
+*/
 node *GBCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunctioncallstmt");
+
     node *n;
     char *s;
+    int scopeDiff = FUNCTIONCALLSTMT_SCOPE(arg_node) - SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
 
-    /* ISRG Label. */
-    n = TBmakeInstructions(I_isrg, NULL);
-    addNode(n, arg_info);
-
-    /* Load instr: for all parameters needed*/
-    INFO_EC(arg_info) = 0;
-    // CREATE LOAD INSTRUCTIONS
-    FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
-
-    /* JSR instr: + # params + fun name     */
-    if (SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)) != 0)
+    /* Subroutine call and jump labels. */
+    /* global subroutine. */
+    if (SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)) == 0)
     {
+        // subroutine call
+        n = TBmakeInstructions(I_isrg, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine (extern/not extern)
+        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL( FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node))) == TRUE)
+        {
+            n = TBmakeInstructions(I_jsre, NULL);
+            s = STRitoa(SYMBOLTABLEENTRY_OFFSET(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)));
+        
+        }
+        else
+        {
+            n = TBmakeInstructions(I_jsr, NULL);
+            s = STRitoa(INFO_EC(arg_info));
+            s = STRcatn(3, s, " ", FUNCTIONCALLSTMT_NAME(arg_node));
+        }
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+    /* subroutine outer scope. */
+    else if (scopeDiff > 0)
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isrn, NULL);
+        s = STRitoa(scopeDiff);
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+
+        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
         n = TBmakeInstructions(I_jsr, NULL);
         s = STRitoa(INFO_EC(arg_info));
-        s = STRcat(s, FUNCTIONCALLSTMT_NAME(arg_node));
-    }
-    else
-    {
-        n = TBmakeInstructions(I_jsre, NULL);
-        s = STRitoa(SYMBOLTABLEENTRY_OFFSET(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)));
+        s = STRcatn(3, s, " ", FUNCTIONCALLSTMT_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
     }
 
-    /* Add params, add to linked list. */
-    INSTRUCTIONS_ARGS(n) = s;
-    addNode(n, arg_info);
+    /* subroutine current scope. */
+    else if (scopeDiff == 0)
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isr, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
+        n = TBmakeInstructions(I_jsr, NULL);
+        s = STRitoa(INFO_EC(arg_info));
+        s = STRcatn(3, s, " ", FUNCTIONCALLSTMT_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+    /* subroutine nested function. */
+    else
+    {
+        // subroutine call
+        n = TBmakeInstructions(I_isrl, NULL);
+        addNode(n, arg_info);
+
+        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+
+        // jump to subroutine
+        n = TBmakeInstructions(I_jsr, NULL);
+        s = STRitoa(INFO_EC(arg_info));
+        s = STRcatn(3, s, " ", FUNCTIONCALLSTMT_NAME(arg_node));
+
+        INSTRUCTIONS_ARGS(n) = s;
+        addNode(n, arg_info);
+    }
+
+    switch(SYMBOLTABLEENTRY_TYPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)))
+    {
+        case T_int:
+                n = TBmakeInstructions(I_ipop, NULL);
+                addNode(n, arg_info);
+                break;
+        case T_float:
+            n = TBmakeInstructions(I_fpop, NULL);
+            addNode(n, arg_info);
+            break;
+        case T_bool:
+            n = TBmakeInstructions(I_bpop, NULL);
+            addNode(n, arg_info);
+            break;
+        default:
+            break;
+    }
+
+    INFO_EC(arg_info) = 0;
 
     DBUG_RETURN(arg_node);
 }
@@ -190,10 +373,6 @@ node *GBCfunction(node *arg_node, info *arg_info)
 
     if (FUNCTION_ISEXTERN(arg_node) == TRUE) // TRUE hoeft niet volgens mij
     {
-        // DO NOT MAKE INSTRUCTIONS BUT PRINT IMPORT FUN AT BOTTOM
-        CTInote("FOUND GLOBAL FUN");
-
-        // add to importfun
         INFO_IMPORTFUN(arg_info)[INFO_IFC(arg_info)] = arg_node;
         INFO_IFC(arg_info) += 1;
     }
@@ -232,7 +411,10 @@ node *GBCfunction(node *arg_node, info *arg_info)
         }
 
         /* Create return instruction for init and void functions that did not have a return. */
-        if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return)
+        if (INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_return &&
+            INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_ireturn &&
+            INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_breturn &&
+            INSTRUCTIONS_INSTR(INFO_LI(arg_info)) != I_freturn)
         {
             n = TBmakeInstructions(I_return, NULL);
             addNode(n, arg_info);
@@ -915,18 +1097,17 @@ node *GBCnum(node *arg_node, info *arg_info)
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            INFO_CONSTANTS(arg_info)
-            [INFO_CC(arg_info)] = arg_node;
-            str = STRitoa(INFO_BC(arg_info));
+            CTInote("CONSTANT %i", INFO_CC(arg_info));
+            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            str = STRitoa(INFO_CC(arg_info));
             INSTRUCTIONS_ARGS(n) = str;
             INFO_CC(arg_info) += 1;
         }
         else
         {
-            str = STRitoa(INFO_BC(arg_info));
+            str = STRitoa(i);
             INSTRUCTIONS_ARGS(n) = str;
         }
-        // INSTRUCTIONS_OFFSET(n) = i;
     }
 
     /* Add the node to the list of instructions. */

@@ -3,6 +3,7 @@
 #include "types.h"
 
 extern node *GBCfunctioncallstmt(node *arg_node, info *arg_info);
+extern node *GBCfunctioncallexpr(node *arg_node, info *arg_info);
 
 /* Variable declarations. */
 extern node *GBCglobaldec(node *arg_node, info *arg_info);

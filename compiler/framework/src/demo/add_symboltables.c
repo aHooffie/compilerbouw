@@ -406,6 +406,8 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
     node *symboltable = INFO_STACK(arg_info);
     node *original;
 
+    FUNCTIONCALLSTMT_SCOPE(arg_node) = INFO_SIZE(arg_info);
+
     while (symboltable != NULL)
     {
         original = findOriginal(SYMBOLTABLE_NEXT(symboltable), FUNCTIONCALLSTMT_NAME(arg_node));
@@ -442,6 +444,8 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     /* Find the original function declaration in the scope above. */
     node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
     node *original;
+
+    FUNCTIONCALLEXPR_SCOPE(arg_node) = INFO_SIZE(arg_info);
 
     while (symboltable != NULL)
     {

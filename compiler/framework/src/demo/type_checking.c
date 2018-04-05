@@ -140,8 +140,8 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
     {
         INFO_PARAMCOUNT(arg_info) = 0;
         node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
-        if (FUNCTION_TYPE(originalFunction) != T_void)
-            typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
+        // if (FUNCTION_TYPE(originalFunction) != T_void)
+        //     typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
 
         if (NODE_TYPE(originalFunction) != N_function)
             CTIabort("Something went wrong in the functioncall on line %i!", NODE_LINE(arg_node));

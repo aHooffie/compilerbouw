@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-// include for integer overflow checking
 #include <limits.h>
 
 #include "types.h"

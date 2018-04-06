@@ -275,7 +275,7 @@ node *TCifelse(node *arg_node, info *arg_info)
     INFO_TYPE(arg_info) = T_unknown;
 
     /* Traverse through block of statements.*/
-    IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+    IFELSE_BLOCK(arg_node) = TRAVopt(IFELSE_BLOCK(arg_node), arg_info);
 
     /* Traverse through else block of statements.*/
     IFELSE_ELSE(arg_node) = TRAVopt(IFELSE_ELSE(arg_node), arg_info);
@@ -740,22 +740,22 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    typeError(arg_info, arg_node, "Types are not matching..");
+                    CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, arg_node, "Types are not matching..");
+                CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, arg_node, "Types are not matching..");
+                CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
         default:
-            typeError(arg_info, arg_node, "Types are not matching..");
+            CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
             break;
         }
         break;
@@ -840,8 +840,7 @@ node *TCvardeclaration(node *arg_node, info *arg_info)
     VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
     // char *s = TypetoString(INFO_TYPE(arg_info));
     // CTInote("%s", s);
-
-    if (INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
+    if (VARDECLARATION_INIT(arg_node) != NULL && INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
         typeError(arg_info, arg_node, "Type of vardeclaration isn't matching assignment. ");
 
     /* Traverse over rest. */

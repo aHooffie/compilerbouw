@@ -1,0 +1,5 @@
+
+export int main() {
+    float a = 5.654.4667;
+    return 0;
+}

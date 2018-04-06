@@ -449,7 +449,6 @@ node *TCmonop(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-// BINOP IS FUCKED?
 /* Binop. */
 node *TCbinop(node *arg_node, info *arg_info)
 {
@@ -493,6 +492,8 @@ node *TCbinop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Unknown types in binop.");
         }
     }
+
+    BINOP_TYPE(arg_node) = INFO_TYPE(arg_info);
 
     switch (BINOP_OP(arg_node))
     {

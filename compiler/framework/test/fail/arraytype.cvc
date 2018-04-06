@@ -1,0 +1,7 @@
+// Should produce a type checking error for mixing types in an array.
+
+
+export int main() {
+    int[4] a = [1, 2, 3.0, 4];
+    return 0;
+}

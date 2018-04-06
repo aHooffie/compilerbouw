@@ -1,5 +1,6 @@
 /*
- * Module: Traverse and create / look for declarations in a symbol table.
+ * Module: add_symboltables.c
+ * Description: Traverse and create / look for declarations in a symbol table.
  * Prefix: AS
  * Author: Andrea van den Hooff
  * Arrays not implemented.
@@ -431,7 +432,7 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
     FUNCTIONCALLEXPR_SCOPE(arg_node) = INFO_SCOPE(arg_info);
 
     /* Find the original function declaration in the scope above. */
-    node *symboltable = SYMBOLTABLE_PREV(INFO_STACK(arg_info));
+    node *symboltable = INFO_STACK(arg_info);
     node *original;
 
     while (symboltable != NULL)

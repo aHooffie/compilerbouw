@@ -1,0 +1,6 @@
+// Should produce a parser error because a comma is missing.
+
+export int main() {
+    int[4, 5, 1] a = [[4, 6], [6, 1]];
+    return 0;
+}

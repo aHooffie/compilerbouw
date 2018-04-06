@@ -1,0 +1,32 @@
+/*
+ * @file   factorial.cvc
+ * @author Martha Szygula (10537988) and Stephen Swatman (10559442)
+ *
+ * @brief  This file finds the factorial of a number in Civilised C.
+ */
+
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+int factorial(int a) {
+	if(a > 1) a = a * factorial(a - 1);
+	return a;
+}
+
+export int main() {
+	int n = 10;
+
+	if(n > 0)
+		n = factorial(n);
+
+	printInt(n);
+	printNewlines(1);
+
+	return 0;
+}

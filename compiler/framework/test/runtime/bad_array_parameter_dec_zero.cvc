@@ -1,0 +1,6 @@
+
+
+export int main() {
+    int[4, 0, 4] array_not_found;
+    return 0;
+}

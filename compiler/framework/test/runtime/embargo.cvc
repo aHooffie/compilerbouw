@@ -1,0 +1,6 @@
+// Should produce an error in the VM because no main is exported.
+
+
+int main() {
+    return 0;
+}

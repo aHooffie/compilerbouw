@@ -1,0 +1,12 @@
+// Should produce a type checking error because funcall has bad arguments.
+
+
+int kaas(int a) {
+    return 0;
+}
+
+export int main() {
+    int a = 0;
+    kaas(5.0 * 6.0);
+    return 0;
+}

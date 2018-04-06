@@ -1100,6 +1100,18 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="Type">
+                    <type name="Type">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
             </attributes>
         </node>
         <!-- 

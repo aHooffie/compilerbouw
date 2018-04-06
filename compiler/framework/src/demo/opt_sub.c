@@ -1,22 +1,20 @@
-/*****************************************************************************
- *
+
+/*
  * Module: opt_sub
  * Prefix: OS
  * Description: This module implements some simple arithmetic optimisations.
  * Author: Andrea van den Hooff
- *
- *****************************************************************************/
+ */
 
 #include "opt_sub.h"
 
-#include "types.h"
-#include "tree_basic.h"
-#include "traverse.h"
 #include "dbug.h"
-
-#include "memory.h"
 #include "free.h"
+#include "memory.h"
 #include "str.h"
+#include "traverse.h"
+#include "tree_basic.h"
+#include "types.h"
 
 /* Traversal functions */
 node *OSbinop(node *arg_node, info *arg_info)
@@ -32,6 +30,7 @@ node *OSbinop(node *arg_node, info *arg_info)
     /* Replace subtraction (optimisation). */
     if (BINOP_OP(arg_node) == BO_sub)
     {
+        /* If (a - a) or (num - num) */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_var) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_var) &&
             STReq(VAR_NAME(BINOP_LEFT(arg_node)), VAR_NAME(BINOP_RIGHT(arg_node))))

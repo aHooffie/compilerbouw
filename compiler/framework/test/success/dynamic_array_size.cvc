@@ -1,0 +1,20 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+int z = 5;
+
+export int main() {
+    int p = 5;
+    int c = 3;
+    int[p * c * z, (p + c) - 3] b = 5 + c;
+    printInt(b[0, 0]);
+    printInt(b[1, 1]);
+    printInt(z);
+    return 0;
+}

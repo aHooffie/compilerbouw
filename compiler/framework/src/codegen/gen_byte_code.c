@@ -47,10 +47,10 @@ struct INFO
     int importvarcount;
     int importfuncount;
     int globalcount;
-    int localvarcount; // counter to check esr offset
-    int branchcount;   // counter to check what branch voorstuk should be used in labels
+    int localvarcount;
+    int branchcount;
     int exprscount;
-    int size;
+    int size; // FOR TESTING
     FILE *filepointer;
 };
 
@@ -76,7 +76,6 @@ struct INFO
 #define INFO_EC(n) ((n)->exprscount)
 #define INFO_SIZE(n) ((n)->size)
 
-
 /* INFO functions */
 static info *MakeInfo(void)
 {
@@ -98,7 +97,6 @@ static info *MakeInfo(void)
     INFO_EC(result) = 0;
     INFO_SIZE(result) = 0;
 
-
     DBUG_RETURN(result);
 }
 
@@ -111,10 +109,10 @@ static info *FreeInfo(info *info)
     DBUG_RETURN(info);
 }
 
-
 /*
     ______  NOT TESTED YET ______
 */
+/* Subroutine call and jump labels. */
 node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunctioncallexpr");
@@ -123,22 +121,21 @@ node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
     char *s;
     int scopeDiff = SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node)) - FUNCTIONCALLEXPR_SCOPE(arg_node);
 
-    /* Subroutine call and jump labels. */
-    /* global subroutine. */
+    /* Global subroutine. */
     if (SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node)) == 0)
     {
-        // subroutine call
+        /* Create subroutine call. */
         n = TBmakeInstructions(I_isrg, NULL);
         addNode(n, arg_info);
 
+        /* Load parameters. */
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
 
-        // jump to subroutine (extern/not extern)
-        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL( FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node))) == TRUE)
+        /* Jump to subroutine (extern/not extern). */
+        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node))))
         {
             n = TBmakeInstructions(I_jsre, NULL);
             s = STRitoa(SYMBOLTABLEENTRY_OFFSET(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node)));
-        
         }
         else
         {
@@ -150,18 +147,19 @@ node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
         INSTRUCTIONS_ARGS(n) = s;
         addNode(n, arg_info);
     }
-    /* subroutine outer scope. */
+    /* Subroutine in an outer scope (nested functions). */
     else if (scopeDiff > 0)
     {
-        // subroutine call
+        /* Create subroutine call. */
         n = TBmakeInstructions(I_isrn, NULL);
         s = STRitoa(scopeDiff);
         INSTRUCTIONS_ARGS(n) = s;
         addNode(n, arg_info);
 
+        /* Load parameters. */
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
 
-        // jump to subroutine
+        /* Jump to subroutine. */
         n = TBmakeInstructions(I_jsr, NULL);
         s = STRitoa(INFO_EC(arg_info));
         s = STRcatn(3, s, " ", FUNCTIONCALLEXPR_NAME(arg_node));
@@ -169,14 +167,14 @@ node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
         INSTRUCTIONS_ARGS(n) = s;
         addNode(n, arg_info);
     }
-
     /* subroutine current scope. */
     else if (scopeDiff == 0)
     {
-        // subroutine call
+        /* Subroutine call. */
         n = TBmakeInstructions(I_isr, NULL);
         addNode(n, arg_info);
 
+        /* Load parameters. */
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
 
         // jump to subroutine
@@ -210,8 +208,6 @@ node *GBCfunctioncallexpr(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-
-
 /*
     ______  NOT TESTED YET ______
            only the globals
@@ -224,7 +220,6 @@ node *GBCfunctioncallstmt(node *arg_node, info *arg_info)
     char *s;
     int scopeDiff = SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)) - FUNCTIONCALLSTMT_SCOPE(arg_node);
 
-    // CTInote("Call: %i Function: %i scopediff: %i", FUNCTIONCALLSTMT_SCOPE(arg_node), SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)), scopeDiff);
     /* Subroutine call and jump labels. */
     /* global subroutine. */
     if (SYMBOLTABLEENTRY_SCOPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)) == 0)
@@ -236,11 +231,10 @@ node *GBCfunctioncallstmt(node *arg_node, info *arg_info)
         FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
 
         // jump to subroutine (extern/not extern)
-        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL( FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node))) == TRUE)
+        if (FUNCTION_ISEXTERN(SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node))) == TRUE)
         {
             n = TBmakeInstructions(I_jsre, NULL);
             s = STRitoa(SYMBOLTABLEENTRY_OFFSET(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)));
-        
         }
         else
         {
@@ -307,22 +301,22 @@ node *GBCfunctioncallstmt(node *arg_node, info *arg_info)
         addNode(n, arg_info);
     }
 
-    switch(SYMBOLTABLEENTRY_TYPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)))
+    switch (SYMBOLTABLEENTRY_TYPE(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node)))
     {
-        case T_int:
-                n = TBmakeInstructions(I_ipop, NULL);
-                addNode(n, arg_info);
-                break;
-        case T_float:
-            n = TBmakeInstructions(I_fpop, NULL);
-            addNode(n, arg_info);
-            break;
-        case T_bool:
-            n = TBmakeInstructions(I_bpop, NULL);
-            addNode(n, arg_info);
-            break;
-        default:
-            break;
+    case T_int:
+        n = TBmakeInstructions(I_ipop, NULL);
+        addNode(n, arg_info);
+        break;
+    case T_float:
+        n = TBmakeInstructions(I_fpop, NULL);
+        addNode(n, arg_info);
+        break;
+    case T_bool:
+        n = TBmakeInstructions(I_bpop, NULL);
+        addNode(n, arg_info);
+        break;
+    default:
+        break;
     }
 
     INFO_EC(arg_info) = 0;
@@ -377,18 +371,17 @@ node *GBCfunction(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCfunction");
     node *n;
 
-    
-
-    if (FUNCTION_ISEXTERN(arg_node) == TRUE) // TRUE hoeft niet volgens mij
+    if (FUNCTION_ISEXTERN(arg_node)) // TRUE hoeft niet volgens mij
     {
-        INFO_IMPORTFUN(arg_info)[INFO_IFC(arg_info)] = arg_node;
+        INFO_IMPORTFUN(arg_info)
+        [INFO_IFC(arg_info)] = arg_node;
         INFO_IFC(arg_info) += 1;
     }
     else
     {
 
         /* Add the labelname to the linked list.*/
-        n = TBmakeInstructions(I_ownbranch, NULL);
+        n = TBmakeInstructions(I_label, NULL);
         INSTRUCTIONS_ARGS(n) = FUNCTION_NAME(arg_node);
         addNode(n, arg_info);
 
@@ -399,7 +392,8 @@ node *GBCfunction(node *arg_node, info *arg_info)
         /* Check if function needs to be exported. */
         if (FUNCTION_ISEXPORT(arg_node) == TRUE)
         {
-            INFO_EXPORTFUN(arg_info)[INFO_EFC(arg_info)] = arg_node;
+            INFO_EXPORTFUN(arg_info)
+            [INFO_EFC(arg_info)] = arg_node;
             INFO_EFC(arg_info) += 1;
         }
 
@@ -416,7 +410,6 @@ node *GBCfunction(node *arg_node, info *arg_info)
 
     // traverse through funbody
 
-
     DBUG_RETURN(arg_node);
 }
 
@@ -424,7 +417,7 @@ node *GBCfunctionbody(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunctionbody");
 
-    node * n;
+    node *n;
 
     /* Create esr instruction. */
     if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
@@ -438,7 +431,7 @@ node *GBCfunctionbody(node *arg_node, info *arg_info)
 
     FUNCTIONBODY_STMTS(arg_node) = TRAVopt(FUNCTIONBODY_STMTS(arg_node), arg_info);
 
-if (INFO_LC(arg_info) != 0)
+    if (INFO_LC(arg_info) != 0)
     {
         char *s = STRitoa(INFO_LC(arg_info));
         INSTRUCTIONS_ARGS(n) = s;
@@ -499,7 +492,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
         addNode(n, arg_info);
 
         /* Create the else label as instruction. */
-        n = TBmakeInstructions(I_ownbranch, NULL);
+        n = TBmakeInstructions(I_label, NULL);
         INSTRUCTIONS_ARGS(n) = otherwise;
         addNode(n, arg_info);
 
@@ -521,7 +514,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
     }
 
     /* Create the end label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
@@ -568,7 +561,7 @@ node *GBCfor(node *arg_node, info *arg_info)
     // start = STRcat(str, "_while(FOR)");
 
     // /* Add the label as instruction. */
-    // n = TBmakeInstructions(I_ownbranch, NULL);
+    // n = TBmakeInstructions(I_label, NULL);
     // INSTRUCTIONS_ARG(n) = start;
     // addNode(n, arg_info);
 
@@ -620,7 +613,7 @@ node *GBCfor(node *arg_node, info *arg_info)
 
     // char *end = "TODO";
     // /* Add the ending label as instruction. */
-    // n = TBmakeInstructions(I_ownbranch, NULL);
+    // n = TBmakeInstructions(I_label, NULL);
     // INSTRUCTIONS_ARG(n) = end;
     // addNode(n, arg_info);
 
@@ -642,7 +635,7 @@ node *GBCwhile(node *arg_node, info *arg_info)
     start = STRcat(str, "_while");
 
     /* Add the label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = start;
     addNode(n, arg_info);
 
@@ -668,7 +661,7 @@ node *GBCwhile(node *arg_node, info *arg_info)
     addNode(n, arg_info);
 
     /* Add the ending label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
@@ -689,7 +682,7 @@ node *GBCdowhile(node *arg_node, info *arg_info)
     label = STRcat(str, "_dowhile");
 
     /* Add the label as instruction. */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = label;
     addNode(n, arg_info);
 
@@ -777,14 +770,14 @@ node *GBCternop(node *arg_node, info *arg_info)
     addNode(n, arg_info);
 
     /* Label! */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = label;
     addNode(n, arg_info);
 
     TERNOP_ELSE(arg_node) = TRAVdo(TERNOP_ELSE(arg_node), arg_info);
 
     /* End label! */
-    n = TBmakeInstructions(I_ownbranch, NULL);
+    n = TBmakeInstructions(I_label, NULL);
     INSTRUCTIONS_ARGS(n) = end;
     addNode(n, arg_info);
 
@@ -795,124 +788,114 @@ node *GBCbinop(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCbinop");
     node *n;
-    char *s;
-    if (BINOP_OP(arg_node) == I_isub)
-        s = "MIN";
-    else 
-        s = "KEER";
 
-    CTInote("BINOP %s", s);
-
-    /* Traverse expressions */
+    // /* Traverse expressions */
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
-    nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
-    if (left != N_num && left != N_bool && left != N_float)
-    {
-        switch (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))))
-        {
-        case T_int:
-            left = N_num;
-            break;
-        case T_float:
-            left = N_float;
-            break;
-        case T_bool:
-            left = N_bool;
-            break;
-        default:
-            typeError(arg_info, arg_node, "Unknown types in binop.");
-        }
-    }
+    type left = BINOP_TYPE(arg_node);
+    // if (left != N_num && left != N_bool && left != N_float)
+    // {
+    //     if (NODE_TYPE(BINOP_LEFT(arg_node)) == N_binop)
+    //     {
+    //         CTInote("HET IS EEN BINOP!!");
+    //     }
+    //     switch (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))))
+    //     {
+    //     case T_int:
+    //         left = N_num;
+    //         break;
+    //     case T_float:
+    //         left = N_float;
+    //         break;
+    //     case T_bool:
+    //         left = N_bool;
+    //         break;
+    //     default:
+    //         typeError(arg_info, arg_node, "Unknown types in binop.");
+    //     }
+    // }
 
     switch (BINOP_OP(arg_node))
     {
     case BO_add:
-        CTInote("binop +");
-        if (left == N_num)
+        if (left == T_int)
             // TO DO > optimize : met iinc??
             n = TBmakeInstructions(I_iadd, NULL);
-        else if (left == N_bool)
+        else if (left == T_bool)
             n = TBmakeInstructions(I_badd, NULL);
         else
             n = TBmakeInstructions(I_fadd, NULL);
         break;
 
     case BO_sub:
-        CTInote("binop -");
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_isub, NULL);
         else
             n = TBmakeInstructions(I_fsub, NULL);
         break;
 
     case BO_mul:
-        CTInote("binop *");
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_imul, NULL);
-        else if (left == N_bool)
+        else if (left == T_bool)
             n = TBmakeInstructions(I_bmul, NULL);
         else
             n = TBmakeInstructions(I_fmul, NULL);
         break;
 
     case BO_div:
-        CTInote("binop /");
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_idiv, NULL);
         else
             n = TBmakeInstructions(I_fdiv, NULL);
         break;
 
     case BO_mod:
-        CTInote("binop %");
-        CTInote("in mod!");
         n = TBmakeInstructions(I_irem, NULL);
-        CTInote("made mod");
         break;
 
     case BO_lt:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_ilt, NULL);
         else
             n = TBmakeInstructions(I_flt, NULL);
         break;
 
     case BO_le:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_ile, NULL);
         else
             n = TBmakeInstructions(I_fle, NULL);
         break;
 
     case BO_gt:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_igt, NULL);
         else
             n = TBmakeInstructions(I_fgt, NULL);
         break;
 
     case BO_ge:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_ige, NULL);
         else
             n = TBmakeInstructions(I_fge, NULL);
         break;
 
     case BO_eq:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_ieq, NULL);
-        else if (left == N_float)
+        else if (left == T_float)
             n = TBmakeInstructions(I_feq, NULL);
         else
             n = TBmakeInstructions(I_beq, NULL);
         break;
 
     case BO_ne:
-        if (left == N_num)
+        if (left == T_int)
             n = TBmakeInstructions(I_ine, NULL);
-        else if (left == N_float)
+        else if (left == T_float)
             n = TBmakeInstructions(I_fne, NULL);
         else
             n = TBmakeInstructions(I_bne, NULL);
@@ -925,7 +908,6 @@ node *GBCbinop(node *arg_node, info *arg_info)
 
     /* Add the node to the list of instructions. */
     addNode(n, arg_info);
-    CTInote("begin van binop");
     DBUG_RETURN(arg_node);
 }
 
@@ -989,7 +971,7 @@ node *GBCvar(node *arg_node, info *arg_info)
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
-    
+
     if (nt == N_vardeclaration)
         scopeDiff = VAR_SCOPE(arg_node) - VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
     else if (nt == N_parameters)
@@ -999,58 +981,61 @@ node *GBCvar(node *arg_node, info *arg_info)
     // type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
     switch (nt)
     {
-    
-        case N_vardeclaration:
-        case N_parameters:
-            if (scopeDiff == 0) {
-                if (t == T_int)
-                    n = TBmakeInstructions(I_iload, NULL);
-                else if (t == T_float)
-                    n = TBmakeInstructions(I_iload, NULL);
-                else
-                    n = TBmakeInstructions(I_iload, NULL);
-                str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
-                INSTRUCTIONS_ARGS(n) = str;    
-            } else {
-                if (t == T_int)
-                    n = TBmakeInstructions(I_iloadn, NULL);
-                else if (t == T_float)
-                    n = TBmakeInstructions(I_floadn, NULL);
-                else
-                    n = TBmakeInstructions(I_bloadn, NULL);
-                str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
-                s = STRitoa(scopeDiff);
-                str = STRcatn(3, str, " ", s);
-                INSTRUCTIONS_ARGS(n) = str;
-            }
-            break;
 
-        case N_globaldec:
+    case N_vardeclaration:
+    case N_parameters:
+        if (scopeDiff == 0)
+        {
             if (t == T_int)
-                n = TBmakeInstructions(I_iloade, NULL);
+                n = TBmakeInstructions(I_iload, NULL);
             else if (t == T_float)
-                n = TBmakeInstructions(I_floade, NULL);
+                n = TBmakeInstructions(I_iload, NULL);
             else
-                n = TBmakeInstructions(I_bloade, NULL);
-
+                n = TBmakeInstructions(I_iload, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
             INSTRUCTIONS_ARGS(n) = str;
-            break;
-
-        case N_globaldef:
+        }
+        else
+        {
             if (t == T_int)
-                n = TBmakeInstructions(I_iloadg, NULL);
+                n = TBmakeInstructions(I_iloadn, NULL);
             else if (t == T_float)
-                n = TBmakeInstructions(I_floadg, NULL);
+                n = TBmakeInstructions(I_floadn, NULL);
             else
-                n = TBmakeInstructions(I_bloadg, NULL);
-
+                n = TBmakeInstructions(I_bloadn, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
+            s = STRitoa(scopeDiff);
+            str = STRcatn(3, str, " ", s);
             INSTRUCTIONS_ARGS(n) = str;
-            break;
-        default:
-            n = NULL;
-            break;
+        }
+        break;
+
+    case N_globaldec:
+        if (t == T_int)
+            n = TBmakeInstructions(I_iloade, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_floade, NULL);
+        else
+            n = TBmakeInstructions(I_bloade, NULL);
+
+        str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
+        INSTRUCTIONS_ARGS(n) = str;
+        break;
+
+    case N_globaldef:
+        if (t == T_int)
+            n = TBmakeInstructions(I_iloadg, NULL);
+        else if (t == T_float)
+            n = TBmakeInstructions(I_floadg, NULL);
+        else
+            n = TBmakeInstructions(I_bloadg, NULL);
+
+        str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
+        INSTRUCTIONS_ARGS(n) = str;
+        break;
+    default:
+        n = NULL;
+        break;
     }
 
     // str = STRitoa(offset);
@@ -1067,12 +1052,9 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvarlet");
     node *n;
     nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
-    // int offset = SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node));
     int scopeDiff;
     char *str;
     char *s;
-
-    CTInote("varlet: %s", VARLET_NAME(arg_node));
 
     if (nt == N_vardeclaration)
         scopeDiff = VARLET_SCOPE(arg_node) - VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
@@ -1085,7 +1067,8 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     {
     case N_vardeclaration:
     case N_parameters:
-        if (scopeDiff == 0) {
+        if (scopeDiff == 0)
+        {
             if (t == T_int)
                 n = TBmakeInstructions(I_istore, NULL);
             else if (t == T_float)
@@ -1093,8 +1076,10 @@ node *GBCvarlet(node *arg_node, info *arg_info)
             else
                 n = TBmakeInstructions(I_bstore, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node)));
-            INSTRUCTIONS_ARGS(n) = str;    
-        } else {
+            INSTRUCTIONS_ARGS(n) = str;
+        }
+        else
+        {
             if (t == T_int)
                 n = TBmakeInstructions(I_istoren, NULL);
             else if (t == T_float)
@@ -1140,8 +1125,6 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     /* Continue with other varlets. */
     VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
 
-    CTInote("einde varlet");
-
     DBUG_RETURN(arg_node);
 }
 
@@ -1175,8 +1158,8 @@ node *GBCnum(node *arg_node, info *arg_info)
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)
         {
-            CTInote("CONSTANT %i", INFO_CC(arg_info));
-            INFO_CONSTANTS(arg_info)[INFO_CC(arg_info)] = arg_node;
+            INFO_CONSTANTS(arg_info)
+            [INFO_CC(arg_info)] = arg_node;
             str = STRitoa(INFO_CC(arg_info));
             INSTRUCTIONS_ARGS(n) = str;
             INFO_CC(arg_info) += 1;
@@ -1264,29 +1247,8 @@ node *GBCbool(node *arg_node, info *arg_info)
 void addNode(node *arg_node, info *arg_info)
 {
     INFO_SIZE(arg_info) += 1;
-    CTInote("%i", INFO_SIZE(arg_info));
-    char *s = "ONBEKEND";
-    switch (INSTRUCTIONS_INSTR(arg_node))
-    {
-        case I_iadd:
-        s = "iadd";
-        break;
-        case I_isub:
-        s = "isub";
-        break;
-         case I_imul:
-        s = "imul";
-        break;
-        case I_iload:
-        s = "iload";
-        break;
-        case I_istore:
-        s = "istore";
-        break;
-        default:
-        s = " geen idee";
-        break;
-    }
+    char *s = instrToString(INSTRUCTIONS_INSTR(arg_node));
+    CTInote("%i %s", INFO_SIZE(arg_info), s);
 
     if (INFO_LI(arg_info) == NULL)
     {
@@ -1298,8 +1260,6 @@ void addNode(node *arg_node, info *arg_info)
         INSTRUCTIONS_NEXT(INFO_LI(arg_info)) = arg_node;
         INFO_LI(arg_info) = arg_node;
     }
-        CTInote("INSTR: %s", s);
-
 }
 
 /* Traversal start function */
@@ -1622,7 +1582,7 @@ char *instrToString(instr type)
     case I_bpop:
         s = "bpop";
         break;
-    case I_ownbranch:
+    case I_label:
         s = "";
         break;
     default:
@@ -1642,7 +1602,7 @@ void printInstructions(info *arg_info)
         /* Print all instructions */
         while (INSTRUCTIONS_NEXT(n) != NULL)
         {
-            if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
+            if (INSTRUCTIONS_INSTR(n) != I_label)
                 printf("    ");
 
             printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
@@ -1654,7 +1614,7 @@ void printInstructions(info *arg_info)
             // if (INSTRUCTIONS_ARG(n) != NULL)
             //     printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
 
-            if (INSTRUCTIONS_INSTR(n) == I_ownbranch)
+            if (INSTRUCTIONS_INSTR(n) == I_label)
                 printf(":");
 
             printf("\n");
@@ -1663,7 +1623,7 @@ void printInstructions(info *arg_info)
         }
 
         /* Print the last instruction. */
-        if (INSTRUCTIONS_INSTR(n) != I_ownbranch)
+        if (INSTRUCTIONS_INSTR(n) != I_label)
             printf("    ");
 
         printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));

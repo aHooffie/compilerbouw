@@ -1,12 +1,20 @@
+export int foo() {
+        return 4;
+    }
+
 export void main () {
     int a;
     int b;
     int c;
     int d;
     int e;
+
+    int bar() {
+        return 4;
+    }
     
-    a = a + b;
-    a = a - b;
+    a = a + foo();
+    a = a - bar();
     a = a * b;
 
     b = a + b + c;

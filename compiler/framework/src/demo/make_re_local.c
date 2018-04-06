@@ -1,25 +1,25 @@
 
 /*
- * Module: make_regularexpr
+ * Module: make_re_local.c
  * Prefix: REL
  * Description: This module implements a traversal of the abstract syntax tree that 
  * turns local variable initialisations into regular assignments
  * Author: Aynel Gul
+ * Arrays not implemented. 
  */
 
 #include "make_re_local.h"
-#include "types.h"
-#include "tree_basic.h"
-#include "traverse.h"
-#include "dbug.h"
-#include "str.h"
-#include "globals.h"
 
-#include "memory.h"
 #include "ctinfo.h"
+#include "dbug.h"
+#include "globals.h"
+#include "memory.h"
+#include "str.h"
+#include "traverse.h"
+#include "tree_basic.h"
+#include "types.h"
 
 /* INFO structure */
-
 struct INFO
 {
     node *head;
@@ -45,7 +45,6 @@ static info *MakeInfo(void)
 }
 
 /* Traversal functions */
-
 node *RELfunctionbody(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("RELfunctionbody");
@@ -59,7 +58,7 @@ node *RELfunctionbody(node *arg_node, info *arg_info)
             FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
         else
         {
-            /* Add the new statements in front of old stmts */
+            /* Add the new statements in front of old statements */
             STMTS_NEXT(INFO_STMTS(arg_info)) = FUNCTIONBODY_STMTS(arg_node);
             FUNCTIONBODY_STMTS(arg_node) = INFO_HEAD(arg_info);
         }
@@ -76,7 +75,6 @@ node *RELfunctionbody(node *arg_node, info *arg_info)
 node *RELvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("RELvardeclaration");
-
 
     if (VARDECLARATION_INIT(arg_node) != NULL)
     {

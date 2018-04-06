@@ -115,6 +115,7 @@ traversals to process it.
                     <node name="IfElse" />
                     <node name="While" />
                     <node name="DoWhile" />
+                    <node name="For" />
                     <node name="Return" />
                     <node name="TernOp" />
                     <node name="BinOp" />

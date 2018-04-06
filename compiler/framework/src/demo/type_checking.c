@@ -133,6 +133,8 @@ node *TCstmts(node *arg_node, info *arg_info)
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
 
+
+    // !!!! DEZE CHECK KLOPT NIET!! DO_WHILE HEEFT OOK EEN NEXT NODE DIE NULL IS
     if (STMTS_NEXT(arg_node) == NULL && NODE_TYPE(STMTS_STMT(arg_node)) != N_return)
         INFO_LS(arg_info) = FALSE;
 
@@ -275,7 +277,7 @@ node *TCifelse(node *arg_node, info *arg_info)
     INFO_TYPE(arg_info) = T_unknown;
 
     /* Traverse through block of statements.*/
-    IFELSE_BLOCK(arg_node) = TRAVopt(IFELSE_BLOCK(arg_node), arg_info);
+    IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
 
     /* Traverse through else block of statements.*/
     IFELSE_ELSE(arg_node) = TRAVopt(IFELSE_ELSE(arg_node), arg_info);
@@ -740,22 +742,22 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
+                    typeError(arg_info, arg_node, "Types are not matching..");
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
+                typeError(arg_info, arg_node, "Types are not matching..");
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
+                typeError(arg_info, arg_node, "Types are not matching..");
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
         default:
-            CTIabort("Errors were found in your || and && operators on line %i.", NODE_LINE(arg_node));
+            typeError(arg_info, arg_node, "Types are not matching..");
             break;
         }
         break;
@@ -840,7 +842,8 @@ node *TCvardeclaration(node *arg_node, info *arg_info)
     VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
     // char *s = TypetoString(INFO_TYPE(arg_info));
     // CTInote("%s", s);
-    if (VARDECLARATION_INIT(arg_node) != NULL && INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
+
+    if (INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
         typeError(arg_info, arg_node, "Type of vardeclaration isn't matching assignment. ");
 
     /* Traverse over rest. */

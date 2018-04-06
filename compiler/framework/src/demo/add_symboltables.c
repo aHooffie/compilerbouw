@@ -468,18 +468,33 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 node *ASfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfor");
+    node *newEntry;
+    char *name;
 
     /* Reset offset count. */
     INFO_OSC(arg_info) = 0;
-
-    char *name = STRcpy(FOR_INITVAR(arg_node));
 
     /* Create new symbol table and add it to the stack. */
     node *forSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
     stackPush(forSymboltable, arg_info);
 
     /* Create entry for initvar. */
-    node *newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    name = STRcpy(FOR_INITVAR(arg_node));
+    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+    INFO_OSC(arg_info) += 1;
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+
+    /* Create entry for stopvar. */
+    name = "stopVar";
+    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+    INFO_OSC(arg_info) += 1;
+    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+
+    /* Create entry for stepvar. */
+    name = "stepVar";
+    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
     INFO_OSC(arg_info) += 1;
     SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;

@@ -557,7 +557,7 @@ node *GBCfor(node *arg_node, info *arg_info)
     // char *str;
     // char *start;
 
-    // sprintf(str, "%d", INFO_BC(arg_info));
+    // sfprintf(INFO_FP(arg_info), str, "%d", INFO_BC(arg_info));
     // start = STRcat(str, "_while(FOR)");
 
     // /* Add the label as instruction. */
@@ -1057,12 +1057,15 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     char *s;
 
     if (nt == N_vardeclaration)
+    {
         scopeDiff = VARLET_SCOPE(arg_node) - VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
+    }
     else if (nt == N_parameters)
         scopeDiff = VARLET_SCOPE(arg_node) - PARAMETERS_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
 
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VARLET_SYMBOLTABLEENTRY(arg_node));
+
     switch (nt)
     {
     case N_vardeclaration:
@@ -1247,8 +1250,8 @@ node *GBCbool(node *arg_node, info *arg_info)
 void addNode(node *arg_node, info *arg_info)
 {
     INFO_SIZE(arg_info) += 1;
-    char *s = instrToString(INSTRUCTIONS_INSTR(arg_node));
-    CTInote("%i %s", INFO_SIZE(arg_info), s);
+    // char *s = instrToString(INSTRUCTIONS_INSTR(arg_node));
+    // CTInote("%i %s", INFO_SIZE(arg_info), s);
 
     if (INFO_LI(arg_info) == NULL)
     {
@@ -1270,15 +1273,21 @@ node *GBCdoGenByteCode(node *syntaxtree)
     info *arg_info;
     arg_info = MakeInfo();
 
-    INFO_FP(arg_info) = fopen(global.outfile, "w");
+    // CTInote("voor file openen");
+    INFO_FP(arg_info) = fopen(global.outfile, "w+");
+
+    // fprintf(INFO_FP(arg_info), "%s", global.outfile);
 
     if (INFO_FP(arg_info) == NULL)
         INFO_FP(arg_info) = stdout;
+    // CTInote("na file openen");
+
 
     TRAVpush(TR_gbc);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();
 
+    // CTInote("NU print");
     printInstructions(arg_info);
     arg_info = FreeInfo(arg_info);
 
@@ -1595,6 +1604,7 @@ char *instrToString(instr type)
 void printInstructions(info *arg_info)
 {
     node *n = INFO_FI(arg_info);
+    // CTInote("HIER");
 
     // TO DO: INDENTATIE + LABELS WITH :
     if (INFO_FI(arg_info) != NULL)
@@ -1603,37 +1613,38 @@ void printInstructions(info *arg_info)
         while (INSTRUCTIONS_NEXT(n) != NULL)
         {
             if (INSTRUCTIONS_INSTR(n) != I_label)
-                printf("    ");
+                fprintf(INFO_FP(arg_info), "    ");
 
-            printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
+            fprintf(INFO_FP(arg_info), "%s", instrToString(INSTRUCTIONS_INSTR(n)));
+            // ffprintf(INFO_FP(arg_info), INFO_FP(arg_info),)
 
             if (INSTRUCTIONS_ARGS(n) != NULL)
-                printf(" %s", INSTRUCTIONS_ARGS(n));
+                fprintf(INFO_FP(arg_info), " %s", INSTRUCTIONS_ARGS(n));
             // WHAT IF OFFSET = 0? WARNING!
 
             // if (INSTRUCTIONS_ARG(n) != NULL)
-            //     printf(" %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
+            //     fprintf(INFO_FP(arg_info), " %s", INSTRUCTIONS_ARG(n)); // spatie te veel?
 
             if (INSTRUCTIONS_INSTR(n) == I_label)
-                printf(":");
+                fprintf(INFO_FP(arg_info), ":");
 
-            printf("\n");
+            fprintf(INFO_FP(arg_info), "\n");
 
             n = INSTRUCTIONS_NEXT(n);
         }
 
         /* Print the last instruction. */
         if (INSTRUCTIONS_INSTR(n) != I_label)
-            printf("    ");
+            fprintf(INFO_FP(arg_info), "    ");
 
-        printf("%s", instrToString(INSTRUCTIONS_INSTR(n)));
+        fprintf(INFO_FP(arg_info), "%s", instrToString(INSTRUCTIONS_INSTR(n)));
         if (INSTRUCTIONS_ARGS(n) != NULL)
-            printf(" %s", INSTRUCTIONS_ARGS(n));
+            fprintf(INFO_FP(arg_info), " %s", INSTRUCTIONS_ARGS(n));
 
         // if (INSTRUCTIONS_ARG(n) != NULL)
-        // printf(" %s", INSTRUCTIONS_ARG(n));
+        // fprintf(INFO_FP(arg_info), " %s", INSTRUCTIONS_ARG(n));
 
-        printf("\n");
+        fprintf(INFO_FP(arg_info), "\n");
     }
 
     /* Add constants */
@@ -1649,17 +1660,17 @@ void printInstructions(info *arg_info)
         {
             consttype = TypetoString(T_int);
             numval = NUM_VALUE(INFO_CONSTANTS(arg_info)[i]);
-            printf(".const %s %i \n", consttype, numval);
+            fprintf(INFO_FP(arg_info), ".const %s %i \n", consttype, numval);
         }
         else
         {
             // float
             consttype = TypetoString(T_float);
             floatval = FLOAT_VALUE(INFO_CONSTANTS(arg_info)[i]);
-            printf(".const %s %f \n", consttype, floatval);
+            fprintf(INFO_FP(arg_info), ".const %s %f \n", consttype, floatval);
         }
 
-        // printf(".const %s %i \n", consttype, constvalue);
+        // fprintf(INFO_FP(arg_info), ".const %s %i \n", consttype, constvalue);
     }
 
     /* Add exports */
@@ -1670,18 +1681,18 @@ void printInstructions(info *arg_info)
     for (int i = 0; i < INFO_EFC(arg_info); i++)
     {
         returntype = TypetoString(FUNCTION_TYPE(INFO_EXPORTFUN(arg_info)[i]));
-        printf(".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]), returntype);
+        fprintf(INFO_FP(arg_info), ".exportfun \"%s\" %s ", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]), returntype);
 
         node *param = FUNCTION_PARAMETERS(INFO_EXPORTFUN(arg_info)[i]);
 
         while (param != NULL)
         {
             paramtype = TypetoString(PARAMETERS_TYPE(param));
-            printf("%s ", paramtype);
+            fprintf(INFO_FP(arg_info), "%s ", paramtype);
             param = PARAMETERS_NEXT(param);
         }
 
-        printf("%s\n", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]));
+        fprintf(INFO_FP(arg_info), "%s\n", FUNCTION_NAME(INFO_EXPORTFUN(arg_info)[i]));
     }
 
     /* Add exported vars (global definitions). */
@@ -1690,14 +1701,14 @@ void printInstructions(info *arg_info)
     for (int i = 0; i < INFO_EVC(arg_info); i++)
     {
         globaltype = TypetoString(GLOBALDEF_TYPE(INFO_GLOBAL(arg_info)[i]));
-        printf(".global %s ", globaltype);
+        fprintf(INFO_FP(arg_info), ".global %s ", globaltype);
     }
 
     /* Add imported vars (global declarations). */
     for (int i = 0; i < INFO_IVC(arg_info); i++)
     {
         globaltype = TypetoString(GLOBALDEC_TYPE(INFO_IMPORTVAR(arg_info)[i]));
-        printf(".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
+        fprintf(INFO_FP(arg_info), ".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
     }
 
     /* Add imported functions. */
@@ -1705,17 +1716,17 @@ void printInstructions(info *arg_info)
     {
         returntype = TypetoString(FUNCTION_TYPE(INFO_IMPORTFUN(arg_info)[i]));
 
-        printf(".importfun \"%s\" %s ", FUNCTION_NAME(INFO_IMPORTFUN(arg_info)[i]), returntype);
+        fprintf(INFO_FP(arg_info), ".importfun \"%s\" %s ", FUNCTION_NAME(INFO_IMPORTFUN(arg_info)[i]), returntype);
 
         node *param = FUNCTION_PARAMETERS(INFO_IMPORTFUN(arg_info)[i]);
 
         while (param != NULL)
         {
             paramtype = TypetoString(PARAMETERS_TYPE(param));
-            printf("%s ", paramtype);
+            fprintf(INFO_FP(arg_info), "%s ", paramtype);
             param = PARAMETERS_NEXT(param);
         }
 
-        printf("\n");
+        fprintf(INFO_FP(arg_info), "\n");
     }
 }

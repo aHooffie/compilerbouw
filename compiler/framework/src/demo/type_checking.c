@@ -104,8 +104,12 @@ node *TCfunction(node *arg_node, info *arg_info)
     FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
     FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
 
-    if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node))
-        typeError(arg_info, arg_node, "Function is missing a return call.");
+    /* Check if there is a return type. */
+    if (FUNCTION_ISEXTERN(arg_node) == FALSE)
+    {
+        if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node) != T_void)
+            typeError(arg_info, arg_node, "Function is missing a return call.");
+    }
 
     INFO_FRC(arg_info) = 0;
 

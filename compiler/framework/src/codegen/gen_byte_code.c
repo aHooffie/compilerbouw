@@ -526,7 +526,16 @@ node *GBCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfor");
 
+    /* Include memory space in the function ESR instruction. */
     INFO_LC(arg_info) += 3;
+
+    /* Load start expression. */
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+
+    /* Create store instruction. */
+    // n = TBmakeInstructions(I_fload_0, NULL);
+
+    // FOR_INITVAR(arg_node)
 
     DBUG_RETURN(arg_node);
 }

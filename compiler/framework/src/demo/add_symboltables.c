@@ -33,6 +33,7 @@ struct INFO
     int errors;
     int scope;
     int currentscope;
+    bool inforloop;
 };
 
 /* struct macros */
@@ -510,52 +511,42 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 node *ASfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfor");
-    node *newEntry;
-    char *name;
-
-    /* Reset offset count. */
-    INFO_OSC(arg_info) = 0;
-
-    /* Create new symbol table and add it to the stack. */
-    node *forSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
-    stackPush(forSymboltable, arg_info);
+    node *newEntry, last;
+    char *name, *label;
 
     /* Create entry for initvar. */
-    name = STRcpy(FOR_INITVAR(arg_node));
-    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
-    SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    INFO_OSC(arg_info) += 1;
-    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+    // label = STRito(INFO_OSC(arg_info));
+    // name = STRcatn(3, FOR_INITVAR(arg_node), "_", label); // i_3 bijv.
+    // newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    // SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+    // INFO_OSC(arg_info) += 1;
 
-    /* Create entry for stopvar. */
-    name = "stopVar";
-    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
-    SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    INFO_OSC(arg_info) += 1;
-    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+    // node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+    // if (last == NULL)
+    //     SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+    // else
+    //     SYMBOLTABLEENTRY_NEXT(last) = newEntry;
 
-    /* Create entry for stepvar. */
-    name = "stepVar";
-    newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
-    SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    INFO_OSC(arg_info) += 1;
-    SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+    // /* Create entry for stopvar. */
+    // label = STRito(INFO_OSC(arg_info));
+    // name = STRcat("stop_", label); // bijv stop_4
+    // newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    // SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+    // INFO_OSC(arg_info) += 1;
+    // SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+
+    // /* Create entry for stepvar. */
+    // name = "stepVar";
+    // newEntry = TBmakeSymboltableentry(name, T_int, INFO_SCOPE(arg_info) - 1, NULL);
+    // SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+    // INFO_OSC(arg_info) += 1;
+    // SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
 
     /* Traverse into child nodes. */
     FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
     FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
     FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
     FOR_STEP(arg_node) = TRAVopt(FOR_STEP(arg_node), arg_info);
-
-    /* Print symboltable of current function. */
-    // CTIwarn("************************************ \n For loop %s's symboltable. Scope level: %i. \n************************************", name, INFO_SCOPE(arg_info) - 1);
-    // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-    // while (entry != NULL)
-    // {
-    //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-    //     entry = SYMBOLTABLEENTRY_NEXT(entry);
-    // }
-    // CTIwarn("************************************");
 
     /* Remove the linked list at the end of the traversal. */
     stackPop(arg_info);

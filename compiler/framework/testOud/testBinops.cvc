@@ -1,0 +1,31 @@
+export int foo() {
+        return 4;
+    }
+
+export void main () {
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+
+    int bar() {
+        return 4;
+    }
+    
+    a = a + foo();
+    a = a - bar();
+    a = a * b;
+
+    b = a + b + c;
+    b = a - b - c;
+    b = a * b * c;
+
+    c = a - b + c;
+    c = a + b - c;
+    
+    e = a + b * c;
+    e = a * b + c;
+    
+    return;
+}

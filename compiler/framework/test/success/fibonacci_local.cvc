@@ -1,0 +1,38 @@
+/*
+ * @file   fibonacci.cvc
+ * @author Martha Szygula (10537988) and Stephen Swatman (10559442)
+ *
+ * @brief  This file finds a given number of Fibonacci numbers in Civilised C
+ *         using relatively free variables.
+ */
+
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    int a = 0;
+    int b = 1;
+    int n = 100;
+    int c;
+
+	void fibonacci() {
+		c = a + b;
+		a = b;
+		b = c;
+		n = n - 1;
+	}
+
+    while (n > 0) {
+        printInt(a);
+        printNewlines(1);
+		fibonacci();
+    }
+
+    return 0;
+}

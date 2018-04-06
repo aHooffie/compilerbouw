@@ -1,0 +1,146 @@
+How to merge the testsuite into your codebase
+=============================================
+
+- Copy the entire "test" directory into the root directory of the framework.
+  The framework already contains a test directory with files test1.cvc and
+  test2.cvc, you can remove these.
+
+
+- Add the following lines to your Makefile (make sure the lines start with tabs):
+
+###############################################################################
+#
+# Testing
+#
+
+check: all
+    @cd test; \
+        CIVAS=../$(TEST_CIVAS) \
+        CIVVM=../$(TEST_CIVVM) \
+        CIVCC=../$(TEST_CIVCC) \
+        RUN_FUNCTIONAL=$(TEST_RUN_FUNCTIONAL) \
+        bash run.bash $(TEST_DIRS)
+
+
+- Add the following lines to your Makefile.Targets (this is configuration, so
+  edit them accordingly):
+
+###############################################################################
+#
+# Testing
+#
+#  Uncomment the necessary parts when adding extensions.
+
+# Subdirectories of "test/" to traverse into during testing. Enable
+# "nested_funs" and "arrays" when you start implementing those extensions.
+# "preprocess" is optional, for those who implemented the C preprocessor.
+TEST_DIRS := basic # nested_funs arrays preprocess
+
+# Flags to pass to your compiler when running tests (e.g., a verbosity level).
+TEST_CFLAGS := ""
+
+# Whether to run tests that compare program output. Set to 1 after you have
+# implemented your assembly phase.
+TEST_RUN_FUNCTIONAL := 1
+
+# Path to toolchain files, relative to the root directory (used for functional
+# test).
+TEST_CIVAS := bin/civas
+TEST_CIVVM := bin/civvm
+
+# Path to your compiler binary, relative to the root directory.
+TEST_CIVCC := bin/civicc
+
+
+Types of tests
+==============
+
+The "test" directory has a number of subdirectories that group the tests into
+different types:
+- The "basic" directory contains tests that test the minimal requirements as
+  explained in the milestones and reference manual, without any extensions.
+- The "nested_funs" and "arrays" directories contain tests that test the
+  functyionalities added by the corresponding extensions.
+- The "preprocess" directory is completely optional, for those students who
+  chose to implement parsing of C preprocessor directives and have a compiler
+  pass that calls the C preprocessor (the "cpp" command).
+
+
+The second nesting level of the test directory has four different formats:
+
+- check_success: Small tests that only check if your compiler exits with a 0
+  status code.
+
+- check_error: Small tests that only check if your compiler exits with a
+  non-zero status code.
+
+- functional: These are the important tests. Your compiler is used to compile a
+  program, which is then assembled and executed with the CiviC VM. The output
+  is compared to the expected output, which is in the corresponding .out file.
+
+- combined_*: This is a special type of functional test, which requires
+  multiple source files to be run at the same time, where one of the source
+  files contains a main function. This is used for testing external variables,
+  which requires a file that exports a variable and a file that imports that
+  variable.
+
+
+How to use the testsuite
+========================
+
+Run all tests by executing "make check" in a terminal. Failed tests will show
+the output that your compiler generated while running the test.
+
+The test suite is designed to be part of your workflow, for example:
+1. Implement a compiler feature (e.g., a set of grammar rules in your parser).
+2. Run "make check".
+3. For the tests that fail, see if the printed output of your compiler helps
+   you to debug the program.
+4. If the output of "make check" is insufficient, have a look at the source
+   files of the failed tests, add some print statements to your code, and try
+   to get your compiler to work with only those source files.
+5. When you have debugged a test case, run "make check" again to verify that
+   the test now succeeds and that you have not broken any other tests.
+
+
+On a more global level, you have to enable more tests in your Makefile.Targets
+file as you advance in the course. First of all, you should uncomment the
+"arrays" and "nested_funs" targets of TEST_DIRS when you start working on these
+extensions. Second, you should set TEST_FUNCTIONAL to 1 when you have
+implemented the first version of your code generation phase, to enable tests
+that compare program output.
+
+
+FAQ
+===
+
+Q: "If a lot of tests fail, will I fail the assignment?"
+A: Obviously, the more tests succeed, the higher your grade is likely to be.
+   Some tests, however, are more important than others (e.g., functional tests
+   are important). Some features may also (unintendedly) have more test cases
+   than others. For example, when your parser does not support function
+   definitions yet, most tests will fail since almost all are wrapped in a
+   "void foo" function. We will try to look closely to exactly which tests fail
+   when evaluating your compilers, and not only to the number of failing tests.
+
+Q: "If all test succeed, will I get a 10?"
+A: You will probably get close, but we also review code quality. If your C coding
+   style is horrible, we will subtract points, even if all of the tests
+   succeed. Also note that we have a number of additional tests for edge cases
+   that are not distributed to the students.
+
+Q: "I have my own testsuite, should I switch to yours instead?"
+A: Using the testsuite is not mandatory. If you have a fancy automated
+   testsuite of your own that covers all input cases, then you can surely use
+   that. Do keep in mind that we will use our own test suite to evaluate your
+   compilers, so it is recommended to at run the testsuite at least once to see
+   if you missed anything.
+
+Q: "Should we extend the testsuite ourselves?"
+A: By all means, we encourage you to write more tests. It is very easy to add a
+   cvc/out file pair to the functional tests directory and it saves you the
+   work of having to run your compiler on separate test files manually after
+   each small change.
+
+Q: "Does the testsuite output look awesome with fancy terminal colors?"
+A: Yes :-)

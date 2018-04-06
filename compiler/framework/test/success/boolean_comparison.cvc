@@ -1,0 +1,17 @@
+// Comparisons don't work on booleans, except for ==.
+
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    if (true == false) {
+        printInt(1234);
+    }
+    return 0;
+}

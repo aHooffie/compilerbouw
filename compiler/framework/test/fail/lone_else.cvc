@@ -1,0 +1,7 @@
+// Should produce a type checking error because binop types should match.
+
+
+export int main() {
+    else {}
+    return 0;
+}

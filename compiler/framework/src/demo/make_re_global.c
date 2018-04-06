@@ -1,22 +1,23 @@
 
 /*
- * Module: make_regularexpr
+ * Module: make_re_global.c
  * Prefix: REG
  * Description: This module implements a traversal of the abstract syntax tree that 
  * turns global variable initialisations into regular assignments
  * Author: Aynel Gul
+ * Arrays not implemented. 
  */
 
 #include "make_re_global.h"
-#include "types.h"
-#include "tree_basic.h"
-#include "traverse.h"
-#include "dbug.h"
-#include "str.h"
-#include "globals.h"
 
-#include "memory.h"
 #include "ctinfo.h"
+#include "dbug.h"
+#include "globals.h"
+#include "memory.h"
+#include "str.h"
+#include "traverse.h"
+#include "tree_basic.h"
+#include "types.h"
 
 /* INFO structure */
 struct INFO
@@ -44,7 +45,6 @@ static info *MakeInfo(void)
 }
 
 /* Traversal functions */
-
 node *REGglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("REGglobaldef");
@@ -79,13 +79,13 @@ node *REGglobaldef(node *arg_node, info *arg_info)
 }
 
 /* Traversal start function */
-
 node *REGdoRegularExpr(node *syntaxtree)
 {
     DBUG_ENTER("REGdoRegularExpr");
 
     info *arg_info;
     arg_info = MakeInfo();
+
     TRAVpush(TR_reg);
     syntaxtree = TRAVdo(syntaxtree, arg_info);
     TRAVpop();

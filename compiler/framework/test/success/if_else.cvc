@@ -1,0 +1,24 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    int a = 560;
+    int b = 320;
+    int c;
+
+	if (a + 5 > b) {
+        c = 0;
+    } else {
+        c = 1;
+    }
+
+    printInt(c);
+
+	return 0;
+}

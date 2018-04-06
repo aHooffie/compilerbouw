@@ -1,0 +1,20 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    int b = 0;
+
+    for (int i = 0, -10, -7) {
+        b = b + 1;
+    }
+
+    printInt(b);
+
+    return 0;
+}

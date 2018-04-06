@@ -1,0 +1,21 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+int rv = 0;
+
+bool kaas() {
+    rv = 1;
+    return true;
+}
+
+export int main() {
+    if (false && kaas()) {}
+    printInt(rv);
+    return 0;
+}

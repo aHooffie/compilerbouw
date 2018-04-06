@@ -1,0 +1,37 @@
+// Should produce an error because an array is dimensionless.
+
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+void fill_matrix(float[] matrix) {
+	for(int i = 0, n)
+		for(int j = 0, m)
+			matrix[i, j] = (float) i + (float) j + 0.5;
+}
+
+void print_matrix(float[] matrix) {
+	for(int i = 0, n) {
+		for(int j = 0, m) {
+			printFloat(matrix[i, j]);
+			printSpaces(1);
+		}
+
+		printNewlines(1);
+	}
+}
+
+/* Main to call the functions */
+export int main() {
+	float[5, 3] matrix;
+
+	fill_matrix(matrix);
+	print_matrix(matrix);
+
+	return 0;
+}

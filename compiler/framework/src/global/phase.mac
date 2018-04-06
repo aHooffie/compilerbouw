@@ -43,7 +43,7 @@ SUBPHASE( ri,
 SUBPHASE( os, 
           "Optimise subtraction",
           OSdoOptSub, 
-          ALWAYS,
+          NEVER,
           pet) 
 
 SUBPHASE( as, 

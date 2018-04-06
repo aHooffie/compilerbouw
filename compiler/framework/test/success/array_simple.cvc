@@ -1,0 +1,19 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+	int[100] a = 7;
+    a[2] = 3;
+
+    for (int i = 0, 5) {
+        printInt(a[i]);
+    }
+
+	return 0;
+}

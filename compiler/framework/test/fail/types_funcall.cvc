@@ -1,0 +1,12 @@
+// Should produce a type checking error because funcalls also have a type.
+
+
+float kaas() {
+    return 6.0;
+}
+
+export int main() {
+    int a = 0;
+    a = a + kaas();
+    return 0;
+}

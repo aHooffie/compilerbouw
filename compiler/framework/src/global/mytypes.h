@@ -140,7 +140,7 @@ typedef enum {
     I_fpop,
     I_bpop,
     I_unknown,
-    I_ownbranch
+    I_label
 } instr;
 
 #endif /* _CIVCC_MYTYPES_H_ */

@@ -6,32 +6,32 @@
  */
 
 #include "type_checking.h"
-#include "add_symboltables.h"
 
-#include "types.h"
+#include "ctinfo.h"
+#include "dbug.h"
+#include "free.h"
+#include "memory.h"
+#include "str.h"
 #include "tree_basic.h"
 #include "traverse.h"
-#include "dbug.h"
-#include "memory.h"
-#include "ctinfo.h"
-#include "free.h"
+#include "types.h"
 
 /* INFO structure */
 struct INFO
 {
-    int errors;
-    int paramcount;
-    int funreturn;
+    node *original;
     type current;
-    node *og;
+    int errors;
+    int parametercount;
+    int functionreturncount;
 };
 
 /* INFO macros */
-#define INFO_ERRORS(n) ((n)->errors)
-#define INFO_PARAMCOUNT(n) ((n)->paramcount)
-#define INFO_FUNRETURN(n) ((n)->funreturn)
+#define INFO_ORIGINAL(n) ((n)->original)
 #define INFO_TYPE(n) ((n)->current)
-#define INFO_OG(n) ((n)->og)
+#define INFO_ERRORS(n) ((n)->errors)
+#define INFO_PC(n) ((n)->parametercount)
+#define INFO_FRC(n) ((n)->functionreturncount)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -41,12 +41,11 @@ static info *MakeInfo(void)
     DBUG_ENTER("MakeInfo");
 
     result = (info *)MEMmalloc(sizeof(info));
-    INFO_ERRORS(result) = 0;
-    INFO_FUNRETURN(result) = 0;
-    INFO_PARAMCOUNT(result) = 0;
-    INFO_OG(result) = NULL;
-
+    INFO_ORIGINAL(result) = NULL;
     INFO_TYPE(result) = T_unknown;
+    INFO_ERRORS(result) = 0;
+    INFO_PC(result) = 0;
+    INFO_FRC(result) = 0;
 
     DBUG_RETURN(result);
 }
@@ -61,7 +60,6 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions below. */
-
 /* Declarations. */
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
@@ -80,9 +78,6 @@ node *TCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldef");
 
-    /* Traverse into array grammar. Not implemented. */
-    GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
-
     /* Check assigned type of global definition. */
     if (GLOBALDEF_ASSIGN(arg_node) != NULL)
     {
@@ -94,26 +89,30 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
 
+    /* Traverse into array grammar. Not implemented. */
+    GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+
     DBUG_RETURN(arg_node);
 }
 
-/* Function node. */
+/* Check calls to return type in function node. */
 node *TCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunction");
 
-   	FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+    /* Traverse into child nodes. */
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
     FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
 
-    if (INFO_FUNRETURN(arg_info) == 0 && FUNCTION_TYPE(arg_node))
+    if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node))
         typeError(arg_info, arg_node, "Function is missing a return call.");
-    
-    INFO_FUNRETURN(arg_info) = 0;
+
+    INFO_FRC(arg_info) = 0;
 
     DBUG_RETURN(arg_node);
 }
 
-/* Parameters in a fundef. */
+/* Check parameters in a fundef. */
 node *TCparameters(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCparameters");
@@ -121,16 +120,16 @@ node *TCparameters(node *arg_node, info *arg_info)
     if (basictypeCheck(PARAMETERS_TYPE(arg_node) == FALSE))
         typeError(arg_info, arg_node, "The parameter is not of a basic type.");
 
+    /* Traverse into next parameters. */
+    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
+
     /* Traverse into array grammar. Not implemented. */
     PARAMETERS_DIMENSIONS(arg_node) = TRAVopt(PARAMETERS_DIMENSIONS(arg_node), arg_info);
-
-    /* Traverse into next. */
-    PARAMETERS_NEXT(arg_node) = TRAVopt(PARAMETERS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }
 
-/* Functioncallstmt */
+/* Check the link with the original function. */
 node *TCfunctioncallstmt(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallstmt");
@@ -138,16 +137,14 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
     /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
     {
-        INFO_PARAMCOUNT(arg_info) = 0;
-        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
-        // if (FUNCTION_TYPE(originalFunction) != T_void)
-        //     typeError(arg_info, arg_node, "The return value of this function needs to be assigned to variable.");
+        INFO_PC(arg_info) = 0;
 
+        node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node));
         if (NODE_TYPE(originalFunction) != N_function)
-            CTIabort("Something went wrong in the functioncall on line %i!", NODE_LINE(arg_node));
+            typeError(arg_info, arg_node, "Something went wrong in the function call.");
         else
         {
-            INFO_OG(arg_info) = originalFunction;
+            INFO_ORIGINAL(arg_info) = originalFunction;
             FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
         }
     }
@@ -155,14 +152,16 @@ node *TCfunctioncallstmt(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+/* Check parameters in a function call position. */
 node *TCexpressions(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCexpressions");
-    INFO_PARAMCOUNT(arg_info) += 1;
+
+    INFO_PC(arg_info) += 1;
 
     /* Find the parameter in function definition that needs to correspond. */
-    node *param = FUNCTION_PARAMETERS(INFO_OG(arg_info));
-    for (int j = 1; j < INFO_PARAMCOUNT(arg_info); j++)
+    node *param = FUNCTION_PARAMETERS(INFO_ORIGINAL(arg_info));
+    for (int j = 1; j < INFO_PC(arg_info); j++)
         param = PARAMETERS_NEXT(param);
 
     /* Find own type, put it in arg_info. */
@@ -174,7 +173,8 @@ node *TCexpressions(node *arg_node, info *arg_info)
     /* Traverse into next. */
     EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
 
-    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+    /* Check if function call type matches assignment to variable. */
+    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_ORIGINAL(arg_info));
 
     DBUG_RETURN(arg_node);
 }
@@ -184,28 +184,29 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfunctioncallexpr");
 
-    INFO_PARAMCOUNT(arg_info) = 0;
-    node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
+    INFO_PC(arg_info) = 0;
 
-    INFO_OG(arg_info) = originalFunction;
-    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_OG(arg_info));
+    node *originalFunction = SYMBOLTABLEENTRY_ORIGINAL(FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node));
+    INFO_ORIGINAL(arg_info) = originalFunction;
+    INFO_TYPE(arg_info) = FUNCTION_TYPE(INFO_ORIGINAL(arg_info));
 
     /* Go through parameters of function call if it has any. */
     if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
     {
-        INFO_PARAMCOUNT(arg_info) = 0;
+        INFO_PC(arg_info) = 0;
         if (FUNCTION_TYPE(originalFunction) == T_void)
             typeError(arg_info, arg_node, "The return value of this function cannot be assigned to variable.");
 
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
     }
 
-    INFO_OG(arg_info) = NULL;
+    /* Reset. */
+    INFO_ORIGINAL(arg_info) = NULL;
 
     DBUG_RETURN(arg_node);
 }
 
-/* Statements (for, if, while, dowhile, return) . */
+/* Function body statements below. */
 node *TCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCfor");
@@ -267,11 +268,11 @@ node *TCwhile(node *arg_node, info *arg_info)
     if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
         typeError(arg_info, arg_node, "While condition is not a basic type.");
 
-    /* Reset. */
-    INFO_TYPE(arg_info) = T_unknown;
-
     /* Traverse through block of statements.*/
     WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+
+    /* Reset. */
+    INFO_TYPE(arg_info) = T_unknown;
 
     DBUG_RETURN(arg_node);
 }
@@ -309,24 +310,24 @@ node *TCreturn(node *arg_node, info *arg_info)
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
-    INFO_FUNRETURN(arg_info) = 1;
+    INFO_FRC(arg_info) += 1;
 
     DBUG_RETURN(arg_node);
 }
 
-/* Assign. */
+/* Check if left and right part of assignment are of the same types. */
 node *TCassign(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCassign");
 
+    type t;
+
     /* Traverse left side of an assignment. */
     ASSIGN_LET(arg_node) = TRAVopt(ASSIGN_LET(arg_node), arg_info);
-
-    type t = INFO_TYPE(arg_info);
+    t = INFO_TYPE(arg_info);
 
     /* Traverse right side and compare. */
     ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
-
     if (t != INFO_TYPE(arg_info))
         typeError(arg_info, arg_node, "Assigning types failed. Not same types!");
 
@@ -336,32 +337,34 @@ node *TCassign(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Cast. */
+/* Check if cast is eligible. */
 node *TCcast(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCcast");
 
-    /* Type check.*/
+    node *new, *condition, *then, *otherwise, *expression;
+
+    /* Type check of expression.*/
     CAST_EXPR(arg_node) = TRAVdo(CAST_EXPR(arg_node), arg_info);
-    node *new, *condition, *then, *otherwise, *temp;
-    type expr = INFO_TYPE(arg_info);
+    type exprType = INFO_TYPE(arg_info);
     type cast = CAST_TYPE(arg_node);
-    temp = CAST_EXPR(arg_node);
+
     INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
-    /* Change Cast into Ternary operator. */
+    expression = CAST_EXPR(arg_node);
+
+    /* Change bool > int/float & int/float > bool cast into Ternary operator. */
     switch (cast)
     {
     case T_bool:
-        if (expr == T_float) {
-            condition = TBmakeBinop(BO_eq, temp, TBmakeFloat(0.0));
-        }
-        else if (expr == T_int)
-            condition = TBmakeBinop(BO_eq, temp, TBmakeNum(0));
-        else if (expr == T_bool)
+        if (exprType == T_float)
+            condition = TBmakeBinop(BO_eq, expression, TBmakeFloat(0.0));
+        else if (exprType == T_int)
+            condition = TBmakeBinop(BO_eq, expression, TBmakeNum(0));
+        else if (exprType == T_bool)
         {
             CAST_EXPR(arg_node) = NULL;
             FREEdoFreeNode(arg_node);
-            DBUG_RETURN(temp);
+            DBUG_RETURN(expression);
         }
         else
             DBUG_RETURN(arg_node);
@@ -371,37 +374,35 @@ node *TCcast(node *arg_node, info *arg_info)
         new = TBmakeTernop(condition, then, otherwise);
         break;
     case T_int:
-        if (expr == T_bool)
-            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
-        else if (expr == T_int)
+        if (exprType == T_bool)
+            condition = TBmakeBinop(BO_eq, expression, TBmakeBool(FALSE));
+        else if (exprType == T_int)
         {
             CAST_EXPR(arg_node) = NULL;
             FREEdoFreeNode(arg_node);
-            DBUG_RETURN(temp);
+            DBUG_RETURN(expression);
         }
         else
             DBUG_RETURN(arg_node);
 
         then = TBmakeNum(0);
         otherwise = TBmakeNum(1);
-
         new = TBmakeTernop(condition, then, otherwise);
         break;
     case T_float:
-        if (expr == T_bool)
-            condition = TBmakeBinop(BO_eq, temp, TBmakeBool(FALSE));
-        else if (expr == T_float)
+        if (exprType == T_bool)
+            condition = TBmakeBinop(BO_eq, expression, TBmakeBool(FALSE));
+        else if (exprType == T_float)
         {
             CAST_EXPR(arg_node) = NULL;
             FREEdoFreeNode(arg_node);
-            DBUG_RETURN(temp);
+            DBUG_RETURN(expression);
         }
         else
             DBUG_RETURN(arg_node);
 
         then = TBmakeFloat(0.0);
         otherwise = TBmakeFloat(1.0);
-
         new = TBmakeTernop(condition, then, otherwise);
         break;
     default:
@@ -415,7 +416,7 @@ node *TCcast(node *arg_node, info *arg_info)
         CAST_EXPR(arg_node) = NULL;
         node *n = FREEdoFreeNode(arg_node);
         if (n != NULL)
-            CTInote("Whoops.");
+            CTIwarn("Tried to free a cast node but failed.");
         DBUG_RETURN(new);
     }
     else
@@ -491,6 +492,8 @@ node *TCbinop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Unknown types in binop.");
         }
     }
+
+    BINOP_TYPE(arg_node) = INFO_TYPE(arg_info);
 
     switch (BINOP_OP(arg_node))
     {
@@ -795,6 +798,7 @@ node *TCvarlet(node *arg_node, info *arg_info)
 
     /* Traverse over rest. */
     VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
+
     /* Array indices, not implemented. */
     VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
 
@@ -825,6 +829,7 @@ node *TCbool(node *arg_node, info *arg_info)
     DBUG_ENTER("TCbool");
 
     INFO_TYPE(arg_info) = T_bool;
+
     DBUG_RETURN(arg_node);
 }
 
@@ -834,6 +839,7 @@ node *TCids(node *arg_node, info *arg_info)
     DBUG_ENTER("TCids");
 
     INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
+
     if (INFO_TYPE(arg_info) != T_int)
         typeError(arg_info, arg_node, "Type of an array index has to be an integer. ");
 
@@ -866,7 +872,7 @@ node *TCdoTypeChecking(node *syntaxtree)
 /* Called when a typecheck error arises. */
 void typeError(info *arg_info, node *arg_node, char *message)
 {
-    CTInote("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
+    CTIwarn("! Error on line %i, col %i. %s", NODE_LINE(arg_node), NODE_COL(arg_node), message);
     INFO_ERRORS(arg_info) += 1;
     INFO_TYPE(arg_info) = T_unknown;
 }
@@ -914,13 +920,13 @@ char *nodetypetoString(node *arg_node)
     case N_monop:
         typeString = "int";
         break;
-            case N_globaldef:
+    case N_globaldef:
         typeString = "globaldef";
         break;
-            case N_globaldec:
+    case N_globaldec:
         typeString = "globaldec";
         break;
-            case N_vardeclaration:
+    case N_vardeclaration:
         typeString = "vardeclaration";
         break;
     default:

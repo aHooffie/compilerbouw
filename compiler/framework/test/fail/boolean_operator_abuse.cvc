@@ -1,0 +1,7 @@
+// Comparisons don't work on booleans, except for ==.
+
+
+export int main() {
+    if (4 && 7) {}
+    return 0;
+}

@@ -1,0 +1,16 @@
+// Should produce a context analysis error because of a redefined variable.
+
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    int a = 0;
+    float a = 5.0;
+    return 0;
+}

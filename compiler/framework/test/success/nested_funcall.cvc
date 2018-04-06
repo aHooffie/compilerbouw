@@ -1,0 +1,22 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+int foo() {
+    return 5;
+}
+
+int bar(int i) {
+    return 10;
+}
+
+export int main() {
+    printInt(bar(foo()));
+
+	return 0;
+}

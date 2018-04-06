@@ -1,0 +1,34 @@
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+	int a = 560;
+	int b = 320;
+
+	void gcd() {
+        void gcd() {
+            void gcd() {
+                void gcd() {
+                    if (a > b) a = a - b;
+                    else b = b - a;
+                }
+                gcd();
+            }
+            gcd();
+        }
+        gcd();
+	}
+
+	while(a != b) gcd();
+
+    printInt(a);
+    printNewlines(1);
+
+    return 0;
+}

@@ -1,0 +1,15 @@
+// Should produce a parser error because a comma is missing.
+extern void printInt(int val);
+extern void printFloat(float val);
+
+extern int scanInt();
+extern float scanFloat();
+
+extern void printSpaces(int num);
+extern void printNewlines(int num);
+
+export int main() {
+    int[4] a = [0, 0];
+    printInt(a[0]);
+    return 0;
+}

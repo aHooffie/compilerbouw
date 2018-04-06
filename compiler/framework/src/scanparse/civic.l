@@ -1,8 +1,15 @@
+/*
+ * Module: civic.l
+ * Description: Scanning of the input code. 
+ * Authors: Aynel Gul & Andrea van den Hooff
+ * Arrays implemented.
+ */
+
 %{
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
 
 #include "types.h"
@@ -87,21 +94,19 @@
 
 
 
-[A-Za-z][A-Za-z0-9_]*      { yylval.id = STRcpy(yytext);
-                             FILTER( ID);
+[A-Za-z][A-Za-z0-9_]*      { 
+                            yylval.id = STRcpy(yytext);
+                            FILTER( ID);
                            }
 
-[0-9]+                     { long long int test = atoll(yytext);
-
-                            if (test < INT_MIN || test > INT_MAX)
-                            {
-                              CTIabort("Integer overflow! Make sure all ints are between -2147483648 and 2147483647");
-                            }
-
-                            yylval.cint=atoi(yytext);
-
-                            FILTER( NUM);
-
+[0-9]+                     { 
+                              long long int test = atoll(yytext);
+                              
+                              if (test < INT_MIN || test > INT_MAX)
+                                CTIabort("Integer overflow! Make sure all ints are between -2147483648 and 2147483647");
+                              
+                              yylval.cint=atoi(yytext);
+                              FILTER( NUM);
                            }
 
 [0-9]*[\.][0-9]*            { yylval.cflt=atof(yytext);

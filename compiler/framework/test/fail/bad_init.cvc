@@ -1,0 +1,7 @@
+// Should produce a type checking error 0 is an int literal, not a float.
+
+
+export int main() {
+    float a = 0;
+    return 0;
+}

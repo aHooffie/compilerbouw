@@ -1,0 +1,7 @@
+// Modulus only works on integers.
+
+
+export int main() {
+    6.0 % 5.0;
+    return 0;
+}

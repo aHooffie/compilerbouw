@@ -72,9 +72,11 @@ traversals to process it.
                     <node name="FunctionCallExpr" />
                     <node name="Expressions" />
                     <node name="Function" />
+                    <node name="VarDeclaration" />
                     <node name="Parameters" />
                     <node name="GlobalDec" />
                     <node name="GlobalDef" />
+                    <node name="Stmts" />
                     <node name="For" />
                     <node name="IfElse" />
                     <node name="While" />
@@ -1547,7 +1549,7 @@ traversals to process it.
                 </son>
             </sons>
             <attributes>
-            <attribute name="Scope">
+                <attribute name="Scope">
                     <type name="Int">
                         <targets>
                             <target mandatory="no">

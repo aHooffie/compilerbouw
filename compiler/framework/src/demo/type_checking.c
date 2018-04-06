@@ -16,6 +16,8 @@
 #include "traverse.h"
 #include "types.h"
 
+extern char *TypetoString(type Type);
+
 /* INFO structure */
 struct INFO
 {
@@ -24,6 +26,7 @@ struct INFO
     int errors;
     int parametercount;
     int functionreturncount;
+    bool laststatement;
 };
 
 /* INFO macros */
@@ -32,6 +35,7 @@ struct INFO
 #define INFO_ERRORS(n) ((n)->errors)
 #define INFO_PC(n) ((n)->parametercount)
 #define INFO_FRC(n) ((n)->functionreturncount)
+#define INFO_LS(n) ((n)->laststatement)
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -46,7 +50,7 @@ static info *MakeInfo(void)
     INFO_ERRORS(result) = 0;
     INFO_PC(result) = 0;
     INFO_FRC(result) = 0;
-
+    INFO_LS(result) = TRUE;
     DBUG_RETURN(result);
 }
 
@@ -101,17 +105,36 @@ node *TCfunction(node *arg_node, info *arg_info)
     DBUG_ENTER("TCfunction");
 
     /* Traverse into child nodes. */
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
     FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
     /* Check if there is a return type. */
     if (FUNCTION_ISEXTERN(arg_node) == FALSE)
     {
-        if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node) != T_void)
-            typeError(arg_info, arg_node, "Function is missing a return call.");
+        if (INFO_LS(arg_info) == FALSE && FUNCTION_TYPE(arg_node) != T_void)
+            typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
+
+        if (INFO_FRC(arg_info) == 0)
+            typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
     }
 
+    INFO_LS(arg_info) = TRUE;
+
     INFO_FRC(arg_info) = 0;
+
+    DBUG_RETURN(arg_node);
+}
+
+node *TCstmts(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCfunction");
+
+    /* Traverse into child nodes. */
+    STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
+    STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
+
+    if (STMTS_NEXT(arg_node) == NULL && NODE_TYPE(STMTS_STMT(arg_node)) != N_return)
+        INFO_LS(arg_info) = FALSE;
 
     DBUG_RETURN(arg_node);
 }
@@ -442,7 +465,7 @@ node *TCmonop(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     case MO_not:
-        if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
+        if (INFO_TYPE(arg_info) != T_bool)
             typeError(arg_info, arg_node, "Wrong Monop types. ");
         break;
     default:
@@ -805,6 +828,27 @@ node *TCvarlet(node *arg_node, info *arg_info)
 
     /* Array indices, not implemented. */
     VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
+
+    DBUG_RETURN(arg_node);
+}
+
+/* Check calls to return type in function node. */
+node *TCvardeclaration(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("TCvardeclaration");
+
+    VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
+    // char *s = TypetoString(INFO_TYPE(arg_info));
+    // CTInote("%s", s);
+
+    if (INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
+        typeError(arg_info, arg_node, "Type of vardeclaration isn't matching assignment. ");
+
+    /* Traverse over rest. */
+    VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
+
+    /* Array indices, not implemented. */
+    VARDECLARATION_DIMENSIONS(arg_node) = TRAVopt(VARDECLARATION_DIMENSIONS(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

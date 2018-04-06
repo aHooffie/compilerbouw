@@ -1,21 +1,17 @@
-// debugging matafackas
-
-extern void printInt(int val);
-extern void printFloat(float val);
-
-extern int scanInt();
-extern float scanFloat();
-
-extern void printSpaces(int num);
-extern void printNewlines(int num);
-
 export int main() {
-    int a = 5;
-    int b;
-    int c;
-    b = a + 2;
-    a = 7;
-    c = a + b;
-    printInt(c);
-	return 0;
+    int a = 0;
+    float b = 0.0;
+    bool c = false;
+
+    a = (int) 5;
+    a = (int) a + 5;
+
+    b = (float) 5.0;
+    b = (float) (int) 5;
+    b = (float) b;
+
+    c = (bool) !c;
+    c = (bool) true;
+
+    return 0;
 }

@@ -203,7 +203,6 @@ node *ASfunction(node *arg_node, info *arg_info)
         SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
         SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
 
-
         node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
         if (last == NULL)
             SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
@@ -211,57 +210,56 @@ node *ASfunction(node *arg_node, info *arg_info)
             SYMBOLTABLEENTRY_NEXT(last) = newEntry;
 
         FUNCTION_SYMBOLTABLEENTRY(arg_node) = newEntry;
-    // }
-    // else
-    // {
-    //     /* Else, insert the function into the symbol table linked list at the end. */
-    //     node *newEntry = TBmakeSymboltableentry(name, FUNCTION_TYPE(arg_node), INFO_SCOPE(arg_info) - 1, NULL);
-    //     SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
-    //     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
+        // }
+        // else
+        // {
+        //     /* Else, insert the function into the symbol table linked list at the end. */
+        //     node *newEntry = TBmakeSymboltableentry(name, FUNCTION_TYPE(arg_node), INFO_SCOPE(arg_info) - 1, NULL);
+        //     SYMBOLTABLEENTRY_ORIGINAL(newEntry) = arg_node;
+        //     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
 
-    //     node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
-    //     if (last == NULL)
-    //         SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
-    //     else
-    //         SYMBOLTABLEENTRY_NEXT(last) = newEntry;
+        //     node *last = travList(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)));
+        //     if (last == NULL)
+        //         SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
+        //     else
+        //         SYMBOLTABLEENTRY_NEXT(last) = newEntry;
 
-    //     FUNCTION_SYMBOLTABLEENTRY(arg_node) = newEntry;
+        //     FUNCTION_SYMBOLTABLEENTRY(arg_node) = newEntry;
 
         /* Create new symbol table and add it to the stack. */
         functionSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
         if (FUNCTION_ISEXTERN(arg_node))
             SYMBOLTABLE_SCOPE(functionSymboltable) = 0;
-        else   
+        else
             SYMBOLTABLE_SCOPE(functionSymboltable) = INFO_SCOPE(arg_info) - 1;
-        
+
         stackPush(functionSymboltable, arg_info);
-         INFO_CS(arg_info) = SYMBOLTABLE_SCOPE(functionSymboltable);
+        INFO_CS(arg_info) = SYMBOLTABLE_SCOPE(functionSymboltable);
         INFO_OSC(arg_info) = 0;
 
         if (stackEmpty(arg_info) == TRUE)
-        stError(arg_info, arg_node, ": something went wrong with creating a symboltable in this function.", name);
+            stError(arg_info, arg_node, ": something went wrong with creating a symboltable in this function.", name);
 
         /* Update function administration. */
         FUNCTION_SYMBOLTABLE(arg_node) = functionSymboltable;
+
+        /* Continue with traversing in child nodes. */
+        FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
+        FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
+
+        // /* Print symboltable of current function. */
+        // CTIwarn("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
+        // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+        // while (entry != NULL)
+        // {
+        //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        //     entry = SYMBOLTABLEENTRY_NEXT(entry);
+        // }
+        // CTIwarn("************************************");
+
+        /* Remove the linked list at the end of the traversal. */
+        stackPop(arg_info);
     }
-
-    /* Continue with traversing in child nodes. */
-    FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
-    FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
-
-    // /* Print symboltable of current function. */
-    // CTIwarn("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
-    // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-    // while (entry != NULL)
-    // {
-    //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-    //     entry = SYMBOLTABLEENTRY_NEXT(entry);
-    // }
-    // CTIwarn("************************************");
-
-
-    /* Remove the linked list at the end of the traversal. */
-    stackPop(arg_info);
 
     DBUG_RETURN(arg_node);
 }
@@ -283,7 +281,7 @@ node *ASparameters(node *arg_node, info *arg_info)
         printLine(arg_info, name);
     }
     else
-    {   
+    {
         /* Else, insert the parameter into the symbol table linked list at the end. */
         node *newEntry = TBmakeSymboltableentry(name, PARAMETERS_TYPE(arg_node), INFO_SCOPE(arg_info) - 1, NULL);
         SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
@@ -412,7 +410,9 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     }
 
     /* Continue with traversing in optional child nodes. */
-    VARDECLARATION_DIMENSIONS(arg_node) = TRAVopt(VARDECLARATION_DIMENSIONS(arg_node), NULL);
+    if (VARDECLARATION_DIMENSIONS(arg_node) != NULL)
+        stError(arg_info, arg_node, ": arrays have not been implemented.", name);
+
     VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
     VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
@@ -446,14 +446,17 @@ node *ASfunctioncallstmt(node *arg_node, info *arg_info)
 
     if (FUNCTIONCALLSTMT_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", FUNCTIONCALLSTMT_NAME(arg_node));
-
-    /* Continue with traversing in child nodes. */
-    if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
-        FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
     else
     {
-        if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
-            stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLSTMT_NAME(arg_node));
+
+        /* Continue with traversing in child nodes. */
+        if (FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) != NULL)
+            FUNCTIONCALLSTMT_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLSTMT_EXPRESSIONS(arg_node), arg_info);
+        else
+        {
+            if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
+                stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLSTMT_NAME(arg_node));
+        }
     }
 
     DBUG_RETURN(arg_node);
@@ -487,20 +490,23 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 
     if (FUNCTIONCALLEXPR_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", FUNCTIONCALLEXPR_NAME(arg_node));
-
-    /* Continue with traversing in child nodes. */
-    if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
-        FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
     else
     {
-        if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
-            stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLSTMT_NAME(arg_node));
+        /* Continue with traversing in child nodes. */
+        if (FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) != NULL)
+            FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVdo(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
+        else
+        {
+            if (FUNCTION_PARAMETERS(INFO_OG(arg_info)) != NULL)
+                stError(arg_info, arg_node, "function call requires parameter.", FUNCTIONCALLEXPR_NAME(arg_node));
+        }
     }
+
+    CTInote("%s werkt", FUNCTIONCALLEXPR_NAME(arg_node));
 
     DBUG_RETURN(arg_node);
 }
 
-// POSSIBLE EDIT FOR CODEGEN?
 node *ASfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfor");
@@ -585,8 +591,9 @@ node *ASvar(node *arg_node, info *arg_info)
     if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", VAR_NAME(arg_node));
 
-    /* Continue with traversing in optional child nodes. */
-    VAR_INDICES(arg_node) = TRAVopt(VAR_INDICES(arg_node), arg_info);
+    /* Arrays are not implemented. */
+    if (VAR_INDICES(arg_node) != NULL)
+        stError(arg_info, arg_node, ": arrays have not been implemented.", VAR_NAME(arg_node));
 
     DBUG_RETURN(arg_node);
 }
@@ -619,8 +626,10 @@ node *ASvarlet(node *arg_node, info *arg_info)
         stError(arg_info, arg_node, "has not been declared yet.", VARLET_NAME(arg_node));
 
     /* Continue with traversing in optional child nodes. */
-    VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
     VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
+
+    if (VARLET_INDICES(arg_node) != NULL)
+        stError(arg_info, arg_node, ": arrays have not been implemented.", VARLET_NAME(arg_node));
 
     DBUG_RETURN(arg_node);
 }

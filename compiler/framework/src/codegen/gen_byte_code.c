@@ -342,7 +342,6 @@ node *GBCglobaldec(node *arg_node, info *arg_info)
 node *GBCglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCglobaldef");
-
     /* Traverse into array subtree - not implemented. */
     GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
 
@@ -530,13 +529,16 @@ node *GBCfor(node *arg_node, info *arg_info)
     node *n;
     char *start, *str;
 
+    // UNDER CONSTRUCTION !!
+    // Find offsets for start, stop and step.
+
     /* Include memory space in the function ESR instruction. */
     INFO_LC(arg_info) += 3;
 
     /* Load start expression. */
     FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 
-    // THIS NEEDS A STORE INSTSUCTION FROM VARLET
+    // Create store instruction, offset
 
     FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
 
@@ -559,7 +561,7 @@ node *GBCfor(node *arg_node, info *arg_info)
     INSTRUCTIONS_ARGS(n) = start;
     addNode(n, arg_info);
 
-    // LOAD STEP
+    // Create store instruction, offset
 
     // LOAD START
 
@@ -1544,7 +1546,7 @@ void printInstructions(info *arg_info)
     node *n = INFO_FI(arg_info);
     // CTInote("HIER");
 
-    // TO DO: INDENTATIE + LABELS WITH :
+    /* Print instructies & labels. */
     if (INFO_FI(arg_info) != NULL)
     {
         /* Print all instructions */
@@ -1636,17 +1638,10 @@ void printInstructions(info *arg_info)
     /* Add exported vars (global definitions). */
     char *globaltype;
 
-    for (int i = 0; i < INFO_EVC(arg_info); i++)
+    for (int i = 0; i < INFO_GC(arg_info); i++)
     {
         globaltype = TypetoString(GLOBALDEF_TYPE(INFO_GLOBAL(arg_info)[i]));
-        fprintf(INFO_FP(arg_info), ".global %s ", globaltype);
-    }
-
-    /* Add imported vars (global declarations). */
-    for (int i = 0; i < INFO_IVC(arg_info); i++)
-    {
-        globaltype = TypetoString(GLOBALDEC_TYPE(INFO_IMPORTVAR(arg_info)[i]));
-        fprintf(INFO_FP(arg_info), ".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
+        fprintf(INFO_FP(arg_info), ".global %s \n", globaltype);
     }
 
     /* Add imported functions. */
@@ -1666,5 +1661,12 @@ void printInstructions(info *arg_info)
         }
 
         fprintf(INFO_FP(arg_info), "\n");
+    }
+
+    /* Add imported vars (global declarations). */
+    for (int i = 0; i < INFO_IVC(arg_info); i++)
+    {
+        globaltype = TypetoString(GLOBALDEC_TYPE(INFO_IMPORTVAR(arg_info)[i]));
+        fprintf(INFO_FP(arg_info), ".importvar \"%s\" %s\n", GLOBALDEC_NAME(INFO_IMPORTVAR(arg_info)[i]), globaltype);
     }
 }

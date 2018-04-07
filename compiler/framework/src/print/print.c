@@ -455,8 +455,13 @@ node *PRTfor(node *arg_node, info *arg_info)
 
     if (FOR_BLOCK(arg_node) != NULL)
     {
+        PRTindent(arg_info);
         printf("{\n");
+        INFO_INDENT(arg_info) += 4;
         FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+        INFO_INDENT(arg_info) -= 4;
+
+        PRTindent(arg_info);
         printf("}\n");
     }
 

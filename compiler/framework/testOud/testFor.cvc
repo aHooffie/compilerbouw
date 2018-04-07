@@ -1,9 +1,14 @@
 export void main () {
     int a;
+    int b;
 
     for (int i = 4, 10)
     {
-        a = a + 1;
+        for (int j = 0, 10)
+        {
+            b = i;
+            a = j;
+        }
     }
 
     return;

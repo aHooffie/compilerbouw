@@ -29,7 +29,6 @@ extern node *ASvar(node *arg_node, info *arg_info);
 extern node *ASvarlet(node *arg_node, info *arg_info);
 extern node *ASvardeclaration(node *arg_node, info *arg_info);
 
-extern node *ASids(node *arg_node, info *arg_info);
 extern node *ASdoAddSymbolTables(node *syntaxtree);
 
 extern void stError(info *arg_info, node *arg_node, char *message, char *name);

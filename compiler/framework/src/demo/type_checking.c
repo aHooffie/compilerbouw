@@ -982,6 +982,9 @@ char *nodetypetoString(node *arg_node)
     case N_var:
         typeString = "var";
         break;
+    case N_varlet:
+        typeString = "varlet";
+        break;
     case N_cast:
         typeString = "cast";
         break;

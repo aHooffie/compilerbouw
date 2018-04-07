@@ -370,7 +370,6 @@ node *GBCfunction(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfunction");
     node *n;
-
     if (FUNCTION_ISEXTERN(arg_node)) // TRUE hoeft niet volgens mij
     {
         INFO_IMPORTFUN(arg_info)
@@ -420,7 +419,8 @@ node *GBCfunctionbody(node *arg_node, info *arg_info)
     node *n;
 
     /* Create esr instruction. */
-    if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL)
+    if (FUNCTIONBODY_VARDECLARATIONS(arg_node) != NULL ||
+        FUNCTIONBODY_FORLOOPS(arg_node) != 0)
     {
         n = TBmakeInstructions(I_esr, NULL);
         addNode(n, arg_info);
@@ -428,7 +428,6 @@ node *GBCfunctionbody(node *arg_node, info *arg_info)
 
     /* Add offset to esr, reset variablecount for next function. */
     FUNCTIONBODY_VARDECLARATIONS(arg_node) = TRAVopt(FUNCTIONBODY_VARDECLARATIONS(arg_node), arg_info);
-
     FUNCTIONBODY_STMTS(arg_node) = TRAVopt(FUNCTIONBODY_STMTS(arg_node), arg_info);
 
     if (INFO_LC(arg_info) != 0)
@@ -448,6 +447,9 @@ node *GBCvardeclaration(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCvardeclaration");
 
     INFO_LC(arg_info) += 1;
+    if (VARDECLARATION_INIT(arg_node) != NULL)
+        VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
+
     VARDECLARATION_NEXT(arg_node) = TRAVopt(VARDECLARATION_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
@@ -525,17 +527,47 @@ node *GBCifelse(node *arg_node, info *arg_info)
 node *GBCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfor");
+    node *n;
+    char *start, *str;
 
     /* Include memory space in the function ESR instruction. */
-    // INFO_LC(arg_info) += 3;
+    INFO_LC(arg_info) += 3;
 
     /* Load start expression. */
-    // FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 
-    /* Create store instruction. */
-    // n = TBmakeInstructions(I_fload_0, NULL);
+    // THIS NEEDS A STORE INSTSUCTION FROM VARLET
 
-    // FOR_INITVAR(arg_node)
+    FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
+
+    if (FOR_STEP(arg_node) != NULL)
+    {
+        FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
+    }
+    else
+    {
+        // STEP = 1;
+    }
+
+    /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    INFO_BC(arg_info) += 1;
+    str = STRitoa(INFO_BC(arg_info));
+    start = STRcat(str, "_while");
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_label, NULL);
+    INSTRUCTIONS_ARGS(n) = start;
+    addNode(n, arg_info);
+
+    // LOAD STEP
+
+    // LOAD START
+
+    /* Add the igt as instruction. */ // HIER MOGELIJK ILT
+    n = TBmakeInstructions(I_igt, NULL);
+    addNode(n, arg_info);
+
+    // DINGEN
 
     DBUG_RETURN(arg_node);
 }
@@ -878,6 +910,8 @@ node *GBCvar(node *arg_node, info *arg_info)
         scopeDiff = VAR_SCOPE(arg_node) - VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
     else if (nt == N_parameters)
         scopeDiff = VAR_SCOPE(arg_node) - PARAMETERS_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
+    else if (nt == N_symboltableentry) // FOR LOOP VARLET!
+        scopeDiff = 0;
 
     /* Load var from array. */
     // type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
@@ -886,6 +920,7 @@ node *GBCvar(node *arg_node, info *arg_info)
 
     case N_vardeclaration:
     case N_parameters:
+    case N_symboltableentry:
         if (scopeDiff == 0)
         {
             if (t == T_int)

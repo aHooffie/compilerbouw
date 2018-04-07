@@ -101,14 +101,14 @@ node *ASprogram(node *arg_node, info *arg_info)
     PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 
     /* Print the symbol table. */
-    CTInote("************************************ \n Global symboltable. Scope level: %i. \n************************************", INFO_STACKSIZE(arg_info) - 1);
-    node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-    while (entry != NULL)
-    {
-        CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-        entry = SYMBOLTABLEENTRY_NEXT(entry);
-    }
-    CTInote("************************************");
+    // CTInote("************************************ \n Global symboltable. Scope level: %i. \n************************************", INFO_STACKSIZE(arg_info) - 1);
+    // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+    // while (entry != NULL)
+    // {
+    //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+    //     entry = SYMBOLTABLEENTRY_NEXT(entry);
+    // }
+    // CTInote("************************************");
 
     /* Remove the linked list at the end of the traversal. */
     if (INFO_STACKSIZE(arg_info) != 0)
@@ -247,15 +247,22 @@ node *ASfunction(node *arg_node, info *arg_info)
         FUNCTION_PARAMETERS(arg_node) = TRAVopt(FUNCTION_PARAMETERS(arg_node), arg_info);
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
-        /* Print symboltable of current function. */
-        CTInote("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
-        node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-        while (entry != NULL)
+        // COUNT FOR LOOPS FOR LATER.
+        if (FUNCTION_FUNCTIONBODY(arg_node) != NULL)
         {
-            CTInote("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-            entry = SYMBOLTABLEENTRY_NEXT(entry);
+            int c = countForLoops(FUNCTION_FUNCTIONBODY(arg_node));
+            FUNCTIONBODY_FORLOOPS(FUNCTION_FUNCTIONBODY(arg_node)) = c;
         }
-        CTInote("************************************");
+
+        /* Print symboltable of current function. */
+        // CTInote("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
+        // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+        // while (entry != NULL)
+        // {
+        //     CTInote("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        //     entry = SYMBOLTABLEENTRY_NEXT(entry);
+        // }
+        // CTInote("************************************");
 
         /* Remove the linked list at the end of the traversal. */
         stackPop(arg_info);
@@ -382,6 +389,7 @@ node *ASexpressions(node *arg_node, info *arg_info)
 node *ASvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASvardeclaration");
+
     char *name = VARDECLARATION_NAME(arg_node);
 
     /* Add scope of current vardeclaration for codegeneration. */
@@ -509,19 +517,18 @@ node *ASfunctioncallexpr(node *arg_node, info *arg_info)
 node *ASfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASfor");
-    node *newVardecl, *newEntry, *last;
+    node *newVardecl, *newEntry, *newVarlet, *last;
     char *name, *label;
 
     /* Create a new vardeclaration for the initvar. */
     label = STRitoa(INFO_OSC(arg_info));
     name = STRcatn(3, FOR_INITVAR(arg_node), "_", label); // i_3 bijv.
-    newVardecl = TBmakeVardeclaration(name, T_int, NULL, FOR_START(arg_node), NULL);
     FOR_INITVAR(arg_node) = name;
 
     /* Create a symbol table entry for the initvar. */
     newEntry = TBmakeSymboltableentry(name, T_int, INFO_STACKSIZE(arg_info) - 1, NULL);
     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newVardecl;
+    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newEntry; // EASTER EGG
     INFO_OSC(arg_info) += 1;
 
     /* Add STE to function's symboltable.    */
@@ -531,17 +538,14 @@ node *ASfor(node *arg_node, info *arg_info)
     else
         SYMBOLTABLEENTRY_NEXT(last) = newEntry;
 
-    VARDECLARATION_SYMBOLTABLEENTRY(newVardecl) = newEntry;
-
-    /* Create entry for stopvar. */
+    /* Create var declaration for stopvar. */
     label = STRitoa(INFO_OSC(arg_info));
     name = STRcat("stop_", label); // stop_4 bijv.
-    newVardecl = TBmakeVardeclaration(name, T_int, NULL, FOR_START(arg_node), NULL);
 
-    /* Create a symbol table entry for the initvar. */
+    /* Create a symbol table entry for the stopvar. */
     newEntry = TBmakeSymboltableentry(name, T_int, INFO_STACKSIZE(arg_info) - 1, NULL);
     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newVardecl;
+    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newEntry;
     INFO_OSC(arg_info) += 1;
 
     /* Add STE to function's symboltable.    */
@@ -550,18 +554,15 @@ node *ASfor(node *arg_node, info *arg_info)
         SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
     else
         SYMBOLTABLEENTRY_NEXT(last) = newEntry;
-
-    VARDECLARATION_SYMBOLTABLEENTRY(newVardecl) = newEntry;
 
     /* Create entry for stepvar. */
     label = STRitoa(INFO_OSC(arg_info));
     name = STRcat("step_", label); // step_4 bijv.
-    newVardecl = TBmakeVardeclaration(name, T_int, NULL, FOR_START(arg_node), NULL);
 
-    /* Create a symbol table entry for the initvar. */
+    /* Create a symbol table entry for the stepvar. */
     newEntry = TBmakeSymboltableentry(name, T_int, INFO_STACKSIZE(arg_info) - 1, NULL);
     SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_OSC(arg_info);
-    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newVardecl;
+    SYMBOLTABLEENTRY_ORIGINAL(newEntry) = newEntry;
     INFO_OSC(arg_info) += 1;
 
     /* Add STE to function's symboltable.    */
@@ -570,8 +571,6 @@ node *ASfor(node *arg_node, info *arg_info)
         SYMBOLTABLE_NEXT(INFO_STACK(arg_info)) = newEntry;
     else
         SYMBOLTABLEENTRY_NEXT(last) = newEntry;
-
-    VARDECLARATION_SYMBOLTABLEENTRY(newVardecl) = newEntry;
 
     /* Traverse into child nodes. */
     FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
@@ -856,4 +855,29 @@ void printLine(info *arg_info, char *name)
             break;
         }
     }
+}
+
+int countForLoops(node *arg_node)
+{
+    if (FUNCTIONBODY_STMTS(arg_node) != NULL)
+    {
+        int count = 0;
+        node *n;
+        n = FUNCTIONBODY_STMTS(arg_node);
+
+        while (STMTS_NEXT(n) != NULL)
+        {
+            if (NODE_TYPE(STMTS_STMT(n)) == N_for)
+                count += 1;
+
+            n = STMTS_NEXT(n);
+        }
+
+        if (NODE_TYPE(STMTS_STMT(n)) == N_for)
+            return count + 1;
+        else
+            return count;
+    }
+    else
+        return 0;
 }

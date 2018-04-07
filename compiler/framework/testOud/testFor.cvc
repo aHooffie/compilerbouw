@@ -2,13 +2,9 @@ export void main () {
     int a;
     int b;
 
-    for (int i = 4, 10)
+    for (int i = 4, 10 - 6)
     {
-        for (int j = 0, 10)
-        {
-            b = i;
-            a = j;
-        }
+        a = i;
     }
 
     return;

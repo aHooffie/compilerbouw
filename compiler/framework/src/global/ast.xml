@@ -588,6 +588,21 @@ traversals to process it.
                     </targets>
                 </son>
             </sons>
+            <attributes>
+                <attribute name="Forloops">
+                    <description>represents scope of current decl</description>
+                    <type name="Int">
+                        <targets>
+                            <target mandatory="no">
+                                <any />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
+            </attributes>
         </node>
         <!-- 
         node VarDeclaration:
@@ -861,7 +876,7 @@ traversals to process it.
                     </targets>
                 </son>
                 <son name="Stop">
-                    <description>represents first expression statement of a for-loop</description>
+                    <description>represents stop assignment of a for-loop</description>
                     <targets>
                         <target mandatory="yes">
                             <set name="Expr" />

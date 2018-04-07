@@ -292,7 +292,7 @@ node *PRTvardeclaration(node *arg_node, info *arg_info)
         DBUG_ASSERT(0, "unknown type detected!");
         break;
     case T_void:
-        DBUG_ASSERT(0, "vardeclaration type cannot be void!");
+        printf("void ");
         break;
     }
 

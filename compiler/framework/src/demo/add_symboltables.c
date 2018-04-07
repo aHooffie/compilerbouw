@@ -27,9 +27,10 @@ struct INFO
     node *original;
     int parametercount;
     int offsetcount;
-    int functioncount;
+    int functionparamcount;
     int globaldeccount;
     int globaldefcount;
+    int externfuncount;
     int errors;
     int stacksize;
     int currentscope;
@@ -41,7 +42,8 @@ struct INFO
 #define INFO_OG(n) ((n)->original)
 #define INFO_PMC(n) ((n)->parametercount)
 #define INFO_OSC(n) ((n)->offsetcount)
-#define INFO_FC(n) ((n)->functioncount)
+#define INFO_FC(n) ((n)->functionparamcount)
+#define INFO_EFC(n) ((n)->externfuncount)
 #define INFO_GDC(n) ((n)->globaldeccount)
 #define INFO_GDF(n) ((n)->globaldefcount)
 #define INFO_STACKSIZE(n) ((n)->stacksize)
@@ -61,6 +63,7 @@ static info *MakeInfo(void)
     INFO_STACKSIZE(result) = 0;
     INFO_ERRORS(result) = 0;
     INFO_FC(result) = 0;
+    INFO_EFC(result) = 0;
     INFO_PMC(result) = 0;
     INFO_OSC(result) = 0;
     INFO_GDC(result) = 0;
@@ -94,15 +97,15 @@ node *ASprogram(node *arg_node, info *arg_info)
     /* Continue with traversing in child nodes. */
     PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 
-    /* Print the symbol table. */
-    CTIwarn("************************************ \n Global symboltable. Scope level: %i. \n************************************", INFO_STACKSIZE(arg_info) - 1);
-    node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-    while (entry != NULL)
-    {
-        CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-        entry = SYMBOLTABLEENTRY_NEXT(entry);
-    }
-    CTIwarn("************************************");
+    // /* Print the symbol table. */
+    // CTIwarn("************************************ \n Global symboltable. Scope level: %i. \n************************************", INFO_STACKSIZE(arg_info) - 1);
+    // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+    // while (entry != NULL)
+    // {
+    //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+    //     entry = SYMBOLTABLEENTRY_NEXT(entry);
+    // }
+    // CTIwarn("************************************");
 
     /* Remove the linked list at the end of the traversal. */
     if (INFO_STACKSIZE(arg_info) != 0)
@@ -215,15 +218,21 @@ node *ASfunction(node *arg_node, info *arg_info)
         /* Create new symbol table and add it to the stack. */
         functionSymboltable = TBmakeSymboltable(NULL, INFO_STACK(arg_info));
         if (FUNCTION_ISEXTERN(arg_node) || INFO_STACKSIZE(arg_info) == 1)
+        {
+            SYMBOLTABLEENTRY_OFFSET(newEntry) = INFO_EFC(arg_info);
+            INFO_EFC(arg_info) += 1;
             SYMBOLTABLE_SCOPE(functionSymboltable) = 0;
+        }
         else
             SYMBOLTABLE_SCOPE(functionSymboltable) = INFO_STACKSIZE(arg_info) - 1;
 
         stackPush(functionSymboltable, arg_info);
 
         /* Reset counters for new scope. */
+        // INFO_CS(arg_info) = INFO_STACKSIZE(arg_info) - 1;
         INFO_CS(arg_info) = SYMBOLTABLE_SCOPE(functionSymboltable);
-        INFO_OSC(arg_info) = 0;
+        if (!FUNCTION_ISEXTERN(arg_node))
+            INFO_OSC(arg_info) = 0;
 
         if (stackEmpty(arg_info) == TRUE)
             stError(arg_info, arg_node, ": something went wrong with creating a symboltable in this function.", name);
@@ -236,17 +245,18 @@ node *ASfunction(node *arg_node, info *arg_info)
         FUNCTION_FUNCTIONBODY(arg_node) = TRAVopt(FUNCTION_FUNCTIONBODY(arg_node), arg_info);
 
         /* Print symboltable of current function. */
-        CTIwarn("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
-        node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
-        while (entry != NULL)
-        {
-            CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
-            entry = SYMBOLTABLEENTRY_NEXT(entry);
-        }
-        CTIwarn("************************************");
+        // CTIwarn("************************************ \n Function %s's symboltable. Scope level: %i. \n************************************", name, SYMBOLTABLE_SCOPE(functionSymboltable));
+        // node *entry = SYMBOLTABLE_NEXT(INFO_STACK(arg_info));
+        // while (entry != NULL)
+        // {
+        //     CTIwarn("* Name: %s. Type: %s.", SYMBOLTABLEENTRY_NAME(entry), TypetoString(SYMBOLTABLEENTRY_TYPE(entry)));
+        //     entry = SYMBOLTABLEENTRY_NEXT(entry);
+        // }
+        // CTIwarn("************************************");
 
         /* Remove the linked list at the end of the traversal. */
         stackPop(arg_info);
+        // INFO_CS(arg_info) = INFO_STACKSIZE(arg_info) - 1;
     }
 
     DBUG_RETURN(arg_node);
@@ -372,7 +382,7 @@ node *ASvardeclaration(node *arg_node, info *arg_info)
     char *name = VARDECLARATION_NAME(arg_node);
 
     /* Add scope of current vardeclaration for codegeneration. */
-    VARDECLARATION_SCOPE(arg_node) = INFO_CS(arg_info);
+    VARDECLARATION_SCOPE(arg_node) = INFO_STACKSIZE(arg_info) - 1;
 
     /* Found vardeclaration. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
@@ -543,7 +553,7 @@ node *ASvar(node *arg_node, info *arg_info)
     DBUG_ENTER("ASvar");
 
     /* Save the current scope for later in code generation. */
-    VAR_SCOPE(arg_node) = INFO_CS(arg_info);
+    VAR_SCOPE(arg_node) = INFO_STACKSIZE(arg_info) - 1;
 
     /* Find the original function declaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
@@ -562,6 +572,8 @@ node *ASvar(node *arg_node, info *arg_info)
         }
     }
 
+    // CTInote("VAR %s on line %i. Current scope: %i Stack size: %i, ", VAR_NAME(arg_node), NODE_LINE(arg_node), VAR_SCOPE(arg_node), INFO_STACKSIZE(arg_info));
+
     if (VAR_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", VAR_NAME(arg_node));
 
@@ -577,7 +589,7 @@ node *ASvarlet(node *arg_node, info *arg_info)
     DBUG_ENTER("ASvarlet");
 
     /* Save the current scope for later in code generation. */
-    VARLET_SCOPE(arg_node) = INFO_CS(arg_info);
+    VARLET_SCOPE(arg_node) = INFO_STACKSIZE(arg_info) - 1;
 
     /* Find the original vardeclaration in the scope above. */
     node *symboltable = INFO_STACK(arg_info);
@@ -595,6 +607,8 @@ node *ASvarlet(node *arg_node, info *arg_info)
             break;
         }
     }
+
+    // CTInote("VARLET %s on line %i. Current scope: %i Stack size: %i, ", VARLET_NAME(arg_node), NODE_LINE(arg_node), VARLET_SCOPE(arg_node), INFO_STACKSIZE(arg_info));
 
     if (VARLET_SYMBOLTABLEENTRY(arg_node) == NULL)
         stError(arg_info, arg_node, "has not been declared yet.", VARLET_NAME(arg_node));

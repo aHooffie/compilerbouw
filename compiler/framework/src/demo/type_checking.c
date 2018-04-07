@@ -5,6 +5,8 @@
  * Arrays not implemented.
  */
 
+/// IF FUNCALL IN FUNCALL PARAM !!
+
 #include "type_checking.h"
 
 #include "ctinfo.h"
@@ -136,7 +138,7 @@ node *TCstmts(node *arg_node, info *arg_info)
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
 
-    // !!!! DEZE CHECK KLOPT NIET!! DO_WHILE HEEFT OOK EEN NEXT NODE DIE NULL IS
+    /* Check if last statement should be a return node. */
     if (INFO_SS(arg_info) == 0 &&
         STMTS_NEXT(arg_node) == NULL &&
         NODE_TYPE(STMTS_STMT(arg_node)) != N_return)
@@ -234,7 +236,8 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
     }
 
     /* Reset. */
-    INFO_ORIGINAL(arg_info) = NULL;
+    // DEZE LINE!! HIERRR
+    // INFO_ORIGINAL(arg_info) = NULL;
 
     DBUG_RETURN(arg_node);
 }
@@ -279,7 +282,7 @@ node *TCifelse(node *arg_node, info *arg_info)
 
     /* Check condition. */
     IFELSE_CONDITION(arg_node) = TRAVdo(IFELSE_CONDITION(arg_node), arg_info);
-    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
+    if (INFO_TYPE(arg_info) != T_bool)
         typeError(arg_info, arg_node, "If condition is not a basic type.");
 
     /* Reset. */
@@ -287,7 +290,8 @@ node *TCifelse(node *arg_node, info *arg_info)
 
     /* Go into if stmts and increase statements scope with 1. */
     INFO_SS(arg_info) += 1;
-    IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+    IFELSE_BLOCK(arg_node) = TRAVopt(IFELSE_BLOCK(arg_node), arg_info);
+    INFO_SS(arg_info) -= 1;
 
     /* Traverse through else block of statements.*/
     if (IFELSE_ELSE(arg_node) != NULL)
@@ -309,7 +313,7 @@ node *TCwhile(node *arg_node, info *arg_info)
 
     /* Check condition. */
     WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
-    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
+    if (INFO_TYPE(arg_info) != T_bool)
         typeError(arg_info, arg_node, "While condition is not a basic type.");
 
     /* Traverse through block of statements.*/
@@ -477,6 +481,8 @@ node *TCmonop(node *arg_node, info *arg_info)
     DBUG_ENTER("TCmonop");
 
     MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
+
+    MONOP_TYPE(arg_node) = INFO_TYPE(arg_info);
 
     /* - Can be either a float or an int, ! can be all three basic types. */
     switch (MONOP_OP(arg_node))
@@ -736,12 +742,12 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    typeError(arg_info, arg_node, "Types are not matching..");
+                    CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, arg_node, "Types are not matching..");
+                CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
             break;
         default:
             typeError(arg_info, arg_node, "Types are not matching..");
@@ -761,22 +767,22 @@ node *TCbinop(node *arg_node, info *arg_info)
             {
                 node *original = VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node));
                 if (SYMBOLTABLEENTRY_TYPE(original) != T_bool)
-                    typeError(arg_info, arg_node, "Types are not matching..");
+                    CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
                 else
                     INFO_TYPE(arg_info) = T_bool;
             }
             else
-                typeError(arg_info, arg_node, "Types are not matching..");
+                CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
             break;
         case N_var:
             if (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))) !=
                 SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_RIGHT(arg_node))))
-                typeError(arg_info, arg_node, "Types are not matching..");
+                CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
             else
                 INFO_TYPE(arg_info) = T_bool;
             break;
         default:
-            typeError(arg_info, arg_node, "Types are not matching..");
+            CTIabort("Errors were found in your boolean && and || operators on line %i.", NODE_LINE(arg_node));
             break;
         }
         break;
@@ -857,6 +863,9 @@ node *TCvarlet(node *arg_node, info *arg_info)
 node *TCvardeclaration(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCvardeclaration");
+
+    if (VARDECLARATION_TYPE(arg_node) == T_void)
+        typeError(arg_info, arg_node, "A variable can not be declared as void. ");
 
     VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
 

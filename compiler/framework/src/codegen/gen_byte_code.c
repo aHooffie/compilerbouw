@@ -479,7 +479,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
         addNode(n, arg_info);
 
         /* Traverse into if block. */
-        IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+        IFELSE_BLOCK(arg_node) = TRAVopt(IFELSE_BLOCK(arg_node), arg_info);
 
         /* Create jump instruction. */
         INFO_BC(arg_info) += 1;
@@ -510,7 +510,7 @@ node *GBCifelse(node *arg_node, info *arg_info)
         addNode(n, arg_info);
 
         /* Traverse into block of statements. */
-        IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
+        IFELSE_BLOCK(arg_node) = TRAVopt(IFELSE_BLOCK(arg_node), arg_info);
     }
 
     /* Create the end label as instruction. */
@@ -651,9 +651,11 @@ node *GBCreturn(node *arg_node, info *arg_info)
 node *GBCexpressions(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCexpressions");
-    INFO_EC(arg_info) += 1;
-
-    EXPRESSIONS_EXPR(arg_node) = TRAVopt(EXPRESSIONS_EXPR(arg_node), arg_info);
+    if (EXPRESSIONS_EXPR(arg_node) != NULL)
+    {
+        EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
+        INFO_EC(arg_info) += 1;
+    }
     EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
@@ -709,63 +711,42 @@ node *GBCbinop(node *arg_node, info *arg_info)
     DBUG_ENTER("GBCbinop");
     node *n;
 
-    // /* Traverse expressions */
+    /* Traverse expressions */
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
-    type left = BINOP_TYPE(arg_node);
-    // if (left != N_num && left != N_bool && left != N_float)
-    // {
-    //     if (NODE_TYPE(BINOP_LEFT(arg_node)) == N_binop)
-    //     {
-    //         CTInote("HET IS EEN BINOP!!");
-    //     }
-    //     switch (SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(BINOP_LEFT(arg_node))))
-    //     {
-    //     case T_int:
-    //         left = N_num;
-    //         break;
-    //     case T_float:
-    //         left = N_float;
-    //         break;
-    //     case T_bool:
-    //         left = N_bool;
-    //         break;
-    //     default:
-    //         typeError(arg_info, arg_node, "Unknown types in binop.");
-    //     }
-    // }
+    type btype = BINOP_TYPE(arg_node);
 
     switch (BINOP_OP(arg_node))
     {
     case BO_add:
-        if (left == T_int)
+        if (btype == T_int)
             // TO DO > optimize : met iinc??
             n = TBmakeInstructions(I_iadd, NULL);
-        else if (left == T_bool)
+        else if (btype == T_bool)
             n = TBmakeInstructions(I_badd, NULL);
         else
             n = TBmakeInstructions(I_fadd, NULL);
         break;
 
     case BO_sub:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_isub, NULL);
         else
             n = TBmakeInstructions(I_fsub, NULL);
         break;
 
     case BO_mul:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_imul, NULL);
-        else if (left == T_bool)
+        else if (btype == T_bool)
             n = TBmakeInstructions(I_bmul, NULL);
         else
             n = TBmakeInstructions(I_fmul, NULL);
         break;
 
     case BO_div:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_idiv, NULL);
         else
             n = TBmakeInstructions(I_fdiv, NULL);
@@ -776,46 +757,46 @@ node *GBCbinop(node *arg_node, info *arg_info)
         break;
 
     case BO_lt:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_ilt, NULL);
         else
             n = TBmakeInstructions(I_flt, NULL);
         break;
 
     case BO_le:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_ile, NULL);
         else
             n = TBmakeInstructions(I_fle, NULL);
         break;
 
     case BO_gt:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_igt, NULL);
         else
             n = TBmakeInstructions(I_fgt, NULL);
         break;
 
     case BO_ge:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_ige, NULL);
         else
             n = TBmakeInstructions(I_fge, NULL);
         break;
 
     case BO_eq:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_ieq, NULL);
-        else if (left == T_float)
+        else if (btype == T_float)
             n = TBmakeInstructions(I_feq, NULL);
         else
             n = TBmakeInstructions(I_beq, NULL);
         break;
 
     case BO_ne:
-        if (left == T_int)
+        if (btype == T_int)
             n = TBmakeInstructions(I_ine, NULL);
-        else if (left == T_float)
+        else if (btype == T_float)
             n = TBmakeInstructions(I_fne, NULL);
         else
             n = TBmakeInstructions(I_bne, NULL);
@@ -838,12 +819,12 @@ node *GBCmonop(node *arg_node, info *arg_info)
 
     /* Traverse expression. */
     MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
-    nodetype type = NODE_TYPE(MONOP_EXPR(arg_node));
+    type mtype = MONOP_TYPE(arg_node);
 
     switch (MONOP_OP(arg_node))
     {
     case MO_neg:
-        if (type == N_num)
+        if (mtype == T_int)
             n = TBmakeInstructions(I_ineg, NULL);
         else
             n = TBmakeInstructions(I_fneg, NULL);
@@ -889,6 +870,7 @@ node *GBCvar(node *arg_node, info *arg_info)
     int scopeDiff;
     nodetype nt = NODE_TYPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node)));
 
+    // CTInote("VAR CURRENT: %i VARDEC: %i LINE %i", VAR_SCOPE(arg_node), VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VAR_SYMBOLTABLEENTRY(arg_node))), NODE_LINE(arg_node));
     /* Load var from array. */
     type t = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
 
@@ -909,9 +891,9 @@ node *GBCvar(node *arg_node, info *arg_info)
             if (t == T_int)
                 n = TBmakeInstructions(I_iload, NULL);
             else if (t == T_float)
-                n = TBmakeInstructions(I_iload, NULL);
+                n = TBmakeInstructions(I_fload, NULL);
             else
-                n = TBmakeInstructions(I_iload, NULL);
+                n = TBmakeInstructions(I_bload, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
             INSTRUCTIONS_ARGS(n) = str;
         }
@@ -925,7 +907,7 @@ node *GBCvar(node *arg_node, info *arg_info)
                 n = TBmakeInstructions(I_bloadn, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VAR_SYMBOLTABLEENTRY(arg_node)));
             s = STRitoa(scopeDiff);
-            str = STRcatn(3, str, " ", s);
+            str = STRcatn(3, s, " ", str);
             INSTRUCTIONS_ARGS(n) = str;
         }
         break;
@@ -976,6 +958,8 @@ node *GBCvarlet(node *arg_node, info *arg_info)
     char *str;
     char *s;
 
+    // CTInote("VARLET CURRENT: %i VARDEC: %i LINE %i", VARLET_SCOPE(arg_node), VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node))), NODE_LINE(arg_node));
+
     if (nt == N_vardeclaration)
     {
         scopeDiff = VARLET_SCOPE(arg_node) - VARDECLARATION_SCOPE(SYMBOLTABLEENTRY_ORIGINAL(VARLET_SYMBOLTABLEENTRY(arg_node)));
@@ -1011,7 +995,7 @@ node *GBCvarlet(node *arg_node, info *arg_info)
                 n = TBmakeInstructions(I_bstoren, NULL);
             str = STRitoa(SYMBOLTABLEENTRY_OFFSET(VARLET_SYMBOLTABLEENTRY(arg_node)));
             s = STRitoa(scopeDiff);
-            str = STRcatn(3, str, " ", s);
+            str = STRcatn(3, s, " ", str);
             INSTRUCTIONS_ARGS(n) = str;
         }
         break;

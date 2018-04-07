@@ -26,11 +26,14 @@ node *OSbinop(node *arg_node, info *arg_info)
 
     node *n;
     int val;
+    float floatval;
+
+    switch (BINOP_OP(arg_node))
+    {
 
     /* Replace subtraction (optimisation). */
-    if (BINOP_OP(arg_node) == BO_sub)
-    {
-        /* If (a - a) or (num - num) */
+    case BO_sub:
+        /* If (a - a) */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_var) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_var) &&
             STReq(VAR_NAME(BINOP_LEFT(arg_node)), VAR_NAME(BINOP_RIGHT(arg_node))))
@@ -38,6 +41,7 @@ node *OSbinop(node *arg_node, info *arg_info)
             arg_node = FREEdoFreeTree(arg_node);
             arg_node = TBmakeNum(0);
         }
+        /* if (num - num) */
         else if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
                  (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
         {
@@ -52,13 +56,21 @@ node *OSbinop(node *arg_node, info *arg_info)
                 arg_node = FREEdoFreeTree(arg_node);
                 arg_node = TBmakeNum(val);
             }
+            /* If float - float */
         }
-    }
+        else if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_float) &&
+                 (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_float))
+        {
+            floatval = FLOAT_VALUE(BINOP_LEFT(arg_node)) - FLOAT_VALUE(BINOP_RIGHT(arg_node));
+            arg_node = FREEdoFreeTree(arg_node);
+            arg_node = TBmakeFloat(floatval);
+        }
+        break;
     /* Replace multiplication: var * 0, var * 1 & num * num (optimisation). */
-    else if (BINOP_OP(arg_node) == BO_mul)
-    {
+    case BO_mul: // possibly loats too?
         if (NODE_TYPE(BINOP_LEFT(arg_node)) == N_num)
         {
+            /* if 0 * var or 0 * num */
             if (NUM_VALUE(BINOP_LEFT(arg_node)) == 0 &&
                 (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_var ||
                  NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
@@ -68,6 +80,7 @@ node *OSbinop(node *arg_node, info *arg_info)
                 arg_node = FREEdoFreeTree(arg_node);
                 arg_node = n;
             }
+            /* if 1 * var or 1 * num */
             else if (NUM_VALUE(BINOP_LEFT(arg_node)) == 1 &&
                      (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_var ||
                       NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
@@ -77,6 +90,7 @@ node *OSbinop(node *arg_node, info *arg_info)
                 arg_node = FREEdoFreeTree(arg_node);
                 arg_node = n;
             }
+            /* num * num */
             else if (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num)
             {
                 val = NUM_VALUE(BINOP_LEFT(arg_node)) * NUM_VALUE(BINOP_RIGHT(arg_node));
@@ -106,9 +120,10 @@ node *OSbinop(node *arg_node, info *arg_info)
             }
         }
     }
-    /* Replace division: num / num (optimisation). */
+    /* Replace division. */
     else if (BINOP_OP(arg_node) == BO_div)
     {
+        /* num / num. */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num) &&
             (NUM_VALUE(BINOP_RIGHT(arg_node)) != 0))
@@ -118,15 +133,22 @@ node *OSbinop(node *arg_node, info *arg_info)
             arg_node = TBmakeNum(val);
         }
     }
-    /* Constant folding: 2 + 4  = 6 (optimisation). */
     else if (BINOP_OP(arg_node) == BO_add)
     {
+        /* Constant folding: 2 + 4  = 6 (optimisation). */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
         {
             val = NUM_VALUE(BINOP_LEFT(arg_node)) + NUM_VALUE(BINOP_RIGHT(arg_node));
             arg_node = FREEdoFreeTree(arg_node);
             arg_node = TBmakeNum(val);
+        }
+        else if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_float) &&
+                 (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_float))
+        {
+            floatval = FLOAT_VALUE(BINOP_LEFT(arg_node)) + FLOAT_VALUE(BINOP_RIGHT(arg_node));
+            arg_node = FREEdoFreeTree(arg_node);
+            arg_node = TBmakeFloat(floatval);
         }
     }
 

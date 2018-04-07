@@ -119,10 +119,9 @@ node *OSbinop(node *arg_node, info *arg_info)
                 arg_node = n;
             }
         }
-    }
-    /* Replace division. */
-    else if (BINOP_OP(arg_node) == BO_div)
-    {
+        break;
+        /* Replace division. */
+    case BO_div:
         /* num / num. */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num) &&
@@ -132,9 +131,8 @@ node *OSbinop(node *arg_node, info *arg_info)
             arg_node = FREEdoFreeTree(arg_node);
             arg_node = TBmakeNum(val);
         }
-    }
-    else if (BINOP_OP(arg_node) == BO_add)
-    {
+        break;
+    case BO_add:
         /* Constant folding: 2 + 4  = 6 (optimisation). */
         if ((NODE_TYPE(BINOP_LEFT(arg_node)) == N_num) &&
             (NODE_TYPE(BINOP_RIGHT(arg_node)) == N_num))
@@ -150,8 +148,10 @@ node *OSbinop(node *arg_node, info *arg_info)
             arg_node = FREEdoFreeTree(arg_node);
             arg_node = TBmakeFloat(floatval);
         }
+        break;
+    default:
+        break;
     }
-
     DBUG_RETURN(arg_node);
 }
 

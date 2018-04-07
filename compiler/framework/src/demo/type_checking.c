@@ -26,6 +26,7 @@ struct INFO
     int errors;
     int parametercount;
     int functionreturncount;
+    int stmtsscope;
     bool laststatement;
 };
 
@@ -36,6 +37,7 @@ struct INFO
 #define INFO_PC(n) ((n)->parametercount)
 #define INFO_FRC(n) ((n)->functionreturncount)
 #define INFO_LS(n) ((n)->laststatement)
+#define INFO_SS(n) ((n)->stmtsscope) // to check stmts scope for return value in last position.
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -50,6 +52,7 @@ static info *MakeInfo(void)
     INFO_ERRORS(result) = 0;
     INFO_PC(result) = 0;
     INFO_FRC(result) = 0;
+    INFO_SS(result) = 0;
     INFO_LS(result) = TRUE;
     DBUG_RETURN(result);
 }
@@ -114,7 +117,7 @@ node *TCfunction(node *arg_node, info *arg_info)
         if (INFO_LS(arg_info) == FALSE && FUNCTION_TYPE(arg_node) != T_void)
             typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
 
-        if (INFO_FRC(arg_info) == 0)
+        if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node) != T_void)
             typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
     }
 
@@ -133,9 +136,10 @@ node *TCstmts(node *arg_node, info *arg_info)
     STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
     STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
 
-
     // !!!! DEZE CHECK KLOPT NIET!! DO_WHILE HEEFT OOK EEN NEXT NODE DIE NULL IS
-    if (STMTS_NEXT(arg_node) == NULL && NODE_TYPE(STMTS_STMT(arg_node)) != N_return)
+    if (INFO_SS(arg_info) == 0 &&
+        STMTS_NEXT(arg_node) == NULL &&
+        NODE_TYPE(STMTS_STMT(arg_node)) != N_return)
         INFO_LS(arg_info) = FALSE;
 
     DBUG_RETURN(arg_node);
@@ -258,6 +262,11 @@ node *TCfor(node *arg_node, info *arg_info)
             typeError(arg_info, arg_node, "For step expression is not of integer type.");
     }
 
+    /* Go into for stmts and increase statements scope with 1. */
+    INFO_SS(arg_info) += 1;
+    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+    INFO_SS(arg_info) -= 1;
+
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
 
@@ -276,11 +285,17 @@ node *TCifelse(node *arg_node, info *arg_info)
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
 
-    /* Traverse through block of statements.*/
+    /* Go into if stmts and increase statements scope with 1. */
+    INFO_SS(arg_info) += 1;
     IFELSE_BLOCK(arg_node) = TRAVdo(IFELSE_BLOCK(arg_node), arg_info);
 
     /* Traverse through else block of statements.*/
-    IFELSE_ELSE(arg_node) = TRAVopt(IFELSE_ELSE(arg_node), arg_info);
+    if (IFELSE_ELSE(arg_node) != NULL)
+    {
+        INFO_SS(arg_info) += 1;
+        IFELSE_ELSE(arg_node) = TRAVdo(IFELSE_ELSE(arg_node), arg_info);
+        INFO_SS(arg_info) -= 1;
+    }
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
@@ -298,7 +313,9 @@ node *TCwhile(node *arg_node, info *arg_info)
         typeError(arg_info, arg_node, "While condition is not a basic type.");
 
     /* Traverse through block of statements.*/
+    INFO_SS(arg_info) += 1;
     WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+    INFO_SS(arg_info) -= 1;
 
     /* Reset. */
     INFO_TYPE(arg_info) = T_unknown;
@@ -311,7 +328,9 @@ node *TCdowhile(node *arg_node, info *arg_info)
     DBUG_ENTER("TCdowhile");
 
     /* Traverse through block of statements.*/
+    INFO_SS(arg_info) += 1;
     DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+    INFO_SS(arg_info) -= 1;
 
     /* Check condition. */
     DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
@@ -840,10 +859,9 @@ node *TCvardeclaration(node *arg_node, info *arg_info)
     DBUG_ENTER("TCvardeclaration");
 
     VARDECLARATION_INIT(arg_node) = TRAVopt(VARDECLARATION_INIT(arg_node), arg_info);
-    // char *s = TypetoString(INFO_TYPE(arg_info));
-    // CTInote("%s", s);
 
-    if (INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
+    if (VARDECLARATION_INIT(arg_node) != NULL &&
+        INFO_TYPE(arg_info) != VARDECLARATION_TYPE(arg_node))
         typeError(arg_info, arg_node, "Type of vardeclaration isn't matching assignment. ");
 
     /* Traverse over rest. */

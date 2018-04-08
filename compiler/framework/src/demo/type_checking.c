@@ -118,6 +118,9 @@ node *TCfunction(node *arg_node, info *arg_info)
     {
         if (INFO_LS(arg_info) == FALSE && FUNCTION_TYPE(arg_node) != T_void)
             typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
+
+        if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node) != T_void)
+            typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
     }
 
     /* Reset administration. */

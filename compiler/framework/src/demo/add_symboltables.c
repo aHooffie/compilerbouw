@@ -25,6 +25,7 @@ struct INFO
 {
     node *stack;
     node *original;
+    node *functions;
     int parametercount;
     int offsetcount;
     int functionparamcount;
@@ -36,6 +37,7 @@ struct INFO
     int currentscope;
     int forloopcount;
     bool inforloop;
+    bool declsleft;
 };
 
 /* struct macros */
@@ -50,6 +52,8 @@ struct INFO
 #define INFO_STACKSIZE(n) ((n)->stacksize)
 #define INFO_CS(n) ((n)->currentscope)
 #define INFO_FLC(n) ((n)->forloopcount)
+#define INFO_FUN(n) ((n)->functions)
+#define INFO_DECLSLEFT(n) ((n)->declsleft)
 #define INFO_ERRORS(n) ((n)->errors)
 
 /* INFO functions */
@@ -119,9 +123,53 @@ node *ASprogram(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
+node *ASdeclarations(node *arg_node, info *arg_info)
+{
+    DBUG_ENTER("ASdeclarations");
+
+    CTInote("declaration found");
+
+    // DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+    // DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+
+    node *n;
+
+    if (DECLARATIONS_DECLARATION(arg_node) != NULL)
+    {
+        /* First go into the decls that aren't functions with function bodies.*/
+        if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function &&
+             FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) == NULL) ||
+            NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldef ||
+            NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldec)
+        {
+            DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+        }
+
+        /* Only then go into the function bodies. */
+        if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function) &&
+            FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) != NULL)
+        {
+            n = travDecls(arg_node, arg_info);
+            if (INFO_DECLSLEFT(arg_info) == TRUE)
+            {
+                DECLARATIONS_NEXT(n) = arg_node;
+                DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+                DBUG_RETURN(arg_node);
+            }
+            else
+                DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+        }
+
+        DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+    }
+
+    DBUG_RETURN(arg_node);
+}
+
 node *ASglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASglobaldec");
+    CTInote("%s", GLOBALDEC_NAME(arg_node));
 
     char *name = GLOBALDEC_NAME(arg_node);
 
@@ -157,6 +205,7 @@ node *ASglobaldef(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASglobaldef");
     char *name = GLOBALDEF_NAME(arg_node);
+    CTInote("%s", GLOBALDEF_NAME(arg_node));
 
     /* Found globaldef. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
@@ -194,6 +243,7 @@ node *ASfunction(node *arg_node, info *arg_info)
     DBUG_ENTER("ASfunction");
     node *functionSymboltable;
     char *name = FUNCTION_NAME(arg_node);
+    CTInote("%s", FUNCTION_NAME(arg_node));
 
     /* Found function. Check if there already is one with the same name in current symbol table. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)
@@ -838,6 +888,34 @@ void stError(info *arg_info, node *arg_node, char *message, char *name)
         CTIwarn("Error on line %i, col %i: %s %s", NODE_LINE(arg_node), NODE_COL(arg_node), name, message);
 
     INFO_ERRORS(arg_info) += 1;
+}
+
+node *travDecls(node *arg_node, info *arg_info)
+{
+    node *n = arg_node;
+    INFO_DECLSLEFT(arg_info) = FALSE;
+
+    if (n != NULL)
+    {
+        if ((NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_function &&
+             FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(n)) == NULL) ||
+            NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_globaldef ||
+            NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_globaldec)
+            INFO_DECLSLEFT(arg_info) = TRUE;
+
+        while (DECLARATIONS_NEXT(n) != NULL)
+        {
+            CTInote("HIER");
+            if ((NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_function &&
+                 FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(n)) == NULL) ||
+                NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_globaldef ||
+                NODE_TYPE(DECLARATIONS_DECLARATION(n)) == N_globaldec)
+                INFO_DECLSLEFT(arg_info) = TRUE;
+            n = DECLARATIONS_NEXT(n);
+        }
+    }
+
+    return n;
 }
 
 void printLine(info *arg_info, char *name)

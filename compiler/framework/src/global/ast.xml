@@ -51,6 +51,7 @@ traversals to process it.
             <traversal id="AS" name="Traverse Symbol Table" default="sons" include="add_symboltables.h">
                 <travuser>
                     <node name="Program" />
+                    <node name="Declarations" />
                     <node name="GlobalDec" />
                     <node name="GlobalDef" />
                     <node name="Function" />

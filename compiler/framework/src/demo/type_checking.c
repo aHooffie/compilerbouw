@@ -409,9 +409,9 @@ node *TCcast(node *arg_node, info *arg_info)
     {
     case T_bool:
         if (exprType == T_float)
-            condition = TBmakeBinop(BO_eq, expression, TBmakeFloat(0.0));
+            condition = TBmakeBinop(BO_ne, expression, TBmakeFloat(0.0));
         else if (exprType == T_int)
-            condition = TBmakeBinop(BO_eq, expression, TBmakeNum(0));
+            condition = TBmakeBinop(BO_ne, expression, TBmakeNum(0));
         else if (exprType == T_bool)
         {
             CAST_EXPR(arg_node) = NULL;
@@ -421,13 +421,13 @@ node *TCcast(node *arg_node, info *arg_info)
         else
             DBUG_RETURN(arg_node);
 
-        then = TBmakeBool(FALSE);
-        otherwise = TBmakeBool(TRUE);
+        then = TBmakeBool(TRUE);
+        otherwise = TBmakeBool(FALSE);
         new = TBmakeTernop(condition, then, otherwise);
         break;
     case T_int:
         if (exprType == T_bool)
-            condition = TBmakeBinop(BO_eq, expression, TBmakeBool(FALSE));
+            condition = TBmakeBinop(BO_ne, expression, TBmakeBool(TRUE));
         else if (exprType == T_int)
         {
             CAST_EXPR(arg_node) = NULL;
@@ -443,7 +443,7 @@ node *TCcast(node *arg_node, info *arg_info)
         break;
     case T_float:
         if (exprType == T_bool)
-            condition = TBmakeBinop(BO_eq, expression, TBmakeBool(FALSE));
+            condition = TBmakeBinop(BO_ne, expression, TBmakeBool(TRUE));
         else if (exprType == T_float)
         {
             CAST_EXPR(arg_node) = NULL;

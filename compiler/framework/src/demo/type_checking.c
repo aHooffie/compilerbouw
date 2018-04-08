@@ -335,7 +335,7 @@ node *TCdowhile(node *arg_node, info *arg_info)
     /* Check condition. */
     DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
 
-    if (basictypeCheck(INFO_TYPE(arg_info)) == FALSE)
+    if (INFO_TYPE(arg_info) != T_bool)
         typeError(arg_info, arg_node, "The dowhile condition is not a basic type.");
 
     /* Reset. */

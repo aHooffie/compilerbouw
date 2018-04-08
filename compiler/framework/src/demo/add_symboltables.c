@@ -412,10 +412,7 @@ node *ASexpressions(node *arg_node, info *arg_info)
 
     /* Counts parameters in functioncall. */
     if (EXPRESSIONS_EXPR(arg_node) != NULL)
-    {
         INFO_PMC(arg_info) += 1;
-        EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
-    }
 
     /* Continue with traversing in optional child nodes. */
     EXPRESSIONS_NEXT(arg_node) = TRAVopt(EXPRESSIONS_NEXT(arg_node), arg_info);
@@ -430,8 +427,10 @@ node *ASexpressions(node *arg_node, info *arg_info)
     }
 
     /* Reset counters. */
-    INFO_PMC(arg_info) = 0;
     INFO_FC(arg_info) = 0;
+    INFO_PMC(arg_info) = 0;
+
+    EXPRESSIONS_EXPR(arg_node) = TRAVdo(EXPRESSIONS_EXPR(arg_node), arg_info);
 
     DBUG_RETURN(arg_node);
 }

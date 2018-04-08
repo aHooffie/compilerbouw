@@ -409,9 +409,15 @@ node *TCcast(node *arg_node, info *arg_info)
     {
     case T_bool:
         if (exprType == T_float)
+        {
             condition = TBmakeBinop(BO_ne, expression, TBmakeFloat(0.0));
+            BINOP_TYPE(condition) = T_float;
+        }
         else if (exprType == T_int)
+        {
             condition = TBmakeBinop(BO_ne, expression, TBmakeNum(0));
+            BINOP_TYPE(condition) = T_int;
+        }
         else if (exprType == T_bool)
         {
             CAST_EXPR(arg_node) = NULL;

@@ -105,11 +105,12 @@
                               if (test < INT_MIN || test > INT_MAX)
                                 CTIabort("Integer overflow! Make sure all ints are between -2147483648 and 2147483647");
                               
-                              yylval.cint=atoi(yytext);
+                              yylval.cint = atoi(yytext);
                               FILTER( NUM);
                            }
 
-[0-9]*[\.][0-9]*            { yylval.cflt=atof(yytext);
+[0-9]*[\.][0-9]*            { yylval.cflt = strtof(yytext, NULL);
+                              if (errno)  CTIabort("Float value out of tange.");
                              FILTER( FLOAT);
                            }
 

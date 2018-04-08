@@ -557,7 +557,7 @@ node *GBCfor(node *arg_node, info *arg_info)
         FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
     else
     {
-        n = TBmakeInstructions(I_iload_1, NULL);
+        n = TBmakeInstructions(I_iloadc_1, NULL);
         addNode(n, arg_info);
     }
 
@@ -1237,13 +1237,15 @@ node *GBCfloat(node *arg_node, info *arg_info)
     char *str;
     bool foundDouble = FALSE;
 
-    /* If the value of the integer is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
+    /* If the value of the float is either 0 or 1, create a basic instruction, otherwise a custom instruction. */
     if (FLOAT_VALUE(arg_node) == 0.0)
-        n = TBmakeInstructions(I_fload_0, NULL);
+        n = TBmakeInstructions(I_floadc_0, NULL);
     else if (FLOAT_VALUE(arg_node) == 1.0)
-        n = TBmakeInstructions(I_fload_1, NULL);
+        n = TBmakeInstructions(I_floadc_1, NULL);
     else
     {
+        n = TBmakeInstructions(I_floadc, NULL);
+
         /* Find original float declaration in array. */
         for (i = 0; i < INFO_CC(arg_info); i++)
         {
@@ -1253,8 +1255,6 @@ node *GBCfloat(node *arg_node, info *arg_info)
                 break;
             }
         }
-
-        n = TBmakeInstructions(I_floadc, NULL);
 
         /* Add the indices to the right place in the array to the instruction. */
         if (foundDouble == FALSE)

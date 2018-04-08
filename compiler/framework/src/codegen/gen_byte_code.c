@@ -28,6 +28,7 @@
 extern char *TypetoString(type Type);
 extern char *nodetypetoString(node *arg_node);
 extern void typeError(info *arg_info, node *arg_node, char *message);
+extern node *findOriginal(node *symboltableentry, char *name);
 
 /* INFO structure */
 struct INFO
@@ -527,10 +528,14 @@ node *GBCfor(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("GBCfor");
     node *n;
-    char *start, *str;
+    char *initVar, *stop, *step, *str, *end, *label, *during, *temp;
 
-    // UNDER CONSTRUCTION !!
-    // Find offsets for start, stop and step.
+    /* Find symbol table entries of the 3 init variables of the for loop. */
+    n = findOriginal(SYMBOLTABLE_NEXT(FOR_SYMBOLTABLE(arg_node)), FOR_INITVAR(arg_node));
+    int offset = SYMBOLTABLEENTRY_OFFSET(n);
+    initVar = STRitoa(offset);
+    stop = STRitoa(offset + 1);
+    step = STRitoa(offset + 2);
 
     /* Include memory space in the function ESR instruction. */
     INFO_LC(arg_info) += 3;
@@ -538,38 +543,141 @@ node *GBCfor(node *arg_node, info *arg_info)
     /* Load start expression. */
     FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 
-    // Create store instruction, offset
+    n = TBmakeInstructions(I_istore, NULL);
+    INSTRUCTIONS_ARGS(n) = initVar;
+    addNode(n, arg_info);
 
     FOR_STOP(arg_node) = TRAVdo(FOR_STOP(arg_node), arg_info);
 
+    n = TBmakeInstructions(I_istore, NULL);
+    INSTRUCTIONS_ARGS(n) = stop;
+    addNode(n, arg_info);
+
     if (FOR_STEP(arg_node) != NULL)
-    {
         FOR_STEP(arg_node) = TRAVdo(FOR_STEP(arg_node), arg_info);
-    }
     else
     {
-        // STEP = 1;
+        n = TBmakeInstructions(I_iload_1, NULL);
+        addNode(n, arg_info);
     }
+
+    n = TBmakeInstructions(I_istore, NULL);
+    INSTRUCTIONS_ARGS(n) = step;
+    addNode(n, arg_info);
 
     /* Create the starting label for a branch (1_while, 2_end etc. ) */
     INFO_BC(arg_info) += 1;
     str = STRitoa(INFO_BC(arg_info));
-    start = STRcat(str, "_while");
+    during = STRcat(str, "_while");
 
     /* Add the label as instruction. */
     n = TBmakeInstructions(I_label, NULL);
-    INSTRUCTIONS_ARGS(n) = start;
+    INSTRUCTIONS_ARGS(n) = during;
     addNode(n, arg_info);
 
-    // Create store instruction, offset
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = step;
+    addNode(n, arg_info);
 
-    // LOAD START
+    /* Load start expression. */
+    FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 
     /* Add the igt as instruction. */ // HIER MOGELIJK ILT
     n = TBmakeInstructions(I_igt, NULL);
     addNode(n, arg_info);
 
-    // DINGEN
+    /* Create the starting label for a branch (1_while, 2_end etc. ) */
+    INFO_BC(arg_info) += 1;
+    str = STRitoa(INFO_BC(arg_info));
+    label = STRcat(str, "_false_expr");
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_branch_f, NULL);
+    INSTRUCTIONS_ARGS(n) = label;
+    addNode(n, arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = initVar;
+    addNode(n, arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = stop;
+    addNode(n, arg_info);
+
+    /* Add the ilt as instruction. */ // HIER MOGELIJK ILT
+    n = TBmakeInstructions(I_ilt, NULL);
+    addNode(n, arg_info);
+
+    /* Add the ilt as instruction. */ // HIER MOGELIJK ILT
+    INFO_BC(arg_info) += 1;
+    str = STRitoa(INFO_BC(arg_info));
+    end = STRcat(str, "_end");
+
+    n = TBmakeInstructions(I_jump, NULL);
+    INSTRUCTIONS_ARGS(n) = end;
+    addNode(n, arg_info);
+
+    /* Add the label as instruction. */
+    n = TBmakeInstructions(I_label, NULL);
+    INSTRUCTIONS_ARGS(n) = label;
+    addNode(n, arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = initVar;
+    addNode(n, arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = stop;
+    addNode(n, arg_info);
+
+    /* Add the ilt as instruction. */ // HIER MOGELIJK ILT
+    n = TBmakeInstructions(I_igt, NULL);
+    addNode(n, arg_info);
+
+    n = TBmakeInstructions(I_label, NULL);
+    INSTRUCTIONS_ARGS(n) = end;
+    addNode(n, arg_info);
+
+    /* Add the real ending label as instruction. */
+    INFO_BC(arg_info) += 1;
+    str = STRitoa(INFO_BC(arg_info));
+    temp = STRcat(str, "_end");
+
+    n = TBmakeInstructions(I_branch_f, NULL);
+    INSTRUCTIONS_ARGS(n) = temp;
+    addNode(n, arg_info);
+
+    FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = initVar;
+    addNode(n, arg_info);
+
+    /* While condition. */
+    n = TBmakeInstructions(I_iload, NULL);
+    INSTRUCTIONS_ARGS(n) = step;
+    addNode(n, arg_info);
+
+    n = TBmakeInstructions(I_iadd, NULL);
+    addNode(n, arg_info);
+
+    n = TBmakeInstructions(I_istore, NULL);
+    INSTRUCTIONS_ARGS(n) = initVar;
+    addNode(n, arg_info);
+
+    n = TBmakeInstructions(I_jump, NULL);
+    INSTRUCTIONS_ARGS(n) = during;
+    addNode(n, arg_info);
+
+    n = TBmakeInstructions(I_label, NULL);
+    INSTRUCTIONS_ARGS(n) = temp;
+    addNode(n, arg_info);
 
     DBUG_RETURN(arg_node);
 }

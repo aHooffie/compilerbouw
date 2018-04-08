@@ -2,10 +2,8 @@ export void main () {
     int a;
     int b;
 
-    for (int i = 4, 10 - 6)
+    for (int i = 0, 10 - 4)
     {
         a = i;
     }
-
-    return;
 }

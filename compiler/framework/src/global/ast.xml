@@ -923,6 +923,19 @@ traversals to process it.
                         </targets>
                     </type>
                 </attribute>
+                <attribute name="SymbolTable">
+                    <description>represents link to symbol table of the globals</description>
+                    <type name="Link">
+                        <targets>
+                            <target mandatory="no">
+                                <node name="SymbolTable" />
+                                <phases>
+                                    <all />
+                                </phases>
+                            </target>
+                        </targets>
+                    </type>
+                </attribute>
             </attributes>
         </node>
         <!-- 

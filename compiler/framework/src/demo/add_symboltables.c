@@ -127,41 +127,39 @@ node *ASdeclarations(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("ASdeclarations");
 
-    CTInote("declaration found");
+    DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+    DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
 
-    // DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
-    // DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+    // node *n;
 
-    node *n;
+    // if (DECLARATIONS_DECLARATION(arg_node) != NULL)
+    // {
+    //     /* First go into the decls that aren't functions with function bodies.*/
+    //     if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function &&
+    //          FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) == NULL) ||
+    //         NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldef ||
+    //         NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldec)
+    //     {
+    //         DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+    //     }
 
-    if (DECLARATIONS_DECLARATION(arg_node) != NULL)
-    {
-        /* First go into the decls that aren't functions with function bodies.*/
-        if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function &&
-             FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) == NULL) ||
-            NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldef ||
-            NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_globaldec)
-        {
-            DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
-        }
+    //     /* Only then go into the function bodies. */
+    //     if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function) &&
+    //         FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) != NULL)
+    //     {
+    //         n = travDecls(arg_node, arg_info);
+    //         if (INFO_DECLSLEFT(arg_info) == TRUE)
+    //         {
+    //             DECLARATIONS_NEXT(n) = arg_node;
+    //             DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+    //             DBUG_RETURN(arg_node);
+    //         }
+    //         else
+    //             DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
+    //     }
 
-        /* Only then go into the function bodies. */
-        if ((NODE_TYPE(DECLARATIONS_DECLARATION(arg_node)) == N_function) &&
-            FUNCTION_FUNCTIONBODY(DECLARATIONS_DECLARATION(arg_node)) != NULL)
-        {
-            n = travDecls(arg_node, arg_info);
-            if (INFO_DECLSLEFT(arg_info) == TRUE)
-            {
-                DECLARATIONS_NEXT(n) = arg_node;
-                DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
-                DBUG_RETURN(arg_node);
-            }
-            else
-                DECLARATIONS_DECLARATION(arg_node) = TRAVopt(DECLARATIONS_DECLARATION(arg_node), arg_info);
-        }
-
-        DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
-    }
+    //     DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+    // }
 
     DBUG_RETURN(arg_node);
 }
@@ -569,6 +567,9 @@ node *ASfor(node *arg_node, info *arg_info)
     DBUG_ENTER("ASfor");
     node *newVardecl, *newEntry, *newVarlet, *last;
     char *name, *label;
+
+    /* Add a link to the last symboltable + current offset for code generation. */
+    FOR_SYMBOLTABLE(arg_node) = INFO_STACK(arg_info);
 
     /* Create a new vardeclaration for the initvar. */
     label = STRitoa(INFO_OSC(arg_info));

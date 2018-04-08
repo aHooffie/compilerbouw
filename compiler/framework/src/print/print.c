@@ -5,13 +5,12 @@
  * Arrays implemented.
  */
 
+#include "dbug.h"
+#include "globals.h"
+#include "memory.h"
 #include "print.h"
 #include "traverse.h"
 #include "tree_basic.h"
-#include "dbug.h"
-#include "memory.h"
-#include "globals.h"
-#include "myglobals.h"
 
 /* Functions related to INFO structure */
 struct INFO

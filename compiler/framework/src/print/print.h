@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-/* !! MODULE + DECLARATIONS AKA TOP BELOW!! */
+/*  MODULE + DECLARATIONS AKA TOP STRUCTURE BELOW */
 extern node *PRTdoPrint(node *syntaxtree);
 extern node *PRTprogram(node *arg_node, info *arg_info);
 extern node *PRTdeclarations(node *arg_node, info *arg_info);
@@ -22,11 +22,9 @@ extern node *PRTglobaldec(node *arg_node, info *arg_info);
 extern node *PRTglobaldef(node *arg_node, info *arg_info);
 extern node *PRTvardeclaration(node *arg_node, info *arg_info);
 
-/* !! STATEMENTS BELOW !!*/
+/*  STATEMENTS BELOW */
 extern node *PRTstmts(node *arg_node, info *arg_info);
 extern node *PRTassign(node *arg_node, info *arg_info);
-
-/* !! FUNCTION ELEMENTS BELOW !! */
 extern node *PRTifelse(node *arg_node, info *arg_info);
 extern node *PRTwhile(node *arg_node, info *arg_info);
 extern node *PRTreturn(node *arg_node, info *arg_info);
@@ -36,7 +34,7 @@ extern node *PRTfunctioncallstmt(node *arg_node, info *arg_info);
 extern node *PRTexpressions(node *arg_node, info *arg_info);
 extern node *PRTlocalfunction(node *arg_node, info *arg_info);
 
-/* !! EXPRESSIONS ARE BELOW !! */
+/*  EXPRESSIONS ARE BELOW  */
 extern node *PRTbinop(node *arg_node, info *arg_info);
 extern node *PRTfloat(node *arg_node, info *arg_info);
 extern node *PRTnum(node *arg_node, info *arg_info);
@@ -49,7 +47,7 @@ extern node *PRTcast(node *arg_node, info *arg_info);
 extern node *PRTarrayexpr(node *arg_node, info *arg_info);
 extern node *PRTternop(node *arg_node, info *arg_info);
 
-/* MISCELLANEOUS !! */
+/* MISCELLANEOUS */
 extern node *PRTinstructions(node *arg_node, info *arg_info);
 extern node *PRTsymboltableentry(node *arg_node, info *arg_info);
 extern node *PRTsymboltable(node *arg_node, info *arg_info);

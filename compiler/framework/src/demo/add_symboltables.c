@@ -36,6 +36,8 @@ struct INFO
     int stacksize;
     int currentscope;
     int forloopcount;
+    int expressionsscope;
+    int esa[5];
     bool inforloop;
     bool declsleft;
 };
@@ -54,6 +56,7 @@ struct INFO
 #define INFO_FLC(n) ((n)->forloopcount)
 #define INFO_FUN(n) ((n)->functions)
 #define INFO_DECLSLEFT(n) ((n)->declsleft)
+#define INFO_ES(n) ((n)->expressionsscope)
 #define INFO_ERRORS(n) ((n)->errors)
 
 /* INFO functions */
@@ -327,8 +330,8 @@ node *ASparameters(node *arg_node, info *arg_info)
 
     char *name = PARAMETERS_NAME(arg_node);
 
-    // WAT DOEN WE HIER MEE??
-    PARAMETERS_SCOPE(arg_node) = INFO_STACKSIZE(arg_info);
+    /* Save parameters scope for code generating (scope difference). */
+    PARAMETERS_SCOPE(arg_node) = INFO_STACKSIZE(arg_info) - 1;
 
     /* Found parameter. Check if there already is one with the same name. */
     if (checkDuplicates(SYMBOLTABLE_NEXT(INFO_STACK(arg_info)), name) == FALSE)

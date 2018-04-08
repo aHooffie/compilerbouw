@@ -91,7 +91,6 @@ traversals to process it.
                     <node name="Bool" />
                     <node name="Float" />
                     <node name="Num" />
-                    <node name="Ids" />
                 </travuser>
             </traversal>
             <traversal id="REG" name="Make global regular expressions" default="sons" include="make_re_global.h">

@@ -3,7 +3,6 @@
 
 #include "types.h"
 
-extern char *nodetypetoString(node *arg_node);
 extern void typeError(info *arg_info, node *arg_node, char *message);
 extern bool basictypeCheck(type t);
 
@@ -32,7 +31,6 @@ extern node *TCvar(node *arg_node, info *arg_info);
 extern node *TCbool(node *arg_node, info *arg_info);
 extern node *TCfloat(node *arg_node, info *arg_info);
 extern node *TCnum(node *arg_node, info *arg_info);
-extern node *TCids(node *arg_node, info *arg_info);
 
 extern node *TCdoTypeChecking(node *syntaxtree);
 

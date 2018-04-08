@@ -5,8 +5,6 @@
  * Arrays not implemented.
  */
 
-/// IF FUNCALL IN FUNCALL PARAM !!
-
 #include "type_checking.h"
 
 #include "ctinfo.h"
@@ -25,21 +23,21 @@ struct INFO
 {
     node *original;
     type current;
-    int errors;
     int parametercount;
     int functionreturncount;
     int stmtsscope;
+    int errors;
     bool laststatement;
 };
 
 /* INFO macros */
 #define INFO_ORIGINAL(n) ((n)->original)
 #define INFO_TYPE(n) ((n)->current)
-#define INFO_ERRORS(n) ((n)->errors)
 #define INFO_PC(n) ((n)->parametercount)
 #define INFO_FRC(n) ((n)->functionreturncount)
+#define INFO_SS(n) ((n)->stmtsscope)
+#define INFO_ERRORS(n) ((n)->errors)
 #define INFO_LS(n) ((n)->laststatement)
-#define INFO_SS(n) ((n)->stmtsscope) // to check stmts scope for return value in last position.
 
 /* INFO functions */
 static info *MakeInfo(void)
@@ -51,11 +49,12 @@ static info *MakeInfo(void)
     result = (info *)MEMmalloc(sizeof(info));
     INFO_ORIGINAL(result) = NULL;
     INFO_TYPE(result) = T_unknown;
-    INFO_ERRORS(result) = 0;
     INFO_PC(result) = 0;
     INFO_FRC(result) = 0;
     INFO_SS(result) = 0;
+    INFO_ERRORS(result) = 0;
     INFO_LS(result) = TRUE;
+
     DBUG_RETURN(result);
 }
 
@@ -69,7 +68,6 @@ static info *FreeInfo(info *info)
 }
 
 /* Traversal functions below. */
-/* Declarations. */
 node *TCglobaldec(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCglobaldec");
@@ -77,8 +75,9 @@ node *TCglobaldec(node *arg_node, info *arg_info)
     if (basictypeCheck(GLOBALDEC_TYPE(arg_node) == FALSE))
         typeError(arg_info, arg_node, "The global declaration is not of a basic type.");
 
-    /* Traverse into array grammar. Not implemented. */
-    GLOBALDEC_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEC_DIMENSIONS(arg_node), arg_info);
+    /* Traverse into array is not implemented. */
+    if (GLOBALDEC_DIMENSIONS(arg_node) != NULL)
+        typeError(arg_info, arg_node, ": arrays have not been implemented.");
 
     DBUG_RETURN(arg_node);
 }
@@ -99,7 +98,8 @@ node *TCglobaldef(node *arg_node, info *arg_info)
     INFO_TYPE(arg_info) = T_unknown;
 
     /* Traverse into array grammar. Not implemented. */
-    GLOBALDEF_DIMENSIONS(arg_node) = TRAVopt(GLOBALDEF_DIMENSIONS(arg_node), arg_info);
+    if (GLOBALDEF_DIMENSIONS(arg_node) != NULL)
+        typeError(arg_info, arg_node, ": arrays have not been implemented.");
 
     DBUG_RETURN(arg_node);
 }
@@ -118,13 +118,10 @@ node *TCfunction(node *arg_node, info *arg_info)
     {
         if (INFO_LS(arg_info) == FALSE && FUNCTION_TYPE(arg_node) != T_void)
             typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
-
-        if (INFO_FRC(arg_info) == 0 && FUNCTION_TYPE(arg_node) != T_void)
-            typeError(arg_info, arg_node, "Function is missing a return call as final code line.");
     }
 
+    /* Reset administration. */
     INFO_LS(arg_info) = TRUE;
-
     INFO_FRC(arg_info) = 0;
 
     DBUG_RETURN(arg_node);
@@ -234,10 +231,6 @@ node *TCfunctioncallexpr(node *arg_node, info *arg_info)
 
         FUNCTIONCALLEXPR_EXPRESSIONS(arg_node) = TRAVopt(FUNCTIONCALLEXPR_EXPRESSIONS(arg_node), arg_info);
     }
-
-    /* Reset. */
-    // DEZE LINE!! HIERRR
-    // INFO_ORIGINAL(arg_info) = NULL;
 
     DBUG_RETURN(arg_node);
 }
@@ -393,7 +386,6 @@ node *TCassign(node *arg_node, info *arg_info)
 node *TCcast(node *arg_node, info *arg_info)
 {
     DBUG_ENTER("TCcast");
-
     node *new, *condition, *then, *otherwise, *expression;
 
     /* Type check of expression.*/
@@ -474,7 +466,7 @@ node *TCcast(node *arg_node, info *arg_info)
         CAST_EXPR(arg_node) = NULL;
         node *n = FREEdoFreeNode(arg_node);
         if (n != NULL)
-            CTIwarn("Tried to free a cast node but failed.");
+            CTIwarn("Tried to free a cast node but failed :'( .");
         DBUG_RETURN(new);
     }
     else
@@ -487,7 +479,6 @@ node *TCmonop(node *arg_node, info *arg_info)
     DBUG_ENTER("TCmonop");
 
     MONOP_EXPR(arg_node) = TRAVdo(MONOP_EXPR(arg_node), arg_info);
-
     MONOP_TYPE(arg_node) = INFO_TYPE(arg_info);
 
     /* - Can be either a float or an int, ! can be all three basic types. */
@@ -515,42 +506,37 @@ node *TCbinop(node *arg_node, info *arg_info)
     DBUG_ENTER("TCbinop");
 
     BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
-    nodetype left = NODE_TYPE(BINOP_LEFT(arg_node));
-    if (left != N_num && left != N_bool && left != N_float)
+    nodetype left;
+    switch (INFO_TYPE(arg_info))
     {
-        switch (INFO_TYPE(arg_info))
-        {
-        case T_int:
-            left = N_num;
-            break;
-        case T_float:
-            left = N_float;
-            break;
-        case T_bool:
-            left = N_bool;
-            break;
-        default:
-            typeError(arg_info, arg_node, "Unknown types in binop.");
-        }
+    case T_int:
+        left = N_num;
+        break;
+    case T_float:
+        left = N_float;
+        break;
+    case T_bool:
+        left = N_bool;
+        break;
+    default:
+        typeError(arg_info, arg_node, "Unknown types in binop.");
     }
+
     BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
-    nodetype right = NODE_TYPE(BINOP_RIGHT(arg_node));
-    if (right != N_num && right != N_bool && right != N_float)
+    nodetype right;
+    switch (INFO_TYPE(arg_info))
     {
-        switch (INFO_TYPE(arg_info))
-        {
-        case T_int:
-            right = N_num;
-            break;
-        case T_float:
-            right = N_float;
-            break;
-        case T_bool:
-            right = N_bool;
-            break;
-        default:
-            typeError(arg_info, arg_node, "Unknown types in binop.");
-        }
+    case T_int:
+        right = N_num;
+        break;
+    case T_float:
+        right = N_float;
+        break;
+    case T_bool:
+        right = N_bool;
+        break;
+    default:
+        typeError(arg_info, arg_node, "Unknown types in binop.");
     }
 
     BINOP_TYPE(arg_node) = INFO_TYPE(arg_info);
@@ -797,7 +783,6 @@ node *TCbinop(node *arg_node, info *arg_info)
         break;
     }
 
-    // MILESTONE 10!
     node *new;
     if (BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or)
     {
@@ -845,7 +830,8 @@ node *TCvar(node *arg_node, info *arg_info)
     INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
 
     /* Array indices, not implemented. */
-    VAR_INDICES(arg_node) = TRAVopt(VAR_INDICES(arg_node), arg_info);
+    if (VAR_INDICES(arg_node) != NULL)
+        typeError(arg_info, arg_node, ": arrays have not been implemented.");
 
     DBUG_RETURN(arg_node);
 }
@@ -860,7 +846,8 @@ node *TCvarlet(node *arg_node, info *arg_info)
     VARLET_NEXT(arg_node) = TRAVopt(VARLET_NEXT(arg_node), arg_info);
 
     /* Array indices, not implemented. */
-    VARLET_INDICES(arg_node) = TRAVopt(VARLET_INDICES(arg_node), arg_info);
+    if (VARLET_INDICES(arg_node) != NULL)
+        typeError(arg_info, arg_node, ": arrays have not been implemented.");
 
     DBUG_RETURN(arg_node);
 }
@@ -916,22 +903,6 @@ node *TCbool(node *arg_node, info *arg_info)
     DBUG_RETURN(arg_node);
 }
 
-/* Part of array grammar. Not implemented. */
-node *TCids(node *arg_node, info *arg_info)
-{
-    DBUG_ENTER("TCids");
-
-    INFO_TYPE(arg_info) = SYMBOLTABLEENTRY_TYPE(VAR_SYMBOLTABLEENTRY(arg_node));
-
-    if (INFO_TYPE(arg_info) != T_int)
-        typeError(arg_info, arg_node, "Type of an array index has to be an integer. ");
-
-    /* Array indices, not implemented. */
-    IDS_NEXT(arg_node) = TRAVopt(IDS_NEXT(arg_node), arg_info);
-
-    DBUG_RETURN(arg_node);
-}
-
 /* Traversal start function */
 node *TCdoTypeChecking(node *syntaxtree)
 {
@@ -968,57 +939,4 @@ bool basictypeCheck(type t)
         t != T_float)
         return FALSE;
     return TRUE;
-}
-
-/* Prints the node type as string, for testing. */
-char *nodetypetoString(node *arg_node)
-{
-    char *typeString;
-    switch (NODE_TYPE(arg_node))
-    {
-    case N_num:
-        typeString = "int";
-        break;
-    case N_float:
-        typeString = "float";
-        break;
-    case N_bool:
-        typeString = "bool";
-        break;
-    case N_var:
-        typeString = "var";
-        break;
-    case N_varlet:
-        typeString = "varlet";
-        break;
-    case N_cast:
-        typeString = "cast";
-        break;
-    case N_functioncallexpr:
-        typeString = "functioncallexpr";
-        break;
-    case N_arrayexpr:
-        typeString = "arrayexpr";
-        break;
-    case N_binop:
-        typeString = "int";
-        break;
-    case N_monop:
-        typeString = "int";
-        break;
-    case N_globaldef:
-        typeString = "globaldef";
-        break;
-    case N_globaldec:
-        typeString = "globaldec";
-        break;
-    case N_vardeclaration:
-        typeString = "vardeclaration";
-        break;
-    default:
-        typeString = "Not known yet";
-        break;
-    }
-
-    return typeString;
 }
